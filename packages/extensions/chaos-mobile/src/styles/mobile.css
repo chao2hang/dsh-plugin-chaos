@@ -1,0 +1,152 @@
+/* Global mobile adaptation CSS: injected as a <style> tag by the plugin's
+   client bundle. Targets structural selectors and data-* attributes only —
+   never CSS Module hashed class names from other packages.
+   Active only below 768px; desktop is completely unaffected. */
+
+/* ═══ A2: Conversation layout on mobile ══════════════════════════════════ */
+
+@media (max-width: 767px) {
+  /* The conversation header needs left padding so the hamburger button
+     (rendered by ChaosAppFrame) does not overlap the title.
+     Target: the session header row inside the conversation column.
+     Structural: the first child of the conversation's first column child. */
+  [data-chaos-drawer] [data-shell-overlay] ~ * :first-child {
+    /* No-op: the hamburger is position: fixed, so it floats above. But we
+       still want the conversation header to not start at x=0 on the left. */
+  }
+
+  /* Message area scrolls independently; the composer is sticky at the bottom.
+     Target: the conversation column's content area. The ChaosAppFrame wraps
+     conversation in .mobileConversation (flex column, overflow hidden).
+     The conversation component itself manages its own scroll. */
+
+  /* Long titles truncate. Target: any heading-like element in the
+     conversation header. We use a broad structural approach: elements with
+     overflow visible get truncated. */
+  [data-chaos-drawer] h1,
+  [data-chaos-drawer] h2,
+  [data-chaos-drawer] h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ═══ A3: Input area touch adaptation ═════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  /* Bottom safe area for the home indicator / gesture bar. */
+  [data-chaos-drawer] {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Send button and primary controls: at least 44px touch target (Apple HIG). */
+  [data-chaos-drawer] button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Allow the input control row to wrap on narrow screens without overlap. */
+  [data-chaos-drawer] [data-shell-overlay] ~ * {
+    /* The conversation's input area — we target flex containers in the
+       composer tool row. The composer is inside the conversation column. */
+  }
+
+  /* Long model names truncate in the input area. */
+  [data-chaos-drawer] select,
+  [data-chaos-drawer] [role='combobox'],
+  [data-chaos-drawer] [role='listbox'] {
+    max-width: 60vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ═══ A4: Popovers → bottom sheets on mobile ═════════════════════════════ */
+
+@media (max-width: 767px) {
+  /* Settings panels, model selection menus, and dropdown selectors become
+     bottom sheets: fixed at the bottom, rounded top corners, scrollable.
+     Target: elements with [role='dialog'], [role='menu'], [role='listbox'],
+     and [data-popup] that float above the main content. */
+  [data-chaos-drawer] [role='dialog'],
+  [data-chaos-drawer] [role='menu'],
+  [data-chaos-drawer] [role='listbox'],
+  [data-chaos-drawer] [data-popup] {
+    position: fixed !important; /* Override absolute positioning from popups */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto !important;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* Slide up animation */
+    animation: chaos-slide-up 0.25s var(--ds-ease-in-out, ease);
+  }
+
+  /* Popover arrow/anchor elements: hide on mobile (bottom sheets don't
+     need them). */
+  [data-chaos-drawer] [data-popup-arrow],
+  [data-chaos-drawer] [data-popper-arrow] {
+    display: none !important;
+  }
+}
+
+@keyframes chaos-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-chaos-drawer] [role='dialog'],
+  [data-chaos-drawer] [role='menu'],
+  [data-chaos-drawer] [role='listbox'],
+  [data-chaos-drawer] [data-popup] {
+    animation: none;
+  }
+}
+
+/* ═══ A5: Viewport adaptation ════════════════════════════════════════════ */
+
+/* Use dynamic viewport height (handles mobile address bar show/hide). */
+@media (max-width: 767px) {
+  html, body {
+    height: 100dvh;
+    overflow: hidden;
+    /* Prevent text size adjust on orientation change. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Safe area insets for the whole app. */
+  #root {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+}
+
+/* Landscape on short screens: shrink the input area so the conversation
+   remains visible. */
+@media (orientation: landscape) and (max-height: 500px) {
+  [data-chaos-drawer] {
+    --chaos-input-max-height: 40dvh;
+  }
+
+  /* Composers and input areas get a max height in landscape. */
+  [data-chaos-drawer] [data-shell-overlay] ~ * textarea {
+    max-height: 30dvh;
+  }
+}
+
+/* Prevent horizontal scroll on mobile. */
+@media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}

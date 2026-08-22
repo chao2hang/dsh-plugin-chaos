@@ -87,6 +87,14 @@ export interface ConnectionHandle {
   readonly api: IApiClient
   /** Whether the current page authority is loopback; non-browser contexts default to true. */
   readonly isLoopback: boolean
+  /**
+   * Whether this connection is authenticated by an external auth plugin (e.g.
+   * token login for remote access). Defaults to false. When true, the client
+   * permits privileged RPCs (settings, credentials) that are otherwise
+   * loopback-only. This is the generic extension point: any auth scheme may
+   * set it; the client trust model reads it alongside isLoopback.
+   */
+  readonly authenticated: boolean
   /** Generation-scoped Host facts, including the account home and native path-open capability. */
   readonly hostDescription: HostDescriptionSource
   /** Generic logical RPC channels over the same Connection transport. */
@@ -100,6 +108,12 @@ export interface ConnectionHandle {
    * @returns stop handle for the loop.
    */
   start(sinks: ConnectionSinks, config?: ConnectionConfig): { stop(): void }
+  /**
+   * Mark this connection as authenticated by an external auth plugin. Called
+   * after a successful login flow; the client re-reads the flag for
+   * privileged RPC gating.
+   */
+  setAuthenticated(value: boolean): void
 }
 
 /**
@@ -127,9 +141,12 @@ export function apply(ctx: Context): void {
       }
     }
   }
+  let authenticated = false
   const handle: ConnectionHandle = {
     api,
     isLoopback: pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    get authenticated() { return authenticated },
+    setAuthenticated(value: boolean) { authenticated = value },
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {
