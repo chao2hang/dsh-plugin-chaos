@@ -1,15 +1,23 @@
 import { PassThrough } from 'node:stream'
 import { describe, expect, it, vi } from 'vitest'
+import type { SubprocessTerminalHandle } from '@deepseek-ai/dsh-subprocess'
 import { BrowserTerminalRegistry } from '../src/terminal-registry.ts'
 
-type Mock = ReturnType<typeof vi.fn>
-type Handle = { output: PassThrough; done: Promise<{ code: number }>; write: Mock; signalForeground: Mock; terminate: Mock }
+type Handle = SubprocessTerminalHandle & {
+  output: PassThrough
+  done: SubprocessTerminalHandle['done']
+  write: ReturnType<typeof vi.fn>
+  signalForeground: ReturnType<typeof vi.fn>
+  terminate: ReturnType<typeof vi.fn>
+}
 function handle(): Handle {
   const output = new PassThrough()
   return {
+    pid: 1,
     output,
     done: new Promise(() => {}),
     write: vi.fn(async () => {}),
+    inspectForeground: vi.fn(async () => undefined),
     signalForeground: vi.fn(async () => 0),
     terminate: vi.fn(async () => {}),
   }
@@ -17,9 +25,11 @@ function handle(): Handle {
 function settledHandle(): Handle {
   const output = new PassThrough()
   return {
+    pid: 1,
     output,
-    done: Promise.resolve({ code: 0 }),
+    done: Promise.resolve({ exitCode: 0, signal: null }),
     write: vi.fn(async () => {}),
+    inspectForeground: vi.fn(async () => undefined),
     signalForeground: vi.fn(async () => 0),
     terminate: vi.fn(async () => {}),
   }

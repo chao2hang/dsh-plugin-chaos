@@ -270,7 +270,12 @@ export function apply(ctx: Context, config: Config = {}): void {
         const unsubscribeExit = terminals.subscribeExit(terminal, () => { if (websocket.readyState === WebSocket.OPEN) { websocket.send(JSON.stringify({ type: 'exit' })); websocket.close() } })
         websocket.on('message', (data) => {
           try {
-            const frame = JSON.parse(Buffer.isBuffer(data) ? data.toString('utf8') : data) as { type?: unknown; data?: unknown }
+            let source: string
+            if (typeof data === 'string') source = data
+            else if (Array.isArray(data)) source = Buffer.concat(data).toString('utf8')
+            else if (Buffer.isBuffer(data)) source = data.toString('utf8')
+            else source = Buffer.from(data).toString('utf8')
+            const frame = JSON.parse(source) as { type?: unknown; data?: unknown }
             if (frame.type === 'input' && typeof frame.data === 'string' && frame.data.length <= 65_536) terminals.write(terminal, frame.data)
             else if (frame.type === 'signal' && frame.data === 'SIGINT') terminals.signal(terminal)
             else if (frame.type === 'close') void terminals.close(terminal.key).finally(() =>{  websocket.close() })

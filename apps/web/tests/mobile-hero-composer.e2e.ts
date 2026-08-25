@@ -40,6 +40,8 @@ describe.skipIf(MODE === 'record')('web e2e: mobile hero composer docking', () =
   }, 120_000)
 
   afterAll(async () => {
+    expect(_tripwire?.warnings).toEqual([])
+    expect(_tripwire?.pageErrors).toEqual([])
     await browser?.close()
     await scaffold?.close()
   })

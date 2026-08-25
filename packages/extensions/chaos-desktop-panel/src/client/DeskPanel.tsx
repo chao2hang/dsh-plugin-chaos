@@ -227,7 +227,7 @@ export function DeskPanel(props: PropsRuntime<'shell.overlay'>) {
   </div>
   const renderReview = () => {
     const staged = (code: string): boolean => code.startsWith('M') || code.startsWith('A')
-    const diffClass = (line: DiffLine): string => css['diff' + line.kind.charAt(0).toUpperCase() + line.kind.slice(1)]
+    const diffClass = (line: DiffLine): string => css['diff' + line.kind.charAt(0).toUpperCase() + line.kind.slice(1)] ?? ''
     return <div className={css.review}>
       <div className={css.toolbar}><strong>Git 工具</strong><button type="button" onClick={() => void loadGit()}>↻ 刷新</button></div>
       <p className={css.path}>{git?.cwd ?? '正在读取工作目录…'}</p>
