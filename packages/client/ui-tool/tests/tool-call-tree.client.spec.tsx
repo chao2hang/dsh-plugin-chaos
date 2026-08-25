@@ -89,4 +89,16 @@ describe('ToolCallTree', () => {
     })} />)
     expect(view.getByText('~/docs/a.ts')).toBeTruthy()
   })
+
+  it('hands rows an opener only when the Host advertises one', () => {
+    const block = root('w1', { name: 'read', argsRaw: '{"path":"a.ts"}' })
+    const described = { version: '0', cwd: '/tmp', attachedSessions: 0, home: '/h' }
+    const withOpener = render(<ToolCallTree {...props(block, undefined, { ...described, canOpenPath: true })} />)
+    expect(withOpener.container.querySelector('[data-tool-row-file]')).not.toBeNull()
+    withOpener.unmount()
+    // Without the capability the path degrades to plain text — no dead link.
+    const without = render(<ToolCallTree {...props(block, undefined, { ...described, canOpenPath: false })} />)
+    expect(without.container.querySelector('[data-tool-row-file]')).toBeNull()
+    expect(without.getByText('a.ts', { exact: false })).toBeTruthy()
+  })
 })

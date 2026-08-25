@@ -215,7 +215,7 @@ function workspaceGroupHalf(e: { clientY: number; currentTarget: HTMLElement }):
 
 type SessionTreeProps = Pick<
   WorkspaceBrowserProps,
-  'useSessions' | 'startSession' | 'open' | 'forkSession'
+  'useSessions' | 'startSession' | 'open' | 'forkSession' | 'downloadSessionLog'
   | 'insertWorkspaceBefore' | 'insertSessionBefore' | 't'
 > & {
   /** Host account home for POSIX hover-path abbreviation. */
@@ -249,7 +249,7 @@ type SessionTreeProps = Pick<
 
 /** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
 function SessionTree({
-  useSessions, startSession, open, forkSession, workspaces, archivedSessionIds,
+  useSessions, startSession, open, forkSession, downloadSessionLog, workspaces, archivedSessionIds,
   onRenameRequest, onDeleteRequest, onSessionRename, onSessionArchive,
   insertWorkspaceBefore, insertSessionBefore, orderBy,
   groupExpansion, setGroupExpanded,
@@ -518,6 +518,7 @@ function SessionTree({
                     onOpen={open}
                     onRename={onSessionRename}
                     onFork={forkSession}
+                    onDownload={downloadSessionLog}
                     onArchive={onSessionArchive}
                     drag={dragProps}
                     t={t}
@@ -547,13 +548,14 @@ function SessionTree({
 
 /** The flat "In one list" body: every session is one draggable top-level row. */
 function FlatList({
-  useSessions, open, forkSession, onSessionRename, onSessionArchive, archivedSessionIds,
+  useSessions, open, forkSession, downloadSessionLog, onSessionRename, onSessionArchive, archivedSessionIds,
   orderBy, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t,
 }: Pick<
   SessionTreeProps,
   | 'useSessions'
   | 'open'
   | 'forkSession'
+  | 'downloadSessionLog'
   | 'onSessionRename'
   | 'onSessionArchive'
   | 'archivedSessionIds'
@@ -634,6 +636,7 @@ function FlatList({
               onOpen={open}
               onRename={onSessionRename}
               onFork={forkSession}
+              onDownload={downloadSessionLog}
               onArchive={onSessionArchive}
               flat
               drag={{
@@ -752,6 +755,7 @@ export function WorkspaceBrowser({
   open,
   renameSession,
   forkSession,
+  downloadSessionLog,
   renameWorkspace,
   deleteWorkspace,
   insertWorkspaceBefore,
@@ -769,6 +773,14 @@ export function WorkspaceBrowser({
   const workspaces = useWorkspaces(state => state.items)
   const workspacePhase = useWorkspaces(state => state.phase)
   const archivedSessionIds = useWorkspaces(state => state.archivedSessionIds)
+  // Hide an archive selection immediately. The runtime archive-set response
+  // replaces this local set when it arrives; a rejected request removes only
+  // its own optimistic id.
+  const [pendingArchivedSessionIds, setPendingArchivedSessionIds] = useState<readonly SessionNode['id'][]>([])
+  const visibleArchivedSessionIds = useMemo(
+    () => [...new Set([...archivedSessionIds, ...pendingArchivedSessionIds])],
+    [archivedSessionIds, pendingArchivedSessionIds],
+  )
   // Live occupancy of this surface's directory-flow hole (the same source the
   // flow reads): a composition without a picking affordance can add nothing.
   const directoryFlowAvailable = useDirectoryFlow(occupied => occupied)
@@ -967,7 +979,11 @@ export function WorkspaceBrowser({
   // archive-set echo lands. Failures are non-fatal console diagnostics, the
   // same posture as reorder rejections.
   const onSessionArchive = (sessionId: SessionNode['id']) => {
-    archiveSession(sessionId).catch((reason: unknown) => {
+    setPendingArchivedSessionIds(previous => previous.includes(sessionId) ? previous : [...previous, sessionId])
+    archiveSession(sessionId).then(() => {
+      setPendingArchivedSessionIds(previous => previous.filter(id => id !== sessionId))
+    }).catch((reason: unknown) => {
+      setPendingArchivedSessionIds(previous => previous.filter(id => id !== sessionId))
       console.warn('session archive rejected:', reason)
     })
   }
@@ -1147,7 +1163,7 @@ export function WorkspaceBrowser({
               useSessions={useSessions}
               open={open}
               workspaces={workspaces}
-              archivedSessionIds={archivedSessionIds}
+              archivedSessionIds={visibleArchivedSessionIds}
               query={normalizedQuery}
               remote={remoteSearch}
               resultLimit={searchResultLimit}
@@ -1157,9 +1173,9 @@ export function WorkspaceBrowser({
           : groupBy === 'flat'
             ? (
               <FlatList
-                useSessions={useSessions} open={open} forkSession={forkSession}
+                useSessions={useSessions} open={open} forkSession={forkSession} downloadSessionLog={downloadSessionLog}
                 onSessionRename={onSessionRename} onSessionArchive={onSessionArchive}
-                archivedSessionIds={archivedSessionIds}
+                archivedSessionIds={visibleArchivedSessionIds}
                 orderBy={orderBy}
                 sessionOrderByAccount={sessionOrderByAccount}
                 sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
@@ -1174,6 +1190,7 @@ export function WorkspaceBrowser({
                 onSessionRename={onSessionRename}
                 onSessionArchive={onSessionArchive}
                 forkSession={forkSession}
+                downloadSessionLog={downloadSessionLog}
                 workspaces={workspaces}
                 groupExpansion={groupExpansion}
                 setGroupExpanded={actions.setGroupExpanded}
@@ -1181,7 +1198,7 @@ export function WorkspaceBrowser({
                 sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
                 syncSessionOrderAccount={actions.syncSessionOrderAccount}
                 setSessionOrder={actions.setSessionOrder}
-                archivedSessionIds={archivedSessionIds}
+                archivedSessionIds={visibleArchivedSessionIds}
                 startSession={startSession}
                 open={open}
                 insertWorkspaceBefore={insertWorkspaceBefore}

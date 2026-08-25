@@ -17,7 +17,7 @@ import { DEFAULT_MAX_REQUEST_BODY_BYTES } from '../src/http-bridge.ts'
 function fakeHttpServer(
   routes: WebRoute[],
   upgrades: WebUpgradeRoute[],
-): Pick<WebServer, 'register' | 'registerUpgrade' | 'tapIndex' | 'port'> {
+): Pick<WebServer, 'register' | 'registerUpgrade' | 'tapIndex' | 'port' | 'isAuthenticated'> {
   return {
     register(route) {
       if (routes.some(candidate => candidate.kind === route.kind && candidate.path === route.path)) {
@@ -31,6 +31,7 @@ function fakeHttpServer(
       return () => { upgrades.splice(upgrades.indexOf(route), 1) }
     },
     tapIndex: () => () => {},
+    isAuthenticated: () => false,
     port: 0,
   }
 }
@@ -167,6 +168,47 @@ describe('connection node half', () => {
     await dispose()
   })
 
+  it('permits an authentication-marked remote WebSocket upgrade', async () => {
+    const ctx = new Context()
+    const routes: WebRoute[] = []
+    const upgrades: WebUpgradeRoute[] = []
+    ctx.provide('webServer', {
+      ...fakeHttpServer(routes, upgrades),
+      isAuthenticated: () => true,
+    } as unknown as WebServer)
+    ctx.provide('apiProxy', {} as ApiProxy)
+    const fiber = ctx.plugin({ inject: [...inject], apply }, { trustedHosts: [] })
+    await fiber.await()
+
+    const socket = new PassThrough()
+    const chunks: Buffer[] = []
+    socket.on('data', (chunk: Buffer) => { chunks.push(chunk) })
+    await upgrades[0]!.handler(fakeRequest({
+      host: 'harness.example', origin: 'http://harness.example', 'sec-fetch-site': 'same-origin',
+    }, MUX_EVENTS_PATH), socket, Buffer.alloc(0))
+
+    expect(Buffer.concat(chunks).toString()).not.toContain('HTTP/1.1 403 Forbidden')
+    await fiber.dispose()
+  })
+
+  it('permits an authentication-marked remote request to a privileged method', async () => {
+    const ctx = new Context()
+    const routes: WebRoute[] = []
+    const upgrades: WebUpgradeRoute[] = []
+    ctx.provide('webServer', {
+      ...fakeHttpServer(routes, upgrades),
+      isAuthenticated: () => true,
+    } as unknown as WebServer)
+    ctx.provide('apiProxy', {
+      fetch: async () => new Response('{}', { status: 200 }),
+    } as unknown as ApiProxy)
+    const fiber = ctx.plugin({ inject: [...inject], apply }, { trustedHosts: ['harness.example'] })
+    await fiber.await()
+    const { response, state } = fakeResponse()
+    await routes[0]!.handler(fakeRequest({ host: 'harness.example' }, `${API_PATH}/settings.describe`), response)
+    expect(state.status).not.toBe(403)
+    await fiber.dispose()
+  })
   it('pins privileged methods to loopback even for a declared trusted authority', async () => {
     const { routes, dispose } = await mounted({ trustedHosts: ['harness.example'] })
     // The privileged set: native dialogs plus the whole settings/credential

@@ -63,8 +63,8 @@ export interface Config {
   host: '127.0.0.1' | '0.0.0.0'
   /** Listen port; zero requests an OS-assigned port. */
   port: number
-  /** TLS certificate and private key for self-run HTTPS (paths on the host). */
-  tls?: { cert: string; key: string }
+  /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+  tls: { cert: string; key: string }
 }
 
 /**
@@ -94,9 +94,9 @@ export class WebServer extends Service {
     host: z.union([z.const('127.0.0.1'), z.const('0.0.0.0')]).required(),
     port: z.natural().max(65535).required(),
     tls: z.object({
-      cert: z.string().required(),
-      key: z.string().required(),
-    }),
+      cert: z.string().default(''),
+      key: z.string().default(''),
+    }).default({ cert: '', key: '' }),
   })
 
   private readonly exact = new Map<string, WebRoute>()
@@ -106,6 +106,7 @@ export class WebServer extends Service {
   private readonly indexTaps: ((html: string) => string)[] = []
   private readonly requestGuards: RequestGuard[] = []
   private readonly upgradeGuards: UpgradeGuard[] = []
+  private readonly authenticatedRequests = new WeakSet<IncomingMessage>()
   private fallback: WebRoute['handler'] | undefined
   private server!: Server
   private listenedPort!: number
@@ -122,6 +123,24 @@ export class WebServer extends Service {
   /** The configured bind host (the loopback or all-interfaces literal). */
   get host(): Config['host'] {
     return this.config.host
+  }
+
+  /**
+   * Mark a request that a preceding authentication guard has validated.
+   * The marker is request-local and never derived from a client-controlled header.
+   * @param req - validated HTTP or upgrade request.
+   */
+  markAuthenticated(req: IncomingMessage): void {
+    this.authenticatedRequests.add(req)
+  }
+
+  /**
+   * Whether a preceding authentication guard validated this request.
+   * @param req - HTTP or upgrade request being dispatched.
+   * @returns true only for a request marked by this server instance.
+   */
+  isAuthenticated(req: IncomingMessage): boolean {
+    return this.authenticatedRequests.has(req)
   }
 
   /**
@@ -259,7 +278,7 @@ export class WebServer extends Service {
         res.end()
       })
     }
-    if (this.config.tls !== undefined) {
+    if (this.config.tls.cert !== '' && this.config.tls.key !== '') {
       this.server = createHttpsServer({
         cert: readFileSync(this.config.tls.cert),
         key: readFileSync(this.config.tls.key),

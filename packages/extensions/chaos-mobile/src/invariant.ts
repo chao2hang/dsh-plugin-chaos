@@ -15,8 +15,8 @@ export const name = 'plugin-chaos-mobile-invariant'
 export const inject = ['invariants']
 
 /**
- * No runtime invariant: the mobile frame shadows the root slot and its
- * drawer store is a per-entry exclusive factory with no cross-entry state.
+ * No runtime invariant: the package contributes browser presentation only;
+ * ui-layout owns the panel state and its observable state transitions.
  */
 const install: InvariantInstaller = () => {}
 

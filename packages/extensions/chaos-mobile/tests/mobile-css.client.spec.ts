@@ -6,8 +6,18 @@ const cssPath = resolve(import.meta.dirname, '../src/styles/mobile.css')
 const css = readFileSync(cssPath, 'utf8')
 
 describe('mobile.css contract', () => {
-  it('targets max-width 767px for mobile breakpoint', () => {
-    expect(css).toContain('max-width: 767px')
+  it('keys layout rules off the html[data-chaos-mobile] mode attribute', () => {
+    // The mode decision lives in one place (MobileOverlay's isMobileViewport,
+    // which also covers short landscape viewports); CSS must not re-derive a
+    // width-only media answer that diverges from the nav bar switch.
+    expect(css).toContain('html[data-chaos-mobile]')
+    expect(css).not.toContain('max-width: 767px')
+  })
+
+  it('tracks Visual Viewport height and offset for keyboard panning', () => {
+    expect(css).toContain('height: var(--chaos-visual-viewport-height, 100%)')
+    expect(css).toContain('translateY(var(--chaos-visual-viewport-offset-top, 0px))')
+    expect(css).not.toContain('--chaos-keyboard-inset')
   })
 
   it('uses 100dvh for dynamic viewport height', () => {
@@ -18,21 +28,59 @@ describe('mobile.css contract', () => {
     expect(css).toContain('env(safe-area-inset-')
   })
 
-  it('sets minimum 44px touch target for buttons', () => {
-    expect(css).toContain('min-height: 44px')
-    expect(css).toContain('min-width: 44px')
+  it('places the sidebar drawer below the persistent mobile header', () => {
+    expect(css).toContain('top: calc(44px + env(safe-area-inset-top, 0)) !important')
   })
 
-  it('transforms popups into bottom sheets (fixed bottom, rounded top)', () => {
+  it('presents settings as a dedicated page below the mobile header', () => {
+    expect(css).toContain('[data-settings-overlay]')
+    expect(css).toContain('[data-settings-page-section]')
+    expect(css).toContain('flex-direction: column')
+  })
+
+  it('centers the slash menu at viewport width above the composer', () => {
+    expect(css).toContain('width: calc(100vw - 24px)')
+    expect(css).toContain('transform: translateX(-50%)')
+  })
+
+  it('targets data-shell-column anchors instead of [class*=] selectors', () => {
+    expect(css).toContain("data-shell-column='sidebar'")
+    expect(css).toContain("data-shell-column='center'")
+    expect(css).toContain("data-shell-column='details'")
+  })
+
+  it('targets data-shell-handle for drag handle hiding', () => {
+    expect(css).toContain('data-shell-handle')
+  })
+
+  it('targets data-shell-frame for frame-level state', () => {
+    expect(css).toContain('data-shell-frame')
+  })
+
+  it('has at most one [class*= selector (headerUtilities known limitation)', () => {
+    const matches = css.match(/\[class\*=/g) ?? []
+    // One is the comment, one is the headerUtilities selector.
+    expect(matches.length).toBeLessThanOrEqual(2)
+  })
+
+  it('sidebar becomes fixed drawer on mobile', () => {
     expect(css).toContain('position: fixed')
-    expect(css).toContain('bottom: 0')
-    expect(css).toContain('border-radius: 16px 16px 0 0')
-    expect(css).toContain('max-height: 85vh')
+    expect(css).toContain('transform: translateX(-100%)')
   })
 
-  it('includes slide-up animation for bottom sheets', () => {
-    expect(css).toContain('chaos-slide-up')
-    expect(css).toContain('translateY(100%)')
+  it('sidebar slides in when data-sidebar-collapsed is absent', () => {
+    expect(css).toContain(':not([data-sidebar-collapsed])')
+    expect(css).toContain('translateX(0)')
+  })
+
+  it('details column becomes full-screen overlay on mobile', () => {
+    expect(css).toContain("data-shell-column='details'")
+    expect(css).toContain('width: 100%')
+  })
+
+  it('drag handles hidden on mobile via data-shell-handle', () => {
+    expect(css).toContain('[data-shell-handle]')
+    expect(css).toContain('display: none')
   })
 
   it('respects prefers-reduced-motion', () => {
@@ -51,40 +99,22 @@ describe('mobile.css contract', () => {
   it('truncates long titles', () => {
     expect(css).toContain('text-overflow: ellipsis')
   })
-})
 
-describe('ChaosAppFrame.module.css contract', () => {
-  const frameCssPath = resolve(import.meta.dirname, '../src/client/ChaosAppFrame.module.css')
-  const frameCss = readFileSync(frameCssPath, 'utf8')
-
-  it('desktop frame uses grid layout', () => {
-    expect(frameCss).toContain('display: grid')
+  it('keeps the duplicated desktop session header out of the mobile workspace', () => {
+    expect(css).toContain('[data-conversation-session-header]')
+    expect(css).toContain('display: none !important')
   })
 
-  it('drawer sidebar is fixed position with translateX', () => {
-    expect(frameCss).toContain('position: fixed')
-    expect(frameCss).toContain('transform: translateX(-100%)')
+  it('nav bar back button visibility driven by data-details-collapsed', () => {
+    expect(css).toContain('[data-chaos-back]')
+    expect(css).toContain(':not([data-details-collapsed])')
   })
 
-  it('drawer open state slides in', () => {
-    expect(frameCss).toContain('translateX(0)')
+  it('coarse pointer media query for touch target enlargement', () => {
+    expect(css).toContain('pointer: coarse')
   })
 
-  it('details overlay is fixed full screen', () => {
-    expect(frameCss).toContain('inset: 0')
-  })
-
-  it('backdrop has semi-transparent background', () => {
-    expect(frameCss).toContain('rgba(0, 0, 0, 0.45)')
-  })
-
-  it('hamburger button is 40px touch target', () => {
-    expect(frameCss).toContain('width: 40px')
-    expect(frameCss).toContain('height: 40px')
-  })
-
-  it('uses safe-area-inset for drawer and hamburger', () => {
-    expect(frameCss).toContain('env(safe-area-inset-left')
-    expect(frameCss).toContain('env(safe-area-inset-top')
+  it('hover-none media query disables hover affordances', () => {
+    expect(css).toContain('hover: none')
   })
 })

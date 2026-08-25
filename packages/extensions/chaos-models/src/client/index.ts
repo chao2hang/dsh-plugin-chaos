@@ -1,101 +1,61 @@
-/**
- * Model selection enhancement plugin, browser half. Provides a model list
- * cache (short TTL) and a virtual scrolling helper for large model catalogs.
- * The cache avoids repeated gateway calls when the user opens the model
- * selector multiple times in quick succession. Virtual scrolling keeps the
- * DOM light for catalogs with hundreds of models.
- */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+/** Browser UI for configuring capabilities on non-official pi-ai models. */
+import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ConnectionHandle, SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import { ModelCapabilities } from './ModelCapabilities.tsx'
 
-/** Required services: the UI slot registry. */
-export const inject = ['slots']
+/** Required client services. */
+export const inject = ['slots', 'connection', 'remote']
 
-/** Cache TTL: 30 seconds (short, avoids stale models). */
-const CACHE_TTL_MS = 30_000
+/** The bounded in-process settings mirror removes menu-open round trips. */
+class PiAiSettingsCache {
+  private value: { writable: boolean; namespaces: SettingsNamespaceView[] } | undefined
+  private pending: Promise<{ writable: boolean; namespaces: SettingsNamespaceView[] }> | undefined
 
-/** Virtual scroll threshold: above this many models, use virtual scrolling. */
-const VIRTUAL_SCROLL_THRESHOLD = 50
+  constructor(private readonly connection: ConnectionHandle) {}
 
-/** One cached model list entry. */
-interface CacheEntry<T> {
-  models: T[]
-  timestamp: number
-}
-
-/**
- * Model list cache: stores the last gateway response for a short TTL.
- * Repeated opens within the TTL return the cached list; after expiry, the
- * next open re-fetches.
- */
-export class ModelListCache<T> {
-  private entry: CacheEntry<T> | undefined
-
-  /** Get cached models if fresh, or undefined. */
-  get(): T[] | undefined {
-    if (this.entry === undefined) return undefined
-    if (Date.now() - this.entry.timestamp > CACHE_TTL_MS) {
-      this.entry = undefined
-      return undefined
-    }
-    return this.entry.models
+  /** Return the last known settings snapshot, loading only when absent. */
+  load(): Promise<{ writable: boolean; namespaces: SettingsNamespaceView[] }> {
+    if (this.value !== undefined) return Promise.resolve(this.value)
+    if (this.pending !== undefined) return this.pending
+    this.pending = this.connection.api.settings.describe({}).then((response) => {
+      if (!response.result.ok) throw new Error(response.result.error.message)
+      this.value = response.result.value
+      return this.value
+    }).finally(() => { this.pending = undefined })
+    return this.pending
   }
 
-  /** Store a fresh model list. */
-  set(models: T[]): void {
-    this.entry = { models, timestamp: Date.now() }
-  }
-
-  /** Invalidate the cache (e.g. after settings change). */
+  /** Discard a snapshot after the extension writes the same document. */
   invalidate(): void {
-    this.entry = undefined
+    this.value = undefined
   }
 }
 
 /**
- * Whether a model list should use virtual scrolling.
- * @param count - number of models.
- * @returns true when virtual scrolling is recommended.
- */
-export function shouldVirtualScroll(count: number): boolean {
-  return count > VIRTUAL_SCROLL_THRESHOLD
-}
-
-/**
- * Compute the visible range for virtual scrolling.
- * @param scrollTop - current scroll position in px.
- * @param itemHeight - height of each item in px.
- * @param containerHeight - visible container height in px.
- * @param totalItems - total number of items.
- * @param overscan - number of extra items to render above/below the viewport.
- * @returns the start index, end index (exclusive), and total height.
- */
-export function virtualScrollRange(
-  scrollTop: number,
-  itemHeight: number,
-  containerHeight: number,
-  totalItems: number,
-  overscan = 3,
-): { startIndex: number; endIndex: number; totalHeight: number } {
-  const visibleCount = Math.ceil(containerHeight / itemHeight)
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan)
-  const endIndex = Math.min(totalItems, startIndex + visibleCount + overscan * 2)
-  return { startIndex, endIndex, totalHeight: totalItems * itemHeight }
-}
-
-/**
- * Mount the model selection enhancement: inject global CSS for mobile
- * bottom-sheet model selector and register any slot contributions.
- * @param ctx - Client root context.
+ * Register the composer-row configuration control. The cached settings document
+ * is warmed once per client lifetime, so opening the form needs only the small
+ * session-model request instead of waiting for a full settings descriptor.
+ * @param ctx - Browser plugin context.
  */
 export function apply(ctx: ClientContext): void {
-  // The model selector enhancement is primarily CSS-driven (mobile bottom
-  // sheet is handled by chaos-mobile's global CSS). This plugin provides
-  // the caching and virtual scrolling utilities that the model selection
-  // UI can opt into through the connection service.
+  const connection = ctx.get('connection') as ConnectionHandle
+  const settings = new PiAiSettingsCache(connection)
   ctx.effect(() => {
-    // Provide the cache as a ctx service for the model selection UI.
-    // This is a lightweight utility; the actual UI integration happens
-    // through the connection API and model selection slot.
-    return () => {}
-  }, 'chaos-models: utilities')
+    const dispose = ctx.remote.$on('settings/document-updated', () => { settings.invalidate() })
+    return dispose
+  }, 'chaos-models: settings cache invalidation')
+  void settings.load().catch(() => {})
+  ctx.slots.inject('conversation.input.right', () => ctx.slots.register({
+    name: 'conversation.input.right',
+    id: 'chaos-model-capabilities',
+    inject: (sessionId: SessionId) => ({
+      sessionId,
+      api: connection.api,
+      describe: () => settings.load(),
+      invalidateSettings: () => { settings.invalidate() },
+    }),
+  }, ModelCapabilities))
 }
+
+export { ModelCapabilities, modelProfileOf, parseCapacity, saveModelCapabilities } from './ModelCapabilities.tsx'

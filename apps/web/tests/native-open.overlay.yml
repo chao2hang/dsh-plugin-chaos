@@ -1,0 +1,6 @@
+# Lanes that click a read-summary host-open link pin the gateway capability so
+# headless Linux CI and desktop developer hosts render the same affordance;
+# platform opener behavior belongs to the apiproxy and ui-tool unit tests.
+- id: api-gateway
+  config:
+    nativeOpen: true

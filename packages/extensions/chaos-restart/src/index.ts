@@ -70,14 +70,22 @@ export function apply(ctx: Context, config: Config): void {
           res.end(JSON.stringify({ ok: false, reason: 'restart not supported' }))
           return
         }
-        // Reply BEFORE stopping: the process must send the response before
-        // it exits, otherwise the client never receives it.
+        let result: { ok: true } | { ok: false; reason: string }
+        try {
+          result = await processControl.restart()
+        } catch (error) {
+          result = {
+            ok: false,
+            reason: error instanceof Error ? error.message : String(error),
+          }
+        }
+        if (!result.ok) {
+          res.writeHead(503, { 'content-type': 'application/json' })
+          res.end(JSON.stringify(result))
+          return
+        }
         res.writeHead(200, { 'content-type': 'application/json' })
-        res.end(JSON.stringify({ ok: true }))
-        // Initiate restart after the response is sent.
-        void processControl.restart().catch((err: unknown) => {
-          ctx.logger.warn(err instanceof Error ? err : new Error(String(err)))
-        })
+        res.end(JSON.stringify(result))
       },
     })
 

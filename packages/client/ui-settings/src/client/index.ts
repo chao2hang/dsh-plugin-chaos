@@ -49,10 +49,10 @@ export const inject = ['connection', 'remote']
 export function apply(ctx: ClientContext): void {
   const schema = new SettingsSchemaService(ctx)
   const connection = ctx.get('connection') as ConnectionHandle
-  const mirror = new SettingsDescribeMirror(
-    connection.api,
-    connection.isLoopback ? 'host' : 'memory',
-  )
+  // Chaos serves authenticated remote browsers as a supported web surface.
+  // Keep the shared settings mirror backed by the host there as well, so the
+  // Models page can join the provider directory with its settings namespaces.
+  const mirror = new SettingsDescribeMirror(connection.api, 'host')
   ctx.effect(() => {
     const disposers = [
       (ctx.get('remote') as ClientContext['remote']).$on('settings/document-updated', () => { void mirror.load() }),

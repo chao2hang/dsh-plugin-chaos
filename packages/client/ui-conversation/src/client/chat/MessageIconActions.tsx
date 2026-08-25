@@ -79,7 +79,7 @@ export function MessageIconActions({
   // readings only on screen: without the flanking spaces a reader hears one
   // run-on string ("Ran for 13sTTFT 0.2s12 tok/s") instead of three facts.
   const clockEl = time === undefined ? null : (
-    <span className={clock === 'start' ? css.timeStart : css.timeEnd}>
+    <span className={clock === 'start' ? css.timeStart : css.timeEnd} data-message-clock="">
       {formatMessageClock(time, t, day)}
       {runMs !== undefined && (
         <>
@@ -108,7 +108,7 @@ export function MessageIconActions({
     </span>
   )
   return (
-    <div className={className === undefined ? css.actions : `${css.actions} ${className}`}>
+    <div className={className === undefined ? css.actions : `${css.actions} ${className}`} data-message-chrome="">
       {clock === 'start' ? clockEl : null}
       <Tooltip label={copied ? t('copied') : t('copy')} side="bottom">
         <button type="button" className={css.action} aria-label={copied ? t('copied') : t('copy')} onClick={onCopy}>

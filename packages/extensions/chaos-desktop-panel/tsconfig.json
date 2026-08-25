@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "lib/types", "types": ["node"], "jsx": "react-jsx" },
+  "include": ["src", "src/client/css-modules.d.ts"],
+  "references": [
+    { "path": "../../runtime-diagnostics/invariants" },
+    { "path": "../../host/webserver" },
+    { "path": "../../core/session" },
+    { "path": "../../subprocess/subprocess" },
+    { "path": "../../client/runtime" },
+    { "path": "../../client/ui-layout" },
+    { "path": "../../client/ui-slots" }
+  ]
+}

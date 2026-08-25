@@ -21,14 +21,15 @@ import { createAppearanceRowStore } from './settings-store.ts'
 import { installThemeStyles } from './styles.ts'
 import { en, zh, type ThemeKey } from './locales.ts'
 import {
-  DEFAULT_PREFERENCE, isThemePreference, THEME_PREFERENCE_FIELD, THEME_SETTINGS_NAMESPACE,
-  type ThemePreference, type ThemeSettings,
+  CODE_FONT_SIZE_FIELD, DEFAULT_CODE_FONT_SIZE, DEFAULT_PREFERENCE, DEFAULT_UI_FONT_SIZE,
+  isThemePreference, THEME_PREFERENCE_FIELD, THEME_SETTINGS_NAMESPACE, UI_FONT_SIZE_FIELD,
+  type CodeFontSize, type ThemePreference, type ThemeSettings, type UiFontSize,
 } from '../theme-settings.ts'
 
 export type { AppearanceRowComponentProps, AppearanceRowInjected } from './AppearanceRow.tsx'
 export type { AppearanceRowState } from './settings-store.ts'
 export type { ThemeKey } from './locales.ts'
-export type { ThemePreference, ThemeSettings } from '../theme-settings.ts'
+export type { CodeFontSize, ThemePreference, ThemeSettings, UiFontSize } from '../theme-settings.ts'
 
 /** Namespace owning this feature's settings-row copy. */
 export const SETTINGS_NS = 'settings.theme'
@@ -83,6 +84,10 @@ export interface ThemeSnapshot {
   active: ThemeDefinition
   /** Registered themes in registration order. */
   themes: readonly ThemeDefinition[]
+  /** Shared application text size in CSS pixels. */
+  uiFontSize: UiFontSize
+  /** Code-surface text size in CSS pixels. */
+  codeFontSize: CodeFontSize
   /** Monotonic change counter (registry or active changes). */
   revision: number
 }
@@ -153,6 +158,8 @@ export class ThemeRuntime {
   private readonly host: SettingsScope<ThemeSettings>
   private themes: ThemeDefinition[] = [...BUILTIN_THEMES]
   private preference: ThemePreference
+  private uiFontSize: UiFontSize
+  private codeFontSize: CodeFontSize
   private revision = 0
   private snapshot: ThemeSnapshot
   private readonly media: MediaQueryList | undefined
@@ -169,6 +176,8 @@ export class ThemeRuntime {
     this.ctx = ctx
     this.host = host
     this.preference = DEFAULT_PREFERENCE
+    this.uiFontSize = DEFAULT_UI_FONT_SIZE
+    this.codeFontSize = DEFAULT_CODE_FONT_SIZE
     // Non-browser runs (node e2e booting the client tree) have no matchMedia.
     this.media = typeof matchMedia === 'undefined' ? undefined : matchMedia('(prefers-color-scheme: dark)')
     this.snapshot = this.buildSnapshot()
@@ -226,15 +235,35 @@ export class ThemeRuntime {
     }
     if (this.preference === id) return
     this.preference = id as ThemePreference
-    if (isThemePreference(id)) void this.host.set(THEME_PREFERENCE_FIELD, id)
+    if (isThemePreference(id) && this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(THEME_PREFERENCE_FIELD, id)
     this.publish()
   }
 
-  /** Adopt the scope's accepted durable preference without writing it back. */
+  /** Persist a shared application text size. */
+  setUiFontSize(size: UiFontSize): void {
+    if (this.uiFontSize === size) return
+    this.uiFontSize = size
+    if (this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(UI_FONT_SIZE_FIELD, size)
+    this.publish()
+  }
+
+  /** Persist a code-surface text size. */
+  setCodeFontSize(size: CodeFontSize): void {
+    if (this.codeFontSize === size) return
+    this.codeFontSize = size
+    if (this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(CODE_FONT_SIZE_FIELD, size)
+    this.publish()
+  }
+
+  /** Adopt the scope's accepted durable appearance values without writing them back. */
   private adopt(): void {
     const section = this.host.getSnapshot().value
-    if (section === undefined || this.preference === section.preference) return
+    if (section === undefined) return
+    if (this.preference === section.preference && this.uiFontSize === section.uiFontSize
+      && this.codeFontSize === section.codeFontSize) return
     this.preference = section.preference
+    this.uiFontSize = section.uiFontSize
+    this.codeFontSize = section.codeFontSize
     this.publish()
   }
 
@@ -303,6 +332,8 @@ export class ThemeRuntime {
       preference: this.preference,
       active: this.composeActive(active),
       themes: Object.freeze([...this.themes]),
+      uiFontSize: this.uiFontSize,
+      codeFontSize: this.codeFontSize,
       revision: this.revision,
     })
   }
@@ -393,7 +424,7 @@ export function apply(ctx: ClientContext): void {
   const store = createAppearanceRowStore()
   let bound: BoundActions<typeof store> | undefined
   const sync = (snapshot: ThemeSnapshot): void => {
-    bound?.sync(snapshot.preference, snapshot.revision)
+    bound?.sync(snapshot.preference, snapshot.uiFontSize, snapshot.codeFontSize, snapshot.revision)
   }
   ctx.on('theme/change', sync)
   const injected = (actions: BoundActions<typeof store>): AppearanceRowInjected => {
@@ -403,6 +434,8 @@ export function apply(ctx: ClientContext): void {
     sync(theme.getTheme())
     return {
       setTheme: (id) => { theme.setTheme(id) },
+      setUiFontSize: (size) => { theme.setUiFontSize(size) },
+      setCodeFontSize: (size) => { theme.setCodeFontSize(size) },
     }
   }
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({

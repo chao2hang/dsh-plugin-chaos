@@ -7,7 +7,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { ApiProxy, GoalRef, HostFrame, MuxFrame, RpcMessage, RpcRequest, RpcResponse } from '@deepseek-ai/dsh-host-apiproxy'
+import type { ApiProxy, GoalRef, HostFrame, MuxFrame, RpcMessage, RpcRequest, RpcResponse, UsageReportReadRequest } from '@deepseek-ai/dsh-host-apiproxy'
 import { InProcessApiClient, RpcId, toFetchHandler } from '@deepseek-ai/dsh-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
@@ -19,6 +19,7 @@ function ok<T>(request: RpcRequest<unknown>, value: T): Promise<RpcResponse<T>> 
 /** Scripted impl: every method resolves an empty-ish OK unless a case overrides it. */
 function scriptedApi(overrides: {
   sessions?: Partial<ApiProxy['sessions']>
+  usageReport?: Partial<ApiProxy['usageReport']>
   subagents?: Partial<ApiProxy['subagents']>
   host?: Partial<ApiProxy['host']>
   skills?: Partial<ApiProxy['skills']>
@@ -62,6 +63,20 @@ function scriptedApi(overrides: {
       updateQueue: r => ok(r, { accepted: true as const }),
       cancel: r => ok(r, { accepted: true as const }),
       ...overrides.sessions,
+    },
+    usageReport: {
+      read: r => ok(r, {
+        days: [],
+        models: [],
+        unattributed: {
+          requests: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 0,
+        },
+      }),
+      ...overrides.usageReport,
     },
     subagents: {
       list: r => ok(r, { entries: [], parentAvailable: false }),
@@ -164,6 +179,41 @@ describe('unary round trip', () => {
     expect(seen?.rpcId).toBeTruthy()
     expect(response.rpcId).toBe(seen?.rpcId)
     expect(response.result).toEqual({ ok: true, value: { items: [{ sessionId: 's1', updatedAt: 7, running: false, blank: false }] } })
+  })
+
+  it('round-trips the durable usage report with its server-returned buckets', async () => {
+    let seen: RpcRequest<UsageReportReadRequest> | undefined
+    const api = scriptedApi({
+      usageReport: {
+        read: (request) => {
+          seen = request
+          return ok(request, {
+            days: [{ date: '2026-08-23', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0, routes: [{ provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0 }] }],
+            models: [{ provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0 }],
+            unattributed: { requests: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+          })
+        },
+      },
+    })
+
+    const response = await client(api).usageReport.read({ timeZone: 'Asia/Shanghai' })
+
+    expect(seen?.payload).toEqual({ timeZone: 'Asia/Shanghai' })
+    expect(response.rpcId).toBe(seen?.rpcId)
+    expect(response.result).toEqual({
+      ok: true,
+      value: {
+        days: [{ date: '2026-08-23', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0, routes: [{ provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0 }] }],
+        models: [{ provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 10, outputTokens: 4, cacheReadTokens: 2, cacheWriteTokens: 0 }],
+        unattributed: { requests: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+      },
+    })
+  })
+
+  it('rejects an unsupported usage-report timezone at the carrier boundary', async () => {
+    const response = await client(scriptedApi()).usageReport.read({ timeZone: 'Not/AZone' })
+
+    expect(response.result).toMatchObject({ ok: false, error: { code: 'bad-request' } })
   })
 
   it('round-trips a trimmed session search query and its bounded result metadata', async () => {

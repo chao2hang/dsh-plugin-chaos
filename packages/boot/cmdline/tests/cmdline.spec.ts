@@ -111,7 +111,7 @@ export function apply(ctx) { return globalThis.__provideDemoArgs(ctx) }
   const ctx = new Context()
   await ctx.plugin(Loader)
   ctx.loader.builtins.include = Include
-  provideCmdline(ctx, { args, exit: code => void observed.exits.push(code) })
+  provideCmdline(ctx, { args, exit: async (code) => { observed.exits.push(code) } })
   await ctx.loader.create({
     name: 'cordis:include',
     config: { path: pathToFileURL(join(dir, 'cordis.yml')).href, patches: structuredClone(composition) },
@@ -182,7 +182,7 @@ describe('provideCmdline', () => {
   it('hands the app a snapshot the caller cannot mutate afterwards', () => {
     const ctx = new Context()
     const args = ['--resume', 'abc']
-    provideCmdline(ctx, { args, exit: () => {} })
+    provideCmdline(ctx, { args, exit: async () => {} })
     args.push('--tampered')
     expect(ctx.cmdlineArgs?.get()).toEqual(['--resume', 'abc'])
   })
@@ -198,7 +198,7 @@ describe('provideCmdline', () => {
     const exits: number[] = []
     let err = ''
     internals.stderr = { write: (chunk: string) => { err += chunk; return true } }
-    provideCmdline(ctx, { args: ['serve'], exit: code => void exits.push(code) })
+    provideCmdline(ctx, { args: ['serve'], exit: async (code) => { exits.push(code) } })
     // The root declares no action of its own: the tree-wide guard accepts the
     // subcommand's, and the subcommand inherits the exit and output routing.
     const program = new Command().name('demo')
@@ -217,7 +217,7 @@ describe('provideCmdline', () => {
 
   it('lets multiple parsers read the same immutable snapshot', () => {
     const ctx = new Context()
-    provideCmdline(ctx, { args: ['--port', '8080'], exit: () => {} })
+    provideCmdline(ctx, { args: ['--port', '8080'], exit: async () => {} })
     const parseOnce = (): unknown => {
       let values: unknown
       const program = demoCommand()

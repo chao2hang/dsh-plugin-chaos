@@ -7,12 +7,14 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import type {
   AssistantMessageNode, ConversationSnapshot, SessionId, ToolResultNode,
 } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import { EMPTY_CONVERSATION_VIEWS } from '@deepseek-ai/dsh-client-runtime/client'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { en as commonEn } from '@deepseek-ai/dsh-client-locale/src/locales/en.ts'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import { StatsLine, contextOccupancy, deriveStats, formatDuration, formatTokens, type StatsLineProps } from '../src/client/chat/StatsLine.tsx'
+import { StatsView } from '../src/client/chat/StatsView.tsx'
 import { en, zh } from '../src/client/locales.ts'
 import { chatSnapshotFixture } from './chat-snapshot-fixture.client.ts'
 
@@ -187,13 +189,35 @@ describe('StatsLine', () => {
   function props(
     source: { getSnapshot(): ConversationSnapshot; subscribe(fn: () => void): () => void },
     values: Record<string, unknown> = { tokenUsage: USAGE },
-  ): StatsLineProps {
-    return { useSession: bindSnapshotSelector(source), useProjection: projections(values), t: tEn }
+  ): StatsLineProps & Pick<import('../src/client/chat/StatsView.tsx').StatsViewProps, 'useSessions'> {
+    const sessions = createSnapshotStore({
+      ids: [SID],
+      byId: { [SID]: { id: SID, displayTitle: 'Stats', running: false, blank: false, updatedAt: 1, projectionValues: values } },
+      current: SID, phase: 'ready' as const, subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+    })
+    return {
+      useSession: bindSnapshotSelector(source),
+      useSessions: bindSnapshotSelector(sessions),
+      useProjection: projections(values),
+      t: tEn,
+    }
   }
 
   function tokenUsage(cacheReadTokens: number, uncachedInputTokens: number) {
     return { uncachedInputTokens, outputTokens: 1, cacheReadTokens, cacheWriteTokens: 0 }
   }
+
+  it('renders durable statistics cards in the dedicated tab view', () => {
+    const { source } = makeSource({ nodes: [assistant(1, 1)] })
+    const view = render(<StatsView {...props(source, {
+      tokenUsage: USAGE,
+      sessionStats: sessionStats({ turns: 3, steps: 8, llmMs: 2_500, toolMs: 500 }),
+    })} />)
+    expect(view.getByRole('region', { name: 'Statistics' })).toBeTruthy()
+    expect(view.container.textContent).toContain('Turns3')
+    expect(view.container.textContent).toContain('Input tokens100')
+    expect(view.container.textContent).toContain('Cache hit90%')
+  })
 
   it('renders the grouped stats row and hides a brand-new empty session', () => {
     const { source } = makeSource({ nodes: [assistant(1, 1)] })

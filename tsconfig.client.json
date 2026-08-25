@@ -25,6 +25,8 @@
     "packages/*/*/tests/**/*.client.ts",
     // Client package outside packages/client with a local CSS module face.
     "packages/extensions/ui-cordis/src/css-modules.d.ts",
+    "packages/extensions/chaos-retry/src/client/css-modules.d.ts",
+    "packages/extensions/chaos-restart/src/client/css-modules.d.ts",
     "packages/client/tsdown.client.ts",
     "scripts/client-build-environment.ts",
     "scripts/*.client.spec.ts",
@@ -42,6 +44,7 @@
     // smoke policy). webserver has zero workspace deps and no cordis merge,
     // so it cannot drag host-side Context augmentation into this program.
     { "path": "./packages/host/webserver" },
+    { "path": "./packages/host/apiproxy/tsconfig.client.json" },
     // Compaction seam: the client-runtime pin test value-imports the canonical
     // checkpoint const from the cordis-free dsh-compaction/checkpoint leaf and
     // deliberately never loads the dsh-compaction package root or the host-side
@@ -60,6 +63,11 @@
     { "path": "./packages/api/remotes/tsconfig.client.json" },
     { "path": "./packages/client/runtime" },
     { "path": "./packages/extensions/cordis-client-runner" },
+    { "path": "./packages/extensions/chaos-mobile" },
+    { "path": "./packages/extensions/chaos-models" },
+    { "path": "./packages/extensions/chaos-retry" },
+    { "path": "./packages/extensions/chaos-restart" },
+    { "path": "./packages/extensions/chaos-at-file/tsconfig.client.json" },
     { "path": "./packages/extensions/ui-cordis" },
     { "path": "./packages/test-support/client-runtime" },
     { "path": "./packages/client/ui-layout" },

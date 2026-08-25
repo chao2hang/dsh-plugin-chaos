@@ -282,7 +282,7 @@ describe('settings domain', () => {
       documentPath: '/tmp/custom-settings.yaml',
     } })
     ctx.settings.register(NS, AdapterConfig, { base: { baseURL: 'https://base' } })
-    const api = createApiProxy(ctx, DEFAULTS)
+    const api = createApiProxy(ctx, { ...DEFAULTS, openTextFile: async () => {} })
     const value = expectOk(await api.settings.describe(request({})))
     expect(value.writable).toBe(true)
     expect(value.hasDocument).toBe(true)
@@ -324,6 +324,14 @@ describe('settings domain', () => {
     const error = expectErr(await api.settings.openDocument(request({}), new AbortController().signal))
     expect(error.code).toBe('internal')
     expect(error.message).toContain('no local document')
+  })
+
+  it('hides the settings document when no desktop can receive it', async () => {
+    // A provider document without a native opener is unopenable, so describe
+    // reports no document and the client never offers the dead handoff.
+    const ctx = await harness({ settings: { documentPath: '/tmp/settings.yaml' } })
+    const api = createApiProxy(ctx, { ...DEFAULTS, canOpenPath: () => false })
+    expect(expectOk(await api.settings.describe(request({}))).hasDocument).toBe(false)
   })
 
   it('does not prepare or open a settings document after cancellation', async () => {

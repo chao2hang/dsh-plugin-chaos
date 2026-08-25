@@ -8,6 +8,7 @@
 
 - `listSessions(signal?)` 读取当前持久化元数据，以实时记录优先的方式合并它们，并按确定性的最新优先顺序返回克隆记录。
 - `readSession(sessionId)` 在执行与恢复相同的核心回放验证后，返回一份完整、脱离存储的原始日志；它绝不会将该会话放入实时存储。
+- `projectSessions(sessionIds, project, signal?)` 在每个实时优先的完整日志被借用期间折叠它，并按顺序返回每个会话的结算结果。持久化检查使用 `persistedInspectConcurrency`；同步 projector 只能保留自己拥有的输出。
 - `filterSessions(filters, signal?)` 对同一份克隆逻辑语料库应用与提供方无关的会话元数据和可用性谓词。
 - `filterEvents(sessionId, filters)` 提取第一方语义文档，并按 seq 升序应用与提供方无关的元数据和字面文本谓词。
 - `readTitleSnapshots(sessionIds, signal?)` 从一次实时优先的语料库观察中解析唯一 id，将取消信号传递给持久化列表查询和检查，并按顺序返回每个会话的结算结果，使某个缺失或格式错误的标题来源不会导致其他会话的结果被丢弃。每个实时来源直接 fold，每个持久化 worker fold 为脱离存储的 header/标题结果，并在出队下一个 id 前释放完整日志。取消会拒绝整个批次。`readTitleSnapshot(sessionId, signal?)` 是单次观察视图；`readTitle(sessionId, signal?)` 只返回其可选的 folded `session/title`。

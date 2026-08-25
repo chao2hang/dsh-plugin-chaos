@@ -18,6 +18,16 @@ export type { AnchoredPositionOptions } from './useAnchoredPosition.ts'
 export { useDismissOnOutsidePointer } from './useDismissOnOutsidePointer.ts'
 export { HoverCard } from './HoverCard.tsx'
 export { Modal } from './Modal.tsx'
+export {
+  setSurfacePresentation,
+  resetSurfacePresentation,
+  useSurfacePresentation,
+} from './SurfacePresentation.tsx'
+export type {
+  SurfaceMode,
+  SurfaceSheetProps,
+  SurfacePresentation,
+} from './SurfacePresentation.tsx'
 export { OnboardingSurface } from './OnboardingSurface.tsx'
 export { RiskConfirmation } from './RiskConfirmation.tsx'
 export type { RiskConfirmationProps } from './RiskConfirmation.tsx'

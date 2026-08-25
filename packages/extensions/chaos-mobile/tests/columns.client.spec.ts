@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  computeColumns, clampWidth, MOBILE_BREAKPOINT,
+  computeColumns, clampWidth, MOBILE_BREAKPOINT, MOBILE_LANDSCAPE_MAX_HEIGHT, isMobileViewport,
   CENTER_MIN, SIDEBAR_COLLAPSED, SIDEBAR_DEFAULT,
   DETAILS_DEFAULT, DETAILS_MIN,
 } from '../src/client/columns.ts'
@@ -50,6 +50,29 @@ describe('computeColumns', () => {
 
   it('MOBILE_BREAKPOINT is 768', () => {
     expect(MOBILE_BREAKPOINT).toBe(768)
+  })
+
+  it('MOBILE_LANDSCAPE_MAX_HEIGHT is 500', () => {
+    expect(MOBILE_LANDSCAPE_MAX_HEIGHT).toBe(500)
+  })
+
+  describe('isMobileViewport', () => {
+    it('fires below the width breakpoint (portrait phone)', () => {
+      expect(isMobileViewport(393, 852)).toBe(true)
+      expect(isMobileViewport(767, 1024)).toBe(true)
+    })
+    it('holds above the width breakpoint (desktop, tablet landscape)', () => {
+      expect(isMobileViewport(1440, 900)).toBe(false)
+      expect(isMobileViewport(1024, 768)).toBe(false)
+    })
+    it('fires for a short landscape viewport (rotated phone) even when wide', () => {
+      expect(isMobileViewport(852, 393)).toBe(true)
+      expect(isMobileViewport(740, 360)).toBe(true)
+    })
+    it('keeps the boundary heights on desktop', () => {
+      expect(isMobileViewport(1280, MOBILE_LANDSCAPE_MAX_HEIGHT)).toBe(false)
+      expect(isMobileViewport(1280, MOBILE_LANDSCAPE_MAX_HEIGHT - 1)).toBe(true)
+    })
   })
 
   it('center absorbs deficit at very narrow viewport', () => {

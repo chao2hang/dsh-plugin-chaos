@@ -55,3 +55,10 @@
   background: var(--dsw-alias-bg-module-platform);
   border-color: var(--dsw-static-neutral-bluish-400);
 }
+
+.sizeControl { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 8px; }
+.sizeLabel { color: var(--dsw-alias-label-primary); font-size: 14px; line-height: 22px; }
+.sizeOptions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.sizeOption { min-width: 52px; padding: 5px 8px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; line-height: 18px; cursor: pointer; }
+.sizeOption:hover:not(.selected) { background: var(--dsw-alias-interactive-bg-hover); }
+@media (max-width: 520px) { .sizeControl { align-items: flex-start; flex-direction: column; } .sizeOptions { justify-content: flex-start; } }

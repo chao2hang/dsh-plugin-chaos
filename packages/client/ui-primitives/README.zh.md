@@ -4,6 +4,10 @@
 
 纯 React 原子组件（零 cordis）：StateDot、DisclosureRow、ic_ds_* 图标、Button/Pill/Menu/Modal/Input、Toast 短时横幅、OnboardingSurface 首次使用接管层（portal 到 body 的遮罩加不透明展示层，在且仅在自身生命周期内保持 `#root` 为 `inert`）、markdown 家族（MessageText/MarkdownText/JsonBlock）、只读 JsonTree 检查器、`useAnchoredMaxHeight` 钩子（把底部锚定的浮层高度收敛到锚点上方的视口空间，并在 resize、scroll 与调用方提供的依赖变化时重新测量）、`useAnchoredPosition` 钩子（让固定定位的浮动面板跟住锚点：测量、偏移、按视口边距钳制，并在捕获阶段滚动、窗口缩放与面板自身尺寸变化时重新定位）、TerminalBlock、DiffBlock、ReadBlock、SearchBlock，以及 WebBlock。
 
+## 呈现形态接缝
+
+`SurfacePresentation` 是一个能力接缝，让 `Modal`、`Menu` 和 `Tooltip` 在桌面（inline）与移动端（底部 sheet）之间适配呈现方式。默认为 `inline` 且无 sheet 呈现器，因此所有消费方行为与之前完全一致，除非 `setSurfacePresentation` 覆盖。移动插件调用 `setSurfacePresentation` 传入 `mode: 'sheet'` 和 `presentAsSheet` 回调（用 `resetSurfacePresentation` 恢复桌面）；此时 `Modal` 和 `Menu` 将内容委托给该回调（由回调渲染带抓手、detent 和下拉关闭的 sheet），而 `Tooltip` 完全抑制气泡。该 store 为模块级（`useSyncExternalStore`）而非 React context，因此可触达 portal 的 Modal/Menu 实例，不受 React 树位置限制。sheet 中的 Menu 会把自身 portal 内容登记为 Menu 文档级外部指针监听器的内部目标，因此移动端点击会先选中条目，再关闭菜单。三者都发出稳定的 `data-surface` 属性（`dialog`、`menu`、`tooltip`），使 CSS 可针对契约编写选择器，无需依赖 CSS Modules 的哈希类名。
+
 ## 悬浮卡片
 
 `HoverCard` 通过指针离开宽限期，使采用 portal 渲染的预览在跨过与锚点之间的间隙时仍可触及。消费方还可传入 `copyText`：此时卡片为指针与键盘激活提供按钮语义，其无障碍名称会在 `copyLabel` 前缀后包含该值，通过包内剪贴板辅助函数原样写入该值，并且只有宿主接受写入后，才会临时将内容替换为 `copiedLabel`。与卡片相交的非折叠文本选区会阻止指针点击激活；成功反馈保持卡片原有高度，并随卡片关闭或在一秒后清除。`copyLabel` 和 `copiedLabel` 采用 label prop，是因为这个 zero-cordis 原子组件无法读取应用 locale；省略 `copyText` 时，卡片维持只读且可选择文本的行为。历史依据见[已归档的悬浮卡片复制 Agent Note](../../../.agents/notes/archived/feature/2026-07-31-hover-card-click-copy.md)。

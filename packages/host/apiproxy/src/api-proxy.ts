@@ -40,9 +40,10 @@ import type {
   ApiProxy, ConfigurableProviderView, CredentialView, GoalRef, HistoryEntry, HostFrame,
   ModelCatalogFailure, ModelProviderGroup,
   ModelReasoning, MuxFrame, PromptContentPart, QuestionResponsePayload, SessionListMetadata, SessionProjectionsBlock, SessionSearchItem,
-  QueuedInboxItem, SessionSummary, SettingsNamespaceView, SubagentAddress, JobView, ToolEventView,
+  QueuedInboxItem, SessionSummary, SettingsNamespaceView, SubagentAddress, JobView, ToolEventView, UsageReport,
   WorkspaceId, WorkspaceView,
 } from './api/index.ts'
+import { usageReportFromLogs, usageReportFromReports } from './api/usage-report.ts'
 import {
   DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
   flushLiveSessionLog,
@@ -1049,6 +1050,46 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     ?? DEFAULT_SESSION_LOG_COMPRESSION_LEVEL
   const coldBlankProbeMaxBytes = defaults.coldBlankProbeMaxBytes
     ?? DEFAULT_COLD_BLANK_PROBE_MAX_BYTES
+  const usageReportCache = new Map<string, { report: UsageReport; epoch: number; durableFingerprint: string | undefined }>()
+  let usageReportEpoch = 0
+  /** Observe stored-log revisions without loading their event histories. */
+  const usageReportDurableFingerprint = async (signal?: AbortSignal): Promise<string | undefined> => {
+    const persistence = ctx.get('sessionPersistence')
+    if (persistence === undefined) return undefined
+    const snapshots = await persistence.listSnapshots(signal)
+    return snapshots
+      .map(snapshot => JSON.stringify([snapshot.header.id, snapshot.revision]))
+      .toSorted()
+      .join('\n')
+  }
+  /** Rebuild only when live or durable inputs change; never retain a report that races either change. */
+  const readUsageReport = async (timeZone: string, signal?: AbortSignal): Promise<UsageReport> => {
+    signal?.throwIfAborted()
+    const beforeEpoch = usageReportEpoch
+    const beforeFingerprint = await usageReportDurableFingerprint(signal)
+    const cached = usageReportCache.get(timeZone)
+    if (cached?.epoch === beforeEpoch && cached.durableFingerprint === beforeFingerprint) return cached.report
+    const records = await ctx.sessionQuery.listSessions(signal)
+    const settlements = await ctx.sessionQuery.projectSessions(
+      records.map(record => record.header.id),
+      source => usageReportFromLogs([source.events], timeZone),
+      signal,
+    )
+    const failure = settlements.find(settlement => settlement.status === 'rejected')
+    if (failure?.status === 'rejected') throw failure.reason
+    const report = usageReportFromReports(settlements.map((settlement) => {
+      if (settlement.status !== 'fulfilled') throw new Error('unreachable usage report settlement')
+      return settlement.value
+    }))
+    const afterFingerprint = await usageReportDurableFingerprint(signal)
+    if (usageReportEpoch === beforeEpoch && afterFingerprint === beforeFingerprint) {
+      usageReportCache.set(timeZone, { report, epoch: beforeEpoch, durableFingerprint: beforeFingerprint })
+    }
+    return report
+  }
+  ctx.on('session/event', (_session, event) => {
+    if (event.type === 'assistant/message' && event.data.usage !== undefined) usageReportEpoch += 1
+  })
   /** The seed model each create/resume declares; re-read so it never goes stale. */
   const agentOptions = (): AgentOptions => {
     const { provider, model } = defaults.defaultModelSelection()
@@ -1861,6 +1902,11 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     return defaults.openPath !== undefined || canOpenNativePath()
   }
 
+  /** Whether this deployment can open a settings document in a text editor. */
+  function canOpenTextFiles(): boolean {
+    return defaults.openTextFile !== undefined || canOpenNativePath()
+  }
+
   /** Missing-service report shared by the credentials domain. */
   function credentialsAbsent(): RpcError {
     return { code: 'internal', message: 'credentials service is absent: this deployment does not mount a credential provider (e.g. @deepseek-ai/dsh-credentials-local) in its composition', details: {} }
@@ -2533,6 +2579,20 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
       },
     },
 
+    usageReport: {
+      async read(request, signal) {
+        try {
+          const timeZone = new Intl.DateTimeFormat('en-US', { timeZone: request.payload.timeZone }).resolvedOptions().timeZone
+          return ok(request, await readUsageReport(timeZone, signal))
+        } catch (error: unknown) {
+          if (signal?.aborted) {
+            return err(request, { code: 'cancelled', message: 'usage report read was cancelled', details: {} })
+          }
+          return err(request, { code: 'internal', message: `usage report unavailable: ${String(error)}`, details: {} })
+        }
+      },
+    },
+
     subagents: {
       async list(request, signal) {
         try {
@@ -3164,7 +3224,10 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         if (settings === undefined) return Promise.resolve(err(request, settingsAbsent()))
         return Promise.resolve(ok(request, {
           writable: settings.writable,
-          hasDocument: settings.documentPath !== undefined,
+          // The only document consumer is the native text-editor handoff, so a
+          // Host without a reachable desktop has no document to report — the
+          // same line the preset roster draws with canOpenPaths().
+          hasDocument: settings.documentPath !== undefined && canOpenTextFiles(),
           namespaces: settings.describe({ redactSecrets: true }).map(namespaceView),
         }))
       },

@@ -19,7 +19,7 @@ import type { Duplex } from 'node:stream'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {} from '@deepseek-ai/dsh-host-webserver'
-import type {} from '@deepseek-ai/dsh-credentials'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import {
   SessionStore, constantTimeEqual, extractSessionId, buildCookie, clearCookie,
   DEFAULT_IDLE_TIMEOUT_MS, DEFAULT_ABSOLUTE_TIMEOUT_MS,
@@ -62,46 +62,68 @@ export const Config: z<Config> = z.object({
 export { SessionStore, constantTimeEqual, extractSessionId, buildCookie, clearCookie, cookieMaxAge } from './session-store.ts'
 export type { SessionStoreConfig } from './session-store.ts'
 
-/** Login page HTML: minimal, no app code loaded. */
+/** Login page HTML: standalone, responsive, and intentionally app-code free. */
 function loginPageHtml(): string {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DeepSeek Harness — Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>登录 · DeepSeek Harness</title>
 <style>
-body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:var(--bg,#1a1a2e);color:#e0e0e0}
-.card{background:#16213e;padding:2rem;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3);width:min(360px,90vw)}
-h1{font-size:1.25rem;margin:0 0 1.5rem;text-align:center}
-input{width:100%;padding:0.75rem;margin:0.5rem 0;border:1px solid #333;border-radius:8px;background:#0f3460;color:#e0e0e0;box-sizing:border-box;font-size:1rem}
-button{width:100%;padding:0.75rem;margin-top:1rem;border:none;border-radius:8px;background:#e94560;color:#fff;font-size:1rem;cursor:pointer;min-height:44px}
-button:active{background:#c73650}
-.error{color:#e94560;font-size:0.875rem;margin-top:0.5rem;display:none}
+:root{color-scheme:dark;--bg:#171410;--surface:#201c16;--border:rgba(237,230,214,.14);--text:#ece5d3;--muted:#9d937e;--accent:#b3402f;--accent-pressed:#93331f}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{min-height:100dvh;margin:0;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));background:radial-gradient(120% 60% at 50% 0%,rgba(236,229,211,.045) 0,transparent 60%),var(--bg);color:var(--text);font-family:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",serif;-webkit-font-smoothing:antialiased}
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:36px}
+.seal{display:grid;place-items:center;width:44px;height:44px;border-radius:6px;background:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 -3px 6px rgba(0,0,0,.28);color:#f4ead8;font-size:24px;font-weight:700;line-height:1}
+.wordmark{color:var(--muted);font-family:ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;font-size:11px;font-weight:600;letter-spacing:.42em;text-indent:.42em}
+h1{margin:0 0 10px;font-size:30px;font-weight:600;line-height:1.25;letter-spacing:.12em;text-align:center}
+.sub{margin:0 0 30px;color:var(--muted);font-size:14px;line-height:1.7;text-align:center}
+label{display:block;margin-bottom:10px;color:var(--text);font-size:14px;font-weight:600;letter-spacing:.18em}
+input{width:100%;height:52px;padding:0 16px;border:1px solid var(--border);border-radius:8px;outline:0;background:var(--surface);color:var(--text);font:inherit;font-size:16px;letter-spacing:.06em;transition:border-color .18s ease,box-shadow .18s ease}
+input::placeholder{color:#6f675a}
+input:hover{border-color:rgba(237,230,214,.26)}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,64,47,.18)}
+button{width:100%;min-height:52px;margin-top:18px;border:0;border-radius:8px;background:var(--accent);color:#f4ead8;font:inherit;font-size:16px;font-weight:600;letter-spacing:.5em;text-indent:.5em;cursor:pointer;transition:background .18s ease,transform .18s ease}
+button:hover{background:#c34a37}
+button:active{background:var(--accent-pressed);transform:translateY(1px)}
+button:focus-visible{outline:3px solid rgba(179,64,47,.4);outline-offset:2px}
+.error{display:none;margin:14px 0 0;padding:11px 14px;border:1px solid rgba(179,64,47,.4);border-radius:8px;background:rgba(179,64,47,.12);color:#e8a195;font-size:13px;line-height:1.5;letter-spacing:.06em}
+.footer{margin:30px 0 0;color:#6f675a;font-size:12px;line-height:1.6;letter-spacing:.14em;text-align:center}
+.side{position:fixed;top:50%;right:max(14px,env(safe-area-inset-right));transform:translateY(-50%);writing-mode:vertical-rl;color:rgba(237,230,214,.16);font-size:15px;letter-spacing:.6em;pointer-events:none;user-select:none}
+.login{display:flex;flex-direction:column;justify-content:center;width:min(100%,400px);min-height:calc(100dvh - max(48px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));margin:auto}
+@media (max-width:480px){body{display:block;padding:20px max(24px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}h1{font-size:27px}.login{width:100%;min-height:calc(100dvh - max(40px,env(safe-area-inset-top) + env(safe-area-inset-bottom)))}.side{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<div class="card">
-<h1>DeepSeek Harness</h1>
-<form method="POST" action="/auth/login">
-<input type="password" name="token" placeholder="Access token" autocomplete="current-password" autofocus>
-<button type="submit">Login</button>
-<div class="error" id="err">Invalid token</div>
-</form>
-</div>
+<div class="side" aria-hidden="true">凭钥而入</div>
+<main class="login" aria-labelledby="login-title">
+  <div class="brand"><span class="seal" aria-hidden="true">启</span><span class="wordmark">DEEPSEEK HARNESS</span></div>
+  <h1 id="login-title">欢迎回来</h1>
+  <p class="sub">此实例已启用访问保护，请输入通行密钥以继续。</p>
+  <form method="POST" action="/auth/login">
+    <label for="token">通行密钥</label>
+    <input id="token" type="password" name="token" placeholder="请输入通行密钥" autocomplete="current-password" autofocus required>
+    <button type="submit">进入</button>
+    <div class="error" id="err" role="alert">密钥不正确，请核对后重试。</div>
+  </form>
+  <p class="footer">此连接已受保护 · 仅受邀用户可访问</p>
+</main>
 </body>
 </html>`
 }
-
 /** Whether a request is a page request (accepts HTML) vs an API request. */
 function isPageRequest(req: IncomingMessage): boolean {
   const accept = req.headers.accept ?? ''
   return accept.includes('text/html')
 }
 
-/** Whether the request path is a public auth endpoint. */
-function isAuthEndpoint(pathname: string): boolean {
-  return pathname === '/auth/login' || pathname === '/auth/logout'
+/** Whether an unauthenticated request may read this public endpoint or install metadata. */
+function isPublicUnauthenticatedPath(pathname: string): boolean {
+  return pathname === '/auth/login' || pathname === '/auth/logout' || pathname === '/manifest.webmanifest'
 }
 
 /**
@@ -111,8 +133,9 @@ function isAuthEndpoint(pathname: string): boolean {
  */
 export function apply(ctx: Context, config: Config): void {
   const webServer = ctx.webServer
+  const tls = (ctx.get('webServer') as { config?: { tls?: { cert?: unknown; key?: unknown } } } | undefined)?.config?.tls
   const isHttps = webServer.host === '0.0.0.0' && config.publicUrl !== '' ||
-    (ctx.get('webServer') as { config?: { tls?: unknown } } | undefined)?.config?.tls !== undefined
+    (typeof tls?.cert === 'string' && tls.cert !== '' && typeof tls.key === 'string' && tls.key !== '')
 
   // Validate config: absolute timeout must be >= idle timeout.
   if (config.absoluteTimeoutMs < config.idleTimeoutMs) {
@@ -133,17 +156,18 @@ export function apply(ctx: Context, config: Config): void {
 
   // Periodic cleanup (every 10 minutes).
   const cleanupInterval = setInterval(() => { sessions.cleanup() }, 10 * 60 * 1000)
-  ctx.effect(() => () => clearInterval(cleanupInterval), 'chaos-auth: cleanup interval')
+  ctx.effect(() => () =>{  clearInterval(cleanupInterval) }, 'chaos-auth: cleanup interval')
 
   // Resolve the token from the credentials system at startup.
   let expectedToken: string | undefined
   ctx.inject(['credentials'], (credCtx) => {
-    const ref = credCtx.credentials.resolve({ ref: config.tokenRef })
-    if (ref.ok && typeof ref.value === 'string' && ref.value !== '') {
-      expectedToken = ref.value
-    } else {
-      ctx.logger.warn(`chaos-auth: token reference "${config.tokenRef}" is not configured; login will be disabled`)
-    }
+    void credCtx.credentials.resolve(credentialRef(config.tokenRef)).then((resolved) => {
+      if (resolved !== undefined && typeof resolved.value === 'string' && resolved.value !== '') {
+        expectedToken = resolved.value
+      } else {
+        credCtx.logger.warn(`chaos-auth: token reference "${config.tokenRef}" is not configured; login will be disabled`)
+      }
+    })
   })
 
   // Register auth routes (public, not guarded).
@@ -208,14 +232,17 @@ export function apply(ctx: Context, config: Config): void {
   // Register request guard: checks session before route matching.
   ctx.effect(() => {
     const disposeGuard = webServer.registerGuard(async (req: IncomingMessage, res: ServerResponse) => {
-      // Auth endpoints are public.
+      // Auth endpoints and the install manifest are public.
       const pathname = new URL(req.url ?? '/', 'http://x').pathname
-      if (isAuthEndpoint(pathname)) return true
+      if (isPublicUnauthenticatedPath(pathname)) return true
 
       // Check session.
       const sessionId = extractSessionId(req)
       const session = sessions.validate(sessionId)
-      if (session !== undefined) return true
+      if (session !== undefined) {
+        webServer.markAuthenticated(req)
+        return true
+      }
 
       // Unauthenticated: page requests get the login page, API requests get 401.
       if (isPageRequest(req)) {
@@ -227,7 +254,7 @@ export function apply(ctx: Context, config: Config): void {
       }
       return false
     })
-    return () => disposeGuard()
+    return () =>{  disposeGuard() }
   }, 'chaos-auth: request guard')
 
   // Register upgrade guard: checks session before WebSocket upgrade.
@@ -235,13 +262,16 @@ export function apply(ctx: Context, config: Config): void {
     const disposeUpgradeGuard = webServer.registerUpgradeGuard((req: IncomingMessage, socket: Duplex) => {
       const sessionId = extractSessionId(req)
       const session = sessions.validate(sessionId)
-      if (session !== undefined) return true
+      if (session !== undefined) {
+        webServer.markAuthenticated(req)
+        return true
+      }
       // Unauthenticated upgrade: reject.
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
       socket.destroy()
       return false
     })
-    return () => disposeUpgradeGuard()
+    return () =>{  disposeUpgradeGuard() }
   }, 'chaos-auth: upgrade guard')
 }
 

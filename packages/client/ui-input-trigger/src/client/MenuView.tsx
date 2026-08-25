@@ -68,6 +68,7 @@ export function MenuView({ menu, onPick, onDismiss, t }: MenuViewProps) {
     <div
       ref={listRef}
       className={css.menu}
+      data-slash-command-menu
       style={{ maxHeight }}
       role="listbox"
       aria-label={t('suggestions.aria')}
@@ -83,15 +84,15 @@ export function MenuView({ menu, onPick, onDismiss, t }: MenuViewProps) {
                   shows its raw name — hence the cast past the typed key union. */}
               {group.showGroupTitle === false || group.items.some(item => item.section !== undefined)
                 ? null
-                : <div className={css.groupTitle} role="presentation" data-source={group.source}>{t(group.source as MenuKey)}</div>}
+                : <div className={css.groupTitle} role="presentation" data-slash-command-group data-source={group.source}>{t(group.source as MenuKey)}</div>}
               {group.status === 'pending'
-                ? <div className={css.loading} data-source={group.source}>{t('loading')}</div>
+                ? <div className={css.loading} data-slash-command-loading data-source={group.source}>{t('loading')}</div>
                 : group.items.map((item, index) => {
                   const active = highlight !== null && highlight.source === group.source && highlight.index === index
                   return (
                     <Fragment key={optionId(group.source, index)}>
                       {item.section !== undefined && item.section !== group.items[index - 1]?.section
-                        ? <div className={css.sectionTitle} role="presentation">{item.section}</div>
+                        ? <div className={css.sectionTitle} role="presentation" data-slash-command-section>{item.section}</div>
                         : null}
                       <button
                         id={optionId(group.source, index)}
@@ -99,6 +100,7 @@ export function MenuView({ menu, onPick, onDismiss, t }: MenuViewProps) {
                         role="option"
                         aria-selected={active}
                         className={clsx(css.item, active && css.active)}
+                        data-slash-command-option
                         // mousedown, not click: the textarea keeps focus (combobox
                         // pattern) — preventing default stops the focus steal, and the
                         // pick runs before any blur-driven teardown.
@@ -107,7 +109,7 @@ export function MenuView({ menu, onPick, onDismiss, t }: MenuViewProps) {
                           onPick(group.source, index)
                         }}
                       >
-                        {item.icon !== undefined && <span className={css.itemIcon} aria-hidden>{item.icon}</span>}
+                        {item.icon !== undefined && <span className={css.itemIcon} data-slash-command-icon aria-hidden>{item.icon}</span>}
                         <span className={css.itemName}>{item.name}</span>
                         {item.description !== undefined && <span className={css.itemDescription}>{item.description}</span>}
                       </button>

@@ -56,8 +56,8 @@
   border-radius: 22px;
   background: var(--dsw-specific-input-major);
   box-shadow: var(--dsw-shadow-lv2);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: calc(var(--dsh-ui-font-size) + 2px);
+  line-height: calc(var(--dsh-ui-font-size) + 10px);
   /* Elevated surface in dark, same as the menus: the draft scrollport inside
      scrolls once the composer hits its height cap, so the thumb takes the l2
      pair. Declared on the card because the elevation belongs to the surface,
@@ -300,6 +300,31 @@
 
 .modes {
   gap: 12px;
+}
+
+.command {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--dsw-specific-selector);
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  font: 600 16px/1 monospace;
+}
+
+.command:hover:not(:disabled),
+.command[aria-expanded="true"] {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+
+.command:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .trailing {

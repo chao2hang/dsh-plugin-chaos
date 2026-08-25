@@ -8,6 +8,17 @@ AppFrame always mounts the conversation and details columns; a connected Session
 
 The `/client` exports are the plugin body (`apply`/`inject`), `LayoutController`, and the four owner-share interfaces. AppFrame, the panel store, and the concession solver remain package-internal.
 
+## Stable layout anchors
+
+AppFrame emits stable data attributes on its structural nodes so that mobile-adaptation plugins (chaos-mobile) can target a contract instead of CSS-module hashed class fragments:
+
+- `data-shell-column="sidebar|center|details"` — on each of the three grid columns.
+- `data-shell-handle` — on each drag handle (absent when the owning column is collapsed).
+- `data-sidebar-collapsed` — present on the frame div while the sidebar is collapsed.
+- `data-details-collapsed` — present on the frame div while the details width is zero.
+
+These attributes are part of the layout contract: renaming or removing them requires a coordinated update in chaos-mobile's `mobile.css`. Tests in `app-frame.client.spec.tsx` assert their presence and state transitions.
+
 ## Model Experience
 
 None, as the layout shell manages browser viewing state; nothing here reaches a model request.

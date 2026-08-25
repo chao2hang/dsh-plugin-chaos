@@ -2264,6 +2264,27 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
   }
 
   const api: ApiProxy = {
+    usageReport: {
+      read: (request) => {
+        const formatter = new Intl.DateTimeFormat('en-US', { timeZone: request.payload.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' })
+        const fields = Object.fromEntries(formatter.formatToParts(new Date()).map(part => [part.type, part.value]))
+        const today = `${fields.year}-${fields.month}-${fields.day}`
+        return ok(request, {
+          days: [{
+            date: today, requests: 3, inputTokens: 48, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0,
+            routes: [
+              { provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 20, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+              { provider: 'openai', model: 'gpt', requests: 1, inputTokens: 25, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+            ],
+          }],
+          models: [
+            { provider: 'openai', model: 'gpt', requests: 2, inputTokens: 35, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+            { provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 20, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+          ],
+          unattributed: { requests: 1, inputTokens: 3, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+        })
+      },
+    },
     sessions: {
       list: request => ok(request, { items: [...sessions].sort((a, b) => b.updatedAt - a.updatedAt) }),
       search: (request, signal) => {
@@ -3175,6 +3196,7 @@ export class FixtureApiClient extends AbstractApiClient {
     signal: AbortSignal,
   ): Promise<RpcResponse<unknown>> {
     switch (method) {
+      case 'usage-report.read': return this.api.usageReport.read(request)
       case 'session.list': return this.api.sessions.list(request)
       case 'session.search': return this.api.sessions.search(request, signal)
       case 'session.create': return this.api.sessions.create(request)

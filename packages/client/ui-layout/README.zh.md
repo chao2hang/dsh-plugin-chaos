@@ -8,6 +8,17 @@ AppFrame 始终挂载会话栏和详情栏；已连接 Session 通过 `SessionPr
 
 `/client` 导出表层包含插件主体（`apply`／`inject`）、`LayoutController` 和四个 owner-share 接口。AppFrame、面板 store 与让步求解器仍属于包内部。
 
+## 稳定布局锚点
+
+AppFrame 在其结构节点上发出稳定的 data 属性，使移动适配插件（chaos-mobile）可以针对契约编写选择器，而非 CSS Modules 的哈希类名片段：
+
+- `data-shell-column="sidebar|center|details"` — 三个网格列各自标注。
+- `data-shell-handle` — 每个拖动手柄（所属列折叠时不存在）。
+- `data-sidebar-collapsed` — 侧边栏折叠时存在于 frame div 上。
+- `data-details-collapsed` — 详情栏宽度为零时存在于 frame div 上。
+
+这些属性属于布局契约：重命名或删除它们需要协同更新 chaos-mobile 的 `mobile.css`。`app-frame.client.spec.tsx` 中的测试断言它们的存在与状态变化。
+
 ## 模型体验
 
 无。布局外壳管理浏览器查看状态；这里没有任何内容进入模型请求。

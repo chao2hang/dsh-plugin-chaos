@@ -127,7 +127,7 @@ export function QueueDock({ useSession, updateQueue, notify, t }: QueueDockProps
                       <Tooltip label={t('queue.save')} side="bottom" delayMs={500}>
                         <button
                           type="button"
-                          className={css.action}
+                          className={css.action} data-queue-action
                           aria-label={t('queue.save')}
                           disabled={busy !== null || editing.text.trim() === ''}
                           onClick={() => { void saveEdit() }}
@@ -138,7 +138,7 @@ export function QueueDock({ useSession, updateQueue, notify, t }: QueueDockProps
                       <Tooltip label={t('queue.cancelEdit')} side="bottom" delayMs={500}>
                         <button
                           type="button"
-                          className={css.action}
+                          className={css.action} data-queue-action
                           aria-label={t('queue.cancelEdit')}
                           disabled={busy !== null}
                           onClick={() => { setEditing(null) }}
@@ -153,7 +153,7 @@ export function QueueDock({ useSession, updateQueue, notify, t }: QueueDockProps
                       <Tooltip label={t('queue.edit')} side="bottom" delayMs={500} disabled={row.text === null}>
                         <button
                           type="button"
-                          className={css.action}
+                          className={css.action} data-queue-action
                           aria-label={t('queue.edit')}
                           // Disabled buttons fire no hover events, so the
                           // unsupported hint stays a native title.
@@ -169,7 +169,7 @@ export function QueueDock({ useSession, updateQueue, notify, t }: QueueDockProps
                       <Tooltip label={t('queue.remove')} side="bottom" delayMs={500}>
                         <button
                           type="button"
-                          className={css.action}
+                          className={css.action} data-queue-action
                           aria-label={t('queue.remove')}
                           disabled={busy !== null}
                           onClick={() => {
@@ -186,7 +186,7 @@ export function QueueDock({ useSession, updateQueue, notify, t }: QueueDockProps
                       <Tooltip label={t('queue.steer')} side="bottom" delayMs={500} disabled={!running}>
                         <button
                           type="button"
-                          className={css.action}
+                          className={css.action} data-queue-action
                           aria-label={t('queue.steer')}
                           title={running ? undefined : t('queue.steer.unavailable')}
                           disabled={busy !== null || !running}

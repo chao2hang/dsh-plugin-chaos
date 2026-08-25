@@ -28,6 +28,25 @@ export const DETAILS_MAX = 520
 export const DETAILS_DEFAULT = 360
 /** Mobile breakpoint: below this width, the drawer layout takes over. */
 export const MOBILE_BREAKPOINT = 768
+/**
+ * Landscape phones: a viewport this short is a phone rotated sideways even
+ * when its width passes the portrait breakpoint. At or above this height the
+ * width test alone decides.
+ */
+export const MOBILE_LANDSCAPE_MAX_HEIGHT = 500
+
+/**
+ * Decide whether the drawer/mobile shell should own the viewport. Fires for
+ * narrow portraits (width below {@link MOBILE_BREAKPOINT}) and for short
+ * landscape viewports (phones rotated sideways), where the three-column
+ * desktop grid cannot fit.
+ * @param width - viewport width in px.
+ * @param height - viewport height in px.
+ * @returns whether the mobile shell is active.
+ */
+export function isMobileViewport(width: number, height: number): boolean {
+  return width < MOBILE_BREAKPOINT || height < MOBILE_LANDSCAPE_MAX_HEIGHT
+}
 
 /**
  * Clamp a panel width into its contract range.

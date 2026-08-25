@@ -12,13 +12,13 @@
       "path": "../../attachment/attachment"
     },
     {
+      "path": "../../host/apiproxy/tsconfig.client.json"
+    },
+    {
       "path": "../../../vendor/cordis"
     },
     {
       "path": "../ui-slots"
-    },
-    {
-      "path": "../../host/apiproxy"
     },
     {
       "path": "../../interaction/commands"

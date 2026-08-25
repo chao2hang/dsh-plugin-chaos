@@ -36,6 +36,16 @@ interface PagingAnchor {
   top: number
 }
 
+/** One deferred correction for a reader position restored into the resident host. */
+interface RestoreSettlement {
+  /** Restored row identity. */
+  anchorKey: string
+  /** Saved reading top relative to the host. */
+  anchorTop: number
+  /** Host that received the initial restore. */
+  scrollport: HTMLElement
+}
+
 /** Find an already-rendered settled row without interpolating a selector. */
 function anchorElement(list: HTMLElement, key: string): HTMLElement | null {
   for (const row of list.querySelectorAll<HTMLElement>('[data-chat-anchor-key]')) {
@@ -233,6 +243,8 @@ export function ChatView({
    *  scroll-driven at-bottom chrome re-render (which would snap inertial
    *  scrolls the rest of the way to the floor). */
   const followSigRef = useRef<string | null>(null)
+  /** One post-layout correction for a reader position restored above the floor. */
+  const restoreSettlementRef = useRef<RestoreSettlement | null>(null)
 
   const firstKey = order[0]
   const firstSeq = firstKey === undefined ? null : nodeStore.get(firstKey)?.anchorSeq ?? null
@@ -243,6 +255,7 @@ export function ChatView({
 
   const toBottom = (el: HTMLElement): void => {
     anchorRef.current = null
+    restoreSettlementRef.current = null
     el.scrollTop = el.scrollHeight
     observedTopRef.current = el.scrollTop
     atBottomRef.current = true
@@ -273,7 +286,14 @@ export function ChatView({
         setAtBottom(isAtBottom)
         const normalized = isAtBottom ? null : scrollPosition(local, el)
         if (isAtBottom) chatScroll.save(null)
-        else if (normalized !== null) chatScroll.save(normalized)
+        else if (normalized !== null) {
+          chatScroll.save(normalized)
+          restoreSettlementRef.current = {
+            anchorKey: saved.anchorKey,
+            anchorTop: saved.anchorTop,
+            scrollport: el,
+          }
+        }
       }
       firstSeqRef.current = firstSeq
       lastKeyRef.current = lastKey
@@ -326,6 +346,7 @@ export function ChatView({
     // the current ownership state.
     const floor = Math.max(0, el.scrollHeight - el.clientHeight)
     const movedByReader = Math.abs(el.scrollTop - Math.min(observedTopRef.current, floor)) > 0.5
+    if (movedByReader) restoreSettlementRef.current = null
     const isAtBottom = movedByReader
       ? floor - el.scrollTop <= FOLLOW_THRESHOLD + 1
       : atBottomRef.current
@@ -347,6 +368,38 @@ export function ChatView({
     else if (position !== null) chatScroll.save(position)
     observedTopRef.current = el.scrollTop
   }
+
+  // One animation-frame pass catches remount reflow after the initial layout
+  // restore. It gives way to reader input, paging, a host change, and bottom
+  // ownership instead of becoming another general-purpose anchor observer.
+  useEffect(() => {
+    const settlement = restoreSettlementRef.current
+    if (settlement === null) return
+    const frame = requestAnimationFrame(() => {
+      if (restoreSettlementRef.current !== settlement) return
+      restoreSettlementRef.current = null
+      const local = listRef.current
+      if (
+        local === null
+        || scrollerOf(local) !== settlement.scrollport
+        || atBottomRef.current
+        || anchorRef.current !== null
+        || loadingOlder
+      ) return
+      const row = anchorElement(local, settlement.anchorKey)
+      if (row === null) return
+      settlement.scrollport.scrollTop += flowTop(row, settlement.scrollport) - settlement.anchorTop
+      observedTopRef.current = settlement.scrollport.scrollTop
+      const isAtBottom = settlement.scrollport.scrollHeight - settlement.scrollport.scrollTop - settlement.scrollport.clientHeight
+        <= FOLLOW_THRESHOLD + 1
+      atBottomRef.current = isAtBottom
+      setAtBottom(isAtBottom)
+      const position = isAtBottom ? null : scrollPosition(local, settlement.scrollport)
+      if (isAtBottom) chatScroll.save(null)
+      else if (position !== null) chatScroll.save(position)
+    })
+    return () => { cancelAnimationFrame(frame) }
+  }, [openState])
 
   // Bind the scroll listener on the resolved scrollport once per mount;
   // reader-input attribution rides the observed-top ledger, not per-device
@@ -397,6 +450,7 @@ export function ChatView({
   }, [loadingOlder])
 
   const loadOlderAnchored = (): void => {
+    restoreSettlementRef.current = null
     const local = listRef.current
     /* v8 ignore next -- ref-null guard: the paging button renders inside the list tree. */
     if (local !== null) {

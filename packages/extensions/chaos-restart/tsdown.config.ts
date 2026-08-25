@@ -1,6 +1,3 @@
-import { defineConfig } from 'tsdown'
-export default defineConfig({
-  entry: ['lib/types/index.js', 'lib/types/invariant.js'],
-  outDir: 'lib', format: ['esm'], platform: 'node', target: 'es2024',
-  dts: false, clean: false,
-})
+import { clientBundle } from '../../client/tsdown.client.ts'
+
+export default clientBundle('@deepseek-ai/dsh-plugin-chaos-restart', ['lib/types/index.js', 'lib/types/invariant.js'])

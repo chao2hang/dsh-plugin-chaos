@@ -6,6 +6,8 @@ export const zh = {
   'appearance.light': '浅色',
   'appearance.dark': '深色',
   'appearance.system': '跟随系统',
+  'appearance.uiFontSize': '界面字号',
+  'appearance.codeFontSize': '代码字号',
 } satisfies Record<string, string>
 
 /** The settings.theme namespace key union. */
@@ -17,4 +19,6 @@ export const en = {
   'appearance.light': 'Light',
   'appearance.dark': 'Dark',
   'appearance.system': 'System',
+  'appearance.uiFontSize': 'Interface font size',
+  'appearance.codeFontSize': 'Code font size',
 } satisfies Record<ThemeKey, string>

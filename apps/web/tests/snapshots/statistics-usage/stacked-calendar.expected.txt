@@ -1,0 +1,6 @@
+columns=30
+zero-days=28
+segments=deepseek/reasoner,openai/gpt,unattributed
+total=58Total tokens
+requests=4Requests
+legend=deepseek / reasoner,openai / gpt,Unattributed historical usage

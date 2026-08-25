@@ -1,29 +1,42 @@
 # `@deepseek-ai/dsh-plugin-chaos-mobile`
 
+English | [中文](README.zh.md)
+
 Mobile adaptation plugin for the DeepSeek Harness Web GUI.
 
 ## Purpose
 
-Shadows the built-in `root` slot with a mobile-aware `ChaosAppFrame` that switches between desktop and drawer layouts at the **768px** breakpoint. On mobile (< 768px):
+At widths below 768px, this plugin adapts the existing layout without replacing its state owner:
 
-- **A1 Drawer sidebar**: the sidebar exits the grid and becomes a slide-in drawer with a semi-transparent backdrop. A hamburger button opens it; tapping a session or the backdrop closes it.
-- **A2 Conversation layout**: the conversation column takes full width; the input area is sticky at the bottom; long titles truncate.
-- **A3 Input touch adaptation**: bottom safe-area padding for the gesture bar; primary buttons have a 44px minimum touch target; control rows wrap without overlap.
-- **A4 Bottom-sheet popups**: settings panels, model menus, and dropdown selectors slide up from the bottom as rounded, scrollable sheets with safe-area padding.
-- **A5 Viewport adaptation**: `100dvh` for dynamic viewport height; `env(safe-area-inset-*)` for notch/home-indicator; landscape support on short screens.
+- A 44pt `MobileNavBar` replaces the floating hamburger and close buttons: left shows a menu toggle (or a back button while the details panel is open), center holds the current session title and agent mode, and right holds a single overflow button.
+- The sidebar becomes a slide-in drawer with a backdrop, opened via the nav bar's menu toggle.
+- The details column becomes a full-screen pushed page with the nav bar's back button closing it.
+- `MobileSheet` presents Modal and Menu as an iOS-inspired glass sheet: its accessible grabber expands or collapses medium and large detents before a downward drag dismisses it; it also provides scroll lock and a focus trap through ui-primitives' `SurfacePresentation` seam.
+- `Tooltip` suppresses its bubble entirely on mobile (no hover on touch devices).
+- Safe-area padding, dynamic viewport height, and 44px minimum touch targets improve touch use.
+- The Visual Viewport API continuously tracks visible height and vertical offset so the composer remains aligned with the keyboard during mobile viewport panning.
+- The composer includes an image-attachment button that uses the existing admission, preview, limit, and removal flow.
+- CSS targets stable `data-shell-column`, `data-shell-frame`, `data-shell-handle`, and `data-conversation-session-header` anchors — no `[class*=]` hashed-class selectors.
 
-At desktop width (≥ 768px), the frame renders identically to the stock `AppFrame` — same three-column grid, drag handles, and column solver.
+Desktop widths retain ui-layout's unmodified three-column frame, drag handles, and column solver.
 
 ## Composition
 
-Register into the `root` slot at `priority: -1` to shadow ui-layout's shipped `AppFrame` (default `priority: 0`). The shadow preserves all four child slots (`sidebar`, `conversation`, `details`, `shell.overlay`). The inject hook connects the combined store's panel-action subset (`toggleSidebar`, `openDetails`, `closeDetails`) to `ctx.layout` so other plugins' panel gestures work unchanged.
+The client plugin adds `MobileOverlay` to ui-layout's `shell.overlay` slot and `AttachmentButton` to `conversation.input.left`. It declares `slots`, `conversation`, `layout`, and `ui-primitives` as required services. The overlay registration injects `toggleSidebar` and `closeDetails` callbacks from `ctx.layout`. On mount, the overlay calls `setSurfacePresentation({ mode: 'sheet', presentAsSheet })` to activate the `MobileSheet` renderer for all Modal/Menu/Tooltip instances; on unmount or desktop, it calls `resetSurfacePresentation()`.
 
 ## Configuration
 
-No configuration — the plugin is active when composed. Remove the `chaos-mobile` row from the web profile's `cordis.patch.yml` to keep the stock desktop-only layout.
+No configuration. Remove the `chaos-mobile` row from the Web profile's `cordis.patch.yml` to use the desktop layout without these mobile adaptations.
+
+## Model Experience
+
+None, as this browser-only plugin registers neither model context nor tool schema.
+
+#### KV Cache effect
+
+The plugin changes no model request, so it neither adds tokens nor changes KV Cache reuse.
 
 ## Known Limitations and Deferred Work
 
-- **Shadow coupling**: the desktop layout path mirrors ui-layout's `AppFrame` logic (copied for package independence). Upstream changes to the column solver or drag-handle behavior require a manual sync.
-- **Bottom-sheet targeting**: the global CSS targets `[role='dialog']`, `[role='menu']`, `[role='listbox']`, and `[data-popup]` — popups that use non-standard markup may not transform into bottom sheets.
-- **`attachPanels` access**: the inject hook casts `ctx.layout` to the concrete `LayoutController` class to call `attachPanels` (public on the class, absent from the `ILayout` interface). A main-repo change to expose this method on `ILayout` would remove the cast.
+- **Layout selectors**: the drawer and sheet CSS targets ui-layout's stable data attributes (`data-shell-frame`, `data-shell-column`, `data-sidebar-collapsed`, `data-details-collapsed`). Changes to those emitted attributes require a coordinated update.
+- **History integration**: the details push-page does not yet intercept `history.pushState` for system back-button support. This is planned for a follow-up.

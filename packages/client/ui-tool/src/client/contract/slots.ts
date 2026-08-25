@@ -37,8 +37,12 @@ export interface ToolCallOwnerProps {
   cwd?: string | undefined
   /** Host account home; POSIX home-rooted summaries display as `~`. */
   home?: string | undefined
-  /** Open a Tool argument path through the Host. */
-  openFile: (path: string) => void
+  /**
+   * Open a Tool argument path through the Host. Absent when this deployment
+   * reports no native opener (`host.describe.canOpenPath === false`), so a
+   * view renders its path as plain text instead of a dead open affordance.
+   */
+  openFile?: ((path: string) => void) | undefined
   /** Inspect this call in the trajectory view when available. */
   inspect?: (() => void) | undefined
 }

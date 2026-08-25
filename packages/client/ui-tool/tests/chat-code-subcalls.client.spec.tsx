@@ -161,7 +161,8 @@ async function bench(snapshot: ConversationSnapshot) {
   ctx.provide('connection', {
     api: { settings: {} },
     isLoopback: false,
-    hostDescription: { getSnapshot: () => undefined, subscribe: () => () => {} },
+    // A capable Host: the file sub-row click exercises the open plumbing.
+    hostDescription: { getSnapshot: () => ({ version: '0', cwd: '/t', attachedSessions: 0, home: '/h', canOpenPath: true }), subscribe: () => () => {} },
   } as never)
   // ui-theme's Appearance row binds a durable scope through these two.
   ctx.provide('remote', { $on: () => () => {} } as never)

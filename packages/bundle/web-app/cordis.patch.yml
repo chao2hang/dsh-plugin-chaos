@@ -188,9 +188,8 @@
     - id: ui-layout
       name: '@deepseek-ai/dsh-client-ui-layout'
 
-    # Mobile adaptation: shadows the root slot with a mobile-aware frame
-    # (drawer sidebar, touch-friendly controls, bottom-sheet popups). Opt-in
-    # — remove this row to keep the stock desktop-only layout.
+    # Mobile adaptation adds drawer controls, touch targets, and bottom sheets
+    # through ui-layout's existing slots. Remove this row for desktop-only layout.
     - id: chaos-mobile
       name: '@deepseek-ai/dsh-plugin-chaos-mobile'
 
@@ -210,6 +209,10 @@
     # Module D: Model selection UX enhancement.
     - id: chaos-models
       name: '@deepseek-ai/dsh-plugin-chaos-models'
+
+    # Retry strip for abnormally ended conversations: docked above the composer.
+    - id: chaos-retry
+      name: '@deepseek-ai/dsh-plugin-chaos-retry'
 
     # ProcessControl service (Module C dependency).
     - id: process-control

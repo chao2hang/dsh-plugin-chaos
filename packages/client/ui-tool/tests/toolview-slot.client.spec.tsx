@@ -67,7 +67,8 @@ async function bench(nodes: ToolResultNode[]) {
   runtime.provide('connection', {
     api: { settings: {} },
     isLoopback: false,
-    hostDescription: { getSnapshot: () => undefined, subscribe: () => () => {} },
+    // A capable Host: the file-path click cases exercise the open plumbing.
+    hostDescription: { getSnapshot: () => ({ version: '0', cwd: '/t', attachedSessions: 0, home: '/h', canOpenPath: true }), subscribe: () => () => {} },
   })
   // ui-theme's Appearance row binds a durable scope through these two.
   runtime.provide('remote', { $on: () => () => {} })
@@ -210,7 +211,7 @@ describe('registrant declaration injection', () => {
     runtime.provide('connection', {
       api: { settings: {} },
       isLoopback: false,
-      hostDescription: { getSnapshot: () => undefined, subscribe: () => () => {} },
+      hostDescription: { getSnapshot: () => ({ version: '0', cwd: '/t', attachedSessions: 0, home: '/h', canOpenPath: true }), subscribe: () => () => {} },
     })
     // ui-theme's Appearance row binds a durable scope through these two.
     runtime.provide('remote', { $on: () => () => {} })

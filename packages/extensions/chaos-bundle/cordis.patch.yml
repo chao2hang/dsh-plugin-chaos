@@ -1,41 +1,8 @@
-# dsh-plugin-chaos bundle patch: composes all chaos plugins over the
-# web-app layer. Apply this bundle in a profile to enable mobile adaptation,
-# remote access auth, server self-restart, and model selection UX.
+# dsh-plugin-chaos bundle patch.
 #
-# A patch replaces the targeted row's whole config; new rows use insert.
-
-# ── Chaos plugins ───────────────────────────────────────────────────────
-
+# The web-app bundle already inserts chaos-mobile, chaos-auth, chaos-restart,
+# chaos-models, chaos-retry, and process-control. This bundle adds only the
+# optional think-tag renderer.
 - insert:
-    # Module A: Mobile adaptation (drawer sidebar, touch controls, bottom sheets)
-    - id: chaos-mobile
-      name: '@deepseek-ai/dsh-plugin-chaos-mobile'
-
-    # Module B: Remote access auth (token login, session management, request guards)
-    # Active only when the webserver binds 0.0.0.0; loopback stays anonymous.
-    - id: chaos-auth
-      name: '@deepseek-ai/dsh-plugin-chaos-auth'
-      config:
-        # Token reference: resolved through the credentials system.
-        # Set the token value in an environment variable or .env file.
-        tokenRef: DSH_AUTH_TOKEN
-        # Timeouts (defaults: 7 days idle, 30 days absolute).
-        # idleTimeoutMs: 604800000
-        # absoluteTimeoutMs: 2592000000
-        # Public URL when behind a reverse proxy (empty = direct TLS or loopback).
-        publicUrl: ''
-
-    # Module C: Server self-restart (process replacement RPC)
-    # Requires the ProcessControl service (boot/process-control).
-    - id: chaos-restart
-      name: '@deepseek-ai/dsh-plugin-chaos-restart'
-      config:
-        enabled: true
-
-    # Module D: Model selection UX enhancement (cache, virtual scroll)
-    - id: chaos-models
-      name: '@deepseek-ai/dsh-plugin-chaos-models'
-
-    # The ProcessControl service: provides canRestart and restart().
-    - id: process-control
-      name: '@deepseek-ai/dsh-process-control'
+    - id: chaos-think-tags
+      name: '@deepseek-ai/dsh-plugin-chaos-think-tags'

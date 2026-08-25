@@ -4,6 +4,9 @@
   "include": ["src"],
   "references": [
     { "path": "../../runtime-diagnostics/invariants" },
-    { "path": "../../client/runtime" }
+    { "path": "../../client/runtime" },
+    { "path": "../../client/ui-conversation" },
+    { "path": "../../client/ui-primitives" },
+    { "path": "../../client/ui-slots" }
   ]
 }
