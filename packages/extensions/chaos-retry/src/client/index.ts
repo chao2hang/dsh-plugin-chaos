@@ -7,11 +7,11 @@
  *    otherwise projects to nothing); and
  * 2. the RetryDock entry in the `conversation.input.dock` strip.
  *
- * Presentation-only — the abnormal-end state derives from the session snapshot
- * each render and the resend rides the standard inputActions, so this plugin
- * owns no store, no refresh chain, and no event listener.
+ * The retry dock remains available on dsh versions without the optional
+ * conversation event registry; crash-recovery rows are registered only when
+ * that service is provided by the host.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext, ConversationEventRegistry } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.dock entry).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
@@ -33,7 +33,7 @@ export type { RetryKey } from './locales.ts'
 const NS = 'chaos-retry'
 
 /** Required services for the node contribution, the dock entry, and the copy. */
-export const inject = ['slots', 'locale', 'conversationEvents']
+export const inject = ['slots', 'locale']
 
 /**
  * Client plugin body: contribute the crash-recovery node and the retry dock.
@@ -41,11 +41,13 @@ export const inject = ['slots', 'locale', 'conversationEvents']
  */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'chaos-retry: dictionaries')
-  ctx.effect(
-    () => ctx.conversationEvents.register(turnInterruptedDefinition),
-    'chaos-retry: crash-recovery turn node',
-  )
-
+  const conversationEvents = ctx.get('conversationEvents') as ConversationEventRegistry | undefined
+  if (conversationEvents !== undefined) {
+    ctx.effect(
+      () => conversationEvents.register(turnInterruptedDefinition),
+      'chaos-retry: crash-recovery turn node',
+    )
+  }
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'turn-interrupted',

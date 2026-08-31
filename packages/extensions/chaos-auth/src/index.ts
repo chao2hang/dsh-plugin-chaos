@@ -147,6 +147,11 @@ export function apply(ctx: Context, config: Config): void {
   // Only activate guards when the server binds all interfaces (remote access).
   // Loopback keeps the existing anonymous behavior.
   if (webServer.host !== '0.0.0.0') return
+  if (typeof (webServer as unknown as { registerGuard?: unknown }).registerGuard !== 'function' ||
+    typeof (webServer as unknown as { registerUpgradeGuard?: unknown }).registerUpgradeGuard !== 'function') {
+    ctx.logger.warn('chaos-auth: the installed dsh web server does not provide request guards; authentication is disabled')
+    return
+  }
 
   const storeConfig: SessionStoreConfig = {
     idleTimeoutMs: config.idleTimeoutMs,
