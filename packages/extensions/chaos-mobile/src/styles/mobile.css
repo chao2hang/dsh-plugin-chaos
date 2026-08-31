@@ -736,9 +736,9 @@ html[data-chaos-mobile] h3 {
   }
 }
 
-/* ═══ Hide command slash button on mobile ═════════════════════════════════ */
+/* ═══ Hide command slash button ═════════════════════════════════════════ */
 
-html[data-chaos-mobile] [data-composer-modes] > button[aria-haspopup="listbox"] {
+[data-composer-modes] > button[aria-haspopup="listbox"] {
   display: none !important;
 }
 

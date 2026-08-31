@@ -118,8 +118,9 @@ describe('mobile.css contract', () => {
     expect(css).toContain('hover: none')
   })
 
-  it('hides command slash button on mobile', () => {
-    expect(css).toContain('html[data-chaos-mobile] [data-composer-modes] > button[aria-haspopup="listbox"]')
+  it('hides the command slash button on every viewport', () => {
+    expect(css).toContain('[data-composer-modes] > button[aria-haspopup="listbox"]')
+    expect(css).not.toContain('html[data-chaos-mobile] [data-composer-modes] > button[aria-haspopup="listbox"]')
     expect(css).toContain('display: none !important')
   })
 })
