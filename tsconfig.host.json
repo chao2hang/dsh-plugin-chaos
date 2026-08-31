@@ -294,7 +294,6 @@
     { "path": "./packages/extensions/cordis-host-runner" },
     { "path": "./packages/extensions/chaos-auth" },
     { "path": "./packages/extensions/chaos-at-file" },
-    { "path": "./packages/extensions/chaos-desktop-panel" },
     { "path": "./packages/extensions/chaos-restart" },
     { "path": "./packages/extensions/tool-cordis" },
     { "path": "./packages/hooks/hook-protocol" },

@@ -37,7 +37,7 @@ export function useEdgeSwipe(enabled: boolean, drawerOpen: boolean, onOpen: () =
 
     const onTouchStart = (e: TouchEvent): void => {
       if (e.touches.length !== 1) return
-      const t = e.touches.item(0)
+      const t = e.touches.item?.(0) ?? e.touches[0] ?? null
       if (t === null) return
       startX = t.clientX
       startY = t.clientY
@@ -47,7 +47,7 @@ export function useEdgeSwipe(enabled: boolean, drawerOpen: boolean, onOpen: () =
 
     const onTouchMove = (e: TouchEvent): void => {
       if (!active) return
-      const t = e.touches.item(0)
+      const t = e.touches.item?.(0) ?? e.touches[0] ?? null
       if (t === null) return
       const dx = t.clientX - startX
       const dy = Math.abs(t.clientY - startY)
@@ -58,7 +58,7 @@ export function useEdgeSwipe(enabled: boolean, drawerOpen: boolean, onOpen: () =
     const onTouchEnd = (e: TouchEvent): void => {
       if (!active) { active = false; return }
       active = false
-      const t = e.changedTouches.item(0)
+      const t = e.changedTouches.item?.(0) ?? e.changedTouches[0] ?? null
       if (t === null) return
       const dx = t.clientX - startX
       if (fromEdge && dx > DRAWER_WIDTH * OPEN_THRESHOLD) {

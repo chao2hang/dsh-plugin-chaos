@@ -186,7 +186,7 @@ export function MobileOverlay({
       return
     }
     const viewport = window.visualViewport
-    if (viewport === null) {
+    if (!viewport) {
       clear()
       return
     }

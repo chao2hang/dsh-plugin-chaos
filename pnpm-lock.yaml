@@ -1461,9 +1461,6 @@ importers:
       '@deepseek-ai/dsh-plugin-chaos-auth':
         specifier: workspace:^
         version: link:../../extensions/chaos-auth
-      '@deepseek-ai/dsh-plugin-chaos-desktop-panel':
-        specifier: workspace:^
-        version: link:../../extensions/chaos-desktop-panel
       '@deepseek-ai/dsh-plugin-chaos-mobile':
         specifier: workspace:^
         version: link:../../extensions/chaos-mobile
@@ -4360,46 +4357,6 @@ importers:
       '@deepseek-ai/dsh-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
-
-  packages/extensions/chaos-desktop-panel:
-    dependencies:
-      ws:
-        specifier: ^8.21.0
-        version: 8.21.0
-    devDependencies:
-      '@deepseek-ai/cordis':
-        specifier: workspace:^
-        version: link:../../../vendor/cordis
-      '@deepseek-ai/dsh-client-runtime':
-        specifier: workspace:^
-        version: link:../../client/runtime
-      '@deepseek-ai/dsh-client-ui-layout':
-        specifier: workspace:^
-        version: link:../../client/ui-layout
-      '@deepseek-ai/dsh-client-ui-slots':
-        specifier: workspace:^
-        version: link:../../client/ui-slots
-      '@deepseek-ai/dsh-host-webserver':
-        specifier: workspace:^
-        version: link:../../host/webserver
-      '@deepseek-ai/dsh-invariants':
-        specifier: workspace:^
-        version: link:../../runtime-diagnostics/invariants
-      '@deepseek-ai/dsh-session':
-        specifier: workspace:^
-        version: link:../../core/session
-      '@deepseek-ai/dsh-subprocess':
-        specifier: workspace:^
-        version: link:../../subprocess/subprocess
-      '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
 
   packages/extensions/chaos-mobile:
     devDependencies:

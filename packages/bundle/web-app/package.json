@@ -86,7 +86,6 @@
     "@deepseek-ai/dsh-client-ui-trajectory": "workspace:^",
     "@deepseek-ai/dsh-client-ui-workspace": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-mobile": "workspace:^",
-    "@deepseek-ai/dsh-plugin-chaos-desktop-panel": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-auth": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-restart": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-models": "workspace:^",

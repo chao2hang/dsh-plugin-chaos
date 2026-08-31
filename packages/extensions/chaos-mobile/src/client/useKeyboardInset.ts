@@ -19,7 +19,7 @@ export function useKeyboardInset(): number {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const vv = window.visualViewport
-    if (vv === null) return
+    if (!vv) return
 
     const update = (): void => {
       const layoutHeight = window.innerHeight
