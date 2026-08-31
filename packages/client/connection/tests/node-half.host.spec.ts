@@ -10,7 +10,7 @@ import type { ApiProxy } from '@deepseek-ai/dsh-host-apiproxy/api'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import { RpcId, type ClientRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
 import type { WebServer, WebRoute, WebUpgradeRoute } from '@deepseek-ai/dsh-host-webserver'
-import { API_PATH, apply, HOST_EVENTS_PATH, inject, MUX_EVENTS_PATH, type HostConnectionHandle } from '../src/index.ts'
+import { API_PATH, apply, HOST_EVENTS_PATH, inject, MUX_EVENTS_PATH, PRIVILEGED_METHODS, type HostConnectionHandle } from '../src/index.ts'
 import { DEFAULT_MAX_REQUEST_BODY_BYTES } from '../src/http-bridge.ts'
 
 /** Structural webServer fake recording both route registries. */
@@ -209,23 +209,40 @@ describe('connection node half', () => {
     expect(state.status).not.toBe(403)
     await fiber.dispose()
   })
-  it('pins privileged methods to loopback even for a declared trusted authority', async () => {
-    const { routes, dispose } = await mounted({ trustedHosts: ['harness.example'] })
-    // The privileged set: native dialogs plus the whole settings/credential
-    // configuration plane, reads included, plus the one method that makes the
-    // host fetch a caller-chosen URL. The same declared authority reaches
-    // ordinary reads (carrier-level 404 from the empty proxy proves the fence
-    // passed), but each privileged method stays loopback-only and 403s.
-    for (const method of [
+  it('allows every privileged method for an authentication-marked remote request', async () => {
+    const ctx = new Context()
+    const routes: WebRoute[] = []
+    const upgrades: WebUpgradeRoute[] = []
+    ctx.provide('webServer', {
+      ...fakeHttpServer(routes, upgrades),
+      isAuthenticated: () => true,
+    } as unknown as WebServer)
+    ctx.provide('apiProxy', {
+      fetch: async () => new Response('{}', { status: 200 }),
+    } as unknown as ApiProxy)
+    const fiber = ctx.plugin({ inject: [...inject], apply }, { trustedHosts: [] })
+    await fiber.await()
+
+    const privilegedMethods = [
       'host.pickDirectory', 'host.openPath',
       'settings.describe', 'settings.openDocument', 'settings.update', 'settings.replace', 'settings.mutate',
       'credentials.describe', 'credentials.set', 'credentials.unset',
       'llm.discoverModels',
-      // A composition names the plugins a session runs: reading one is
-      // reconnaissance, and copy/remove/openDocument manage the roster and
-      // drive the host desktop.
       'agentPreset.read', 'agentPreset.copy', 'agentPreset.openDocument', 'agentPreset.remove',
-    ]) {
+    ]
+    for (const method of privilegedMethods) {
+      const result = fakeResponse()
+      await routes[0]!.handler(fakeRequest({ host: 'remote.example' }, `${API_PATH}/${method}`), result.response)
+      expect(result.state.status, method).not.toBe(403)
+    }
+    await fiber.dispose()
+  })
+
+  it('rejects unauthenticated privileged methods from a declared trusted authority', async () => {
+    const { routes, dispose } = await mounted({ trustedHosts: ['harness.example'] })
+    // The privileged set requires either loopback access or an authenticated
+    // session. A trusted authority alone is intentionally insufficient.
+    for (const method of PRIVILEGED_METHODS) {
       const denied = fakeResponse()
       await routes[0]!.handler(
         fakeRequest({ host: 'harness.example' }, `${API_PATH}/${method}`),
