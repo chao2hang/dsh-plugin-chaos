@@ -214,6 +214,10 @@
     - id: chaos-retry
       name: '@deepseek-ai/dsh-plugin-chaos-retry'
 
+    # Prevent redundant sandbox escalation arguments after a resumed session.
+    - id: chaos-sandbox-guidance
+      name: '@deepseek-ai/dsh-plugin-chaos-sandbox-guidance'
+
     # ProcessControl service (Module C dependency).
     - id: process-control
       name: '@deepseek-ai/dsh-process-control'

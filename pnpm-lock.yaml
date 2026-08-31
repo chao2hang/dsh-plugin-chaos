@@ -1473,6 +1473,9 @@ importers:
       '@deepseek-ai/dsh-plugin-chaos-retry':
         specifier: workspace:^
         version: link:../../extensions/chaos-retry
+      '@deepseek-ai/dsh-plugin-chaos-sandbox-guidance':
+        specifier: workspace:^
+        version: link:../../extensions/chaos-sandbox-guidance
       '@deepseek-ai/dsh-process-control':
         specifier: workspace:^
         version: link:../../boot/process-control
@@ -4344,6 +4347,9 @@ importers:
       '@deepseek-ai/dsh-plugin-chaos-restart':
         specifier: workspace:^
         version: link:../chaos-restart
+      '@deepseek-ai/dsh-plugin-chaos-sandbox-guidance':
+        specifier: workspace:^
+        version: link:../chaos-sandbox-guidance
       '@deepseek-ai/dsh-plugin-chaos-think-tags':
         specifier: workspace:^
         version: link:../chaos-think-tags
@@ -4513,6 +4519,24 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
+
+  packages/extensions/chaos-sandbox-guidance:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-sandbox-policy':
+        specifier: workspace:^
+        version: link:../../sandbox/sandbox-policy
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
 
   packages/extensions/chaos-think-tags:
     devDependencies:

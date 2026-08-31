@@ -4,7 +4,7 @@ Chaos plugin bundle: composes all chaos plugins over the web-app layer.
 
 ## Composition
 
-The bundle's `cordis.patch.yml` inserts five plugin rows:
+The bundle's `cordis.patch.yml` inserts two additional plugin rows; the web-app layer mounts the other Chaos rows:
 
 | Row | Package | Module | Purpose |
 |---|---|---|---|
@@ -13,6 +13,7 @@ The bundle's `cordis.patch.yml` inserts five plugin rows:
 | `chaos-restart` | `dsh-plugin-chaos-restart` | C | Server self-restart: process replacement RPC |
 | `chaos-models` | `dsh-plugin-chaos-models` | D | Model selection UX: cache, virtual scroll |
 | `process-control` | `dsh-process-control` | C | ProcessControl service (canRestart + restart) |
+| `chaos-sandbox-guidance` | `dsh-plugin-chaos-sandbox-guidance` | — | Runtime guidance preventing redundant sandbox escalation arguments |
 
 ## Usage
 

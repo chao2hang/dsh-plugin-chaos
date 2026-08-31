@@ -41,6 +41,7 @@
     "@deepseek-ai/dsh-plugin-chaos-restart": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-models": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-think-tags": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-sandbox-guidance": "workspace:^",
     "@deepseek-ai/dsh-process-control": "workspace:^"
   },
   "peerDependencies": {

@@ -90,6 +90,7 @@
     "@deepseek-ai/dsh-plugin-chaos-restart": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-models": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-retry": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-sandbox-guidance": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos": "workspace:^",
     "@deepseek-ai/dsh-process-control": "workspace:^",
     "@deepseek-ai/dsh-cmdline": "workspace:^",
