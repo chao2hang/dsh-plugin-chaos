@@ -117,4 +117,9 @@ describe('mobile.css contract', () => {
   it('hover-none media query disables hover affordances', () => {
     expect(css).toContain('hover: none')
   })
+
+  it('hides command slash button on mobile', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-composer-modes] > button[aria-haspopup="listbox"]')
+    expect(css).toContain('display: none !important')
+  })
 })
