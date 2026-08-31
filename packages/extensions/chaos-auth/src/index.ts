@@ -1,9 +1,10 @@
 /**
  * @deepseek-ai/dsh-plugin-chaos-auth — Remote access authentication plugin.
- * Registers request and upgrade guards on the webserver: unauthenticated
- * requests receive a minimal login page (for page requests) or 401 (for API
- * requests); authenticated requests pass through with refreshed session
- * activity. Login/logout endpoints are public named routes.
+ * It requires the dsh-host-webserver `registerGuard` and
+ * `registerUpgradeGuard` APIs. Unauthenticated requests receive a minimal
+ * login page (for page requests) or 401 (for API requests); authenticated
+ * requests pass through with refreshed session activity. Login/logout endpoints
+ * are public named routes.
  *
  * Security model:
  * - Default: loopback HTTP stays anonymous (existing behavior unchanged).
@@ -147,10 +148,10 @@ export function apply(ctx: Context, config: Config): void {
   // Only activate guards when the server binds all interfaces (remote access).
   // Loopback keeps the existing anonymous behavior.
   if (webServer.host !== '0.0.0.0') return
-  if (typeof (webServer as unknown as { registerGuard?: unknown }).registerGuard !== 'function' ||
-    typeof (webServer as unknown as { registerUpgradeGuard?: unknown }).registerUpgradeGuard !== 'function') {
-    ctx.logger.warn('chaos-auth: the installed dsh web server does not provide request guards; authentication is disabled')
-    return
+  // dsh-host-webserver exposes these hooks as the supported cross-cutting
+  // interception seam. Fail at activation when an older host is used.
+  if (typeof webServer.registerGuard !== 'function' || typeof webServer.registerUpgradeGuard !== 'function') {
+    throw new Error('chaos-auth requires dsh-host-webserver registerGuard/registerUpgradeGuard')
   }
 
   const storeConfig: SessionStoreConfig = {
@@ -215,7 +216,7 @@ export function apply(ctx: Context, config: Config): void {
     const disposeLogout = webServer.register({
       kind: 'exact',
       path: '/auth/logout',
-      handler: async (req: IncomingMessage, res: ServerResponse) => {
+      handler: (req: IncomingMessage, res: ServerResponse) => {
         if (req.method !== 'POST' && req.method !== 'GET') {
           res.writeHead(405)
           res.end()
@@ -236,7 +237,7 @@ export function apply(ctx: Context, config: Config): void {
 
   // Register request guard: checks session before route matching.
   ctx.effect(() => {
-    const disposeGuard = webServer.registerGuard(async (req: IncomingMessage, res: ServerResponse) => {
+    const disposeGuard = webServer.registerGuard((req: IncomingMessage, res: ServerResponse) => {
       // Auth endpoints and the install manifest are public.
       const pathname = new URL(req.url ?? '/', 'http://x').pathname
       if (isPublicUnauthenticatedPath(pathname)) return true

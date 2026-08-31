@@ -48,11 +48,11 @@ describe('chaos-auth request guard', () => {
     expect(guard).toBeDefined()
 
     const manifest = response()
-    await expect(guard!({ url: '/manifest.webmanifest', headers: { accept: '*/*' } } as IncomingMessage, manifest as never)).resolves.toBe(true)
+    expect(guard!({ url: '/manifest.webmanifest', headers: { accept: '*/*' } } as IncomingMessage, manifest as never)).toBe(true)
     expect(manifest.result.status).toBeUndefined()
 
     const asset = response()
-    await expect(guard!({ url: '/favicon.svg', headers: { accept: '*/*' } } as IncomingMessage, asset as never)).resolves.toBe(false)
+    expect(guard!({ url: '/favicon.svg', headers: { accept: '*/*' } } as IncomingMessage, asset as never)).toBe(false)
     expect(asset.result).toEqual({ status: 401, body: JSON.stringify({ error: 'unauthorized' }) })
     await fiber.dispose()
   })

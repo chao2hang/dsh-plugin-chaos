@@ -38,7 +38,7 @@ dsh --profile web --host 0.0.0.0
 
 This bundle relies on three generic extension points opened in the main repo:
 
-1. **WebServer guards** (`dsh-host-webserver`): `registerGuard`, `registerUpgradeGuard`, and TLS config.
+1. **WebServer guards** (`dsh-host-webserver`): `registerGuard`, `registerUpgradeGuard`, and TLS config. The auth plugin requires a dsh build that exports both Guard APIs; older WebServer builds fail during auth activation.
 2. **ConnectionHandle.authenticated** (`dsh-client-connection`): allows authenticated remote sessions to access settings/credentials.
 3. **ProcessControl service** (`dsh-process-control`): `canRestart` and `restart()` for process replacement.
 4. **LlmModelInfo extensions** (`dsh-llm`): `contextWindow`, `maxOutput`, `capabilitiesEditable` fields.
