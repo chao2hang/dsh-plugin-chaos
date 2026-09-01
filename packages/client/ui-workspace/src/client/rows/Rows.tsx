@@ -5,13 +5,13 @@
  * except workspace Rename/Delete and session Rename/Fork/Archive; the session
  * and workspace hover cards are suppressed while a menu is open.
  */
-import { useState } from 'react'
+import { useRef, useState, type PointerEvent } from 'react'
 import clsx from 'clsx'
 import {
   HoverCard, IconAlarmClockOutline16, IconArchiveOutline20, IconBranchOutline16,
-  IconEditOutline16, IconEllipsisOutline16, IconFolderClose16, IconFolderOpen16,
-  IconPlusOutline16, IconTrashOutline16, IconTriangleRightFill14, Menu, relativeTime,
-  StateDot,
+  IconDownloadOutline16, IconEditOutline16, IconEllipsisOutline16, IconFolderClose16,
+  IconFolderOpen16, IconPlusOutline16, IconTrashOutline16, IconTriangleRightFill14,
+  Menu, relativeTime, StateDot,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
 import { abbreviateHomePath } from '@deepseek-ai/dsh-util-workspace-path'
@@ -375,7 +375,7 @@ export function SearchResultItem({ result, currentId, onOpen, t }: {
  * @param props.t - the browser root's locale seat.
  * @returns the session row.
  */
-export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onArchive, drag, flat = false, t }: {
+export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onDownload, onArchive, drag, flat = false, t }: {
   node: SessionNode
   currentId: string | undefined
   now: number
@@ -384,6 +384,8 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   onRename: (id: SessionNode['id'], currentTitle: string) => void
   /** Fork a session at its last completed turn (row menu action). */
   onFork: (id: SessionNode['id']) => void
+  /** Download this Session's persisted log archive (row menu action). */
+  onDownload?: ((id: SessionNode['id']) => void) | undefined
   /** Archive this session (row menu action; commits without a dialog). */
   onArchive: (id: SessionNode['id']) => void
   /** Present only on draggable rows (workspace-group sessions outside search). */
@@ -399,92 +401,141 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   const primaryStatus = statuses[0]
   const showStatus = primaryStatus.state !== 'done' || row.completed
   const [menuOpen, setMenuOpen] = useState(false)
+  const [swipe, setSwipe] = useState<'leading' | 'trailing' | null>(null)
+  const gesture = useRef<{ pointerId: number; x: number; y: number; active: boolean } | null>(null)
+  const suppressOpen = useRef(false)
+  const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
+    if (row.blank || event.pointerType !== 'touch' || !event.isPrimary || event.target instanceof Element && event.target.closest('button, input, a') !== null) return
+    gesture.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, active: true }
+  }
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
+    const current = gesture.current
+    if (current === null || current.pointerId !== event.pointerId || !current.active) return
+    const dx = event.clientX - current.x
+    const dy = event.clientY - current.y
+    if (Math.abs(dy) > Math.abs(dx)) current.active = false
+  }
+  const settleSwipe = (event: PointerEvent<HTMLDivElement>): void => {
+    const current = gesture.current
+    if (current === null || current.pointerId !== event.pointerId) return
+    gesture.current = null
+    if (!current.active) return
+    const dx = event.clientX - current.x
+    if (Math.abs(dx) < 56) return
+    suppressOpen.current = true
+    setSwipe(dx > 0 ? 'leading' : 'trailing')
+  }
   // Archive hides the row through the registry-global archive set and never
   // touches the session log, so it is not styled as destructive and needs no
   // confirmation dialog.
   const sessionMenuItems = [
     { id: 'rename', label: t('rename'), icon: <IconEditOutline16 /> },
     { id: 'fork', label: t('menu.fork'), icon: <IconBranchOutline16 /> },
+    ...(selected && onDownload !== undefined ? [{ id: 'download', label: t('menu.downloadLog'), icon: <IconDownloadOutline16 /> }] : []),
     // 20-native glyph in the menu's 16px icon slot (Menu.module.css .itemIcon).
     { id: 'archive', label: t('menu.archiveSession'), icon: <IconArchiveOutline20 size={16} /> },
   ]
   // Figma session cell: pad 8, status slot 16, then a 4px title gap.
   const ownRow = (
-    <div
-      className={clsx(
-        css.sessionRow, selected && css.selected, menuOpen && css.menuOpen,
-        flat && !showStatus && css.flatSessionRowWithoutStatus,
-        drag?.marker === 'before' && css.dropBefore, drag?.marker === 'after' && css.dropAfter,
+    <div className={css.sessionSwipe} data-session-swipe={swipe ?? undefined}>
+      {!row.blank && (
+        <div className={clsx(css.swipeActions, css.swipeActionsLeading)} data-session-swipe-actions="leading">
+          <button type="button" onClick={() => { setSwipe(null); onRename(node.id, row.title) }}>{t('rename')}</button>
+          <button type="button" onClick={() => { setSwipe(null); onFork(node.id) }}>{t('menu.fork')}</button>
+        </div>
       )}
-      role="treeitem"
-      aria-selected={selected}
-      onClick={() => { onOpen(node.id) }}
-      draggable={drag !== undefined}
-      onDragStart={drag === undefined
-        ? undefined
-        : (e) => {
-          e.dataTransfer.effectAllowed = 'move'
-          e.dataTransfer.setData('text/plain', node.id)
-          drag.start()
+      <div
+        className={clsx(
+          css.sessionRow, selected && css.selected, menuOpen && css.menuOpen,
+          flat && !showStatus && css.flatSessionRowWithoutStatus,
+          drag?.marker === 'before' && css.dropBefore, drag?.marker === 'after' && css.dropAfter,
+        )}
+        role="treeitem"
+        aria-selected={selected}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={settleSwipe}
+        onPointerCancel={(event) => {
+          if (gesture.current?.pointerId === event.pointerId) gesture.current = null
         }}
-      onDragEnd={drag?.end}
-      onDragOver={drag === undefined
-        ? undefined
-        : (e) => {
-          if (!drag.active) return
-          e.preventDefault()
-          e.dataTransfer.dropEffect = 'move'
-          drag.hover(rowHalf(e))
+        onClick={() => {
+          if (suppressOpen.current) { suppressOpen.current = false; return }
+          if (swipe !== null) { setSwipe(null); return }
+          onOpen(node.id)
         }}
-      onDrop={drag === undefined
-        ? undefined
-        : (e) => {
-          if (!drag.active) return
-          e.preventDefault()
-          drag.drop(rowHalf(e))
-        }}
-    >
-      {/* Pending interaction and own or descendant activity outrank the
+        draggable={drag !== undefined}
+        onDragStart={drag === undefined
+          ? undefined
+          : (e) => {
+            e.dataTransfer.effectAllowed = 'move'
+            e.dataTransfer.setData('text/plain', node.id)
+            drag.start()
+          }}
+        onDragEnd={drag?.end}
+        onDragOver={drag === undefined
+          ? undefined
+          : (e) => {
+            if (!drag.active) return
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'move'
+            drag.hover(rowHalf(e))
+          }}
+        onDrop={drag === undefined
+          ? undefined
+          : (e) => {
+            if (!drag.active) return
+            e.preventDefault()
+            drag.drop(rowHalf(e))
+          }}
+      >
+        {/* Pending interaction and own or descendant activity outrank the
           finished-but-unviewed reminder, which returns after activity stops
           and is cleared by opening the session. */}
-      {(!flat || showStatus) && (
-        <span className={css.slot}>
-          {showStatus && <SessionStatusDots statuses={statuses} />}
-        </span>
-      )}
-      <span className={css.title}>{title}</span>
-      {row.hasActiveSchedule && <ActiveScheduleIndicator t={t} />}
-      {/* A blank New Session row is a provisional placeholder: nothing has
+        {(!flat || showStatus) && (
+          <span className={css.slot}>
+            {showStatus && <SessionStatusDots statuses={statuses} />}
+          </span>
+        )}
+        <span className={css.title}>{title}</span>
+        {row.hasActiveSchedule && <ActiveScheduleIndicator t={t} />}
+        {/* A blank New Session row is a provisional placeholder: nothing has
           happened in it yet, so a "now" timestamp and the row verbs
           (rename/fork/archive) would all act on content that does not
           exist — both trailing cells stay off until the first prompt. */}
-      {!row.blank && <span className={css.time}>{timeLabel(row.updatedAt, now, t)}</span>}
+        {!row.blank && <span className={css.time}>{timeLabel(row.updatedAt, now, t)}</span>}
+        {!row.blank && (
+          <span className={css.rowActions}>
+            <Menu
+              open={menuOpen}
+              onClose={() => { setMenuOpen(false) }}
+              items={sessionMenuItems}
+              onSelect={(id) => {
+                setMenuOpen(false)
+                if (id === 'rename') onRename(node.id, row.title)
+                if (id === 'fork') onFork(node.id)
+                if (id === 'download') onDownload?.(node.id)
+                if (id === 'archive') onArchive(node.id)
+              }}
+              portal
+              closeOnPointerLeave
+              anchor={(
+                <button
+                  type="button"
+                  className={css.iconButton}
+                  aria-label={t('actions.session.aria', { name: title })}
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v) }}
+                >
+                  <IconEllipsisOutline16 />
+                </button>
+              )}
+            />
+          </span>
+        )}
+      </div>
       {!row.blank && (
-        <span className={css.rowActions}>
-          <Menu
-            open={menuOpen}
-            onClose={() => { setMenuOpen(false) }}
-            items={sessionMenuItems}
-            onSelect={(id) => {
-              setMenuOpen(false)
-              if (id === 'rename') onRename(node.id, row.title)
-              if (id === 'fork') onFork(node.id)
-              if (id === 'archive') onArchive(node.id)
-            }}
-            portal
-            closeOnPointerLeave
-            anchor={(
-              <button
-                type="button"
-                className={css.iconButton}
-                aria-label={t('actions.session.aria', { name: title })}
-                onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v) }}
-              >
-                <IconEllipsisOutline16 />
-              </button>
-            )}
-          />
-        </span>
+        <div className={clsx(css.swipeActions, css.swipeActionsTrailing)} data-session-swipe-actions="trailing">
+          <button type="button" onClick={() => { setSwipe(null); onArchive(node.id) }}>{t('menu.archiveSession')}</button>
+        </div>
       )}
     </div>
   )

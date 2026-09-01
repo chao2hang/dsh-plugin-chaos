@@ -8,7 +8,7 @@ import type { AddressInfo } from 'node:net'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import type { WebServer, WebRoute, WebUpgradeRoute } from '@deepseek-ai/dsh-host-webserver'
-import { API_PATH, RpcId, apply, inject, type ClientRequest, type HostConnectionHandle } from '../src/index.ts'
+import { API_PATH, PRIVILEGED_METHODS, RpcId, apply, inject, type ClientRequest, type HostConnectionHandle } from '../src/index.ts'
 import { DEFAULT_MAX_REQUEST_BODY_BYTES } from '../src/http-bridge.ts'
 import { provideBrowserCredentials } from './browser-credentials.ts'
 
@@ -16,7 +16,7 @@ import { provideBrowserCredentials } from './browser-credentials.ts'
 function fakeHttpServer(
   routes: WebRoute[],
   upgrades: WebUpgradeRoute[],
-): Pick<WebServer, 'register' | 'registerUpgrade' | 'tapIndex' | 'port'> {
+): Pick<WebServer, 'register' | 'registerUpgrade' | 'tapIndex' | 'port' | 'isAuthenticated'> {
   return {
     register(route) {
       if (routes.some(candidate => candidate.kind === route.kind && candidate.path === route.path)) {
@@ -30,6 +30,7 @@ function fakeHttpServer(
       return () => { upgrades.splice(upgrades.indexOf(route), 1) }
     },
     tapIndex: () => () => {},
+    isAuthenticated: () => false,
     port: 0,
   }
 }
@@ -191,6 +192,48 @@ describe('connection node half', () => {
     const forged = fakeResponse()
     await routes[0]!.handler(fakeRequest({ host: 'localhost:3080' }), forged.response)
     expect(forged.state).toMatchObject({ status: 401, body: 'unauthorized' })
+    await dispose()
+  })
+
+  it('allows an authentication-marked remote request to every privileged method', async () => {
+    const ctx = new Context()
+    const routes: WebRoute[] = []
+    const upgrades: WebUpgradeRoute[] = []
+    provideBrowserCredentials(ctx)
+    ctx.provide('webServer', {
+      ...fakeHttpServer(routes, upgrades),
+      isAuthenticated: () => true,
+    } as unknown as WebServer)
+    const fiber = ctx.plugin({ inject: [...inject], apply }, { trustedHosts: ['harness.example'] })
+    await fiber.await()
+    const connection = ctx.get('connection') as HostConnectionHandle
+    // The shared rejection policy accepts the mark left by a preceding web
+    // server authentication guard as a valid session; every sibling route
+    // that reads the policy (including the gateway stream mux) inherits it.
+    expect(connection.requestRejection(fakeRequest({ host: 'harness.example' }))).toBeUndefined()
+    // A declared remote authority plus the authenticated mark reaches the
+    // whole privileged set; the carrier-level 404 proves the gate passed.
+    for (const method of PRIVILEGED_METHODS) {
+      const allowed = fakeResponse()
+      await routes[0]!.handler(
+        fakeRequest({ host: 'harness.example' }, `${API_PATH}/${method}`),
+        allowed.response,
+      )
+      expect([method, allowed.state.status]).toEqual([method, 404])
+    }
+    await fiber.dispose()
+  })
+
+  it('rejects unauthenticated privileged methods from a declared trusted authority', async () => {
+    const { routes, dispose } = await mounted({ trustedHosts: ['harness.example'] })
+    // The privileged set requires a valid session: the browser cookie or a
+    // preceding guard's authenticated mark. A trusted authority alone is
+    // intentionally insufficient.
+    for (const method of PRIVILEGED_METHODS) {
+      const denied = fakeResponse()
+      await routes[0]!.handler(fakeRequest({ host: 'harness.example' }, `${API_PATH}/${method}`), denied.response)
+      expect([method, denied.state.status, denied.state.body]).toEqual([method, 401, 'unauthorized'])
+    }
     await dispose()
   })
 

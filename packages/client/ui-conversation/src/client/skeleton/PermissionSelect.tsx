@@ -159,6 +159,7 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
           <button
             type="button"
             className={css.trigger}
+            data-composer-permission
             aria-label={t('input.accessMode', { name: currentLabel })}
             title={current?.description}
             disabled={locked || busy}
@@ -167,8 +168,9 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
             {permissionGlyph(currentValue) !== undefined && (
               <span className={css.triggerIcon} aria-hidden>{permissionGlyph(currentValue)}</span>
             )}
-            <span className={css.triggerLabel}>{currentLabel}</span>
-            <span className={clsx(css.chevron, open && css.chevronOpen)} aria-hidden>
+            <span className={css.triggerLabel} data-composer-permission-label>{currentLabel}</span>
+            {/* Same glyph + open rotation as the sibling ModelSelect trigger. */}
+            <span className={clsx(css.chevron, open && css.chevronOpen)} data-composer-permission-chevron aria-hidden>
               <IconChevronDownOutline14 />
             </span>
           </button>

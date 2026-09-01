@@ -118,6 +118,14 @@ export interface ConnectionHandle {
    * ({@link ClientTransportHooks.ownsHost}), or the context is not a browser.
    */
   readonly isLoopback: boolean
+  /**
+   * Whether this connection is authenticated by an external auth plugin (e.g.
+   * token login for remote access). Defaults to false. When true, the client
+   * permits privileged RPCs (settings, credentials) that are otherwise
+   * loopback-only. This is the generic extension point: any auth scheme may
+   * set it; the client trust model reads it alongside isLoopback.
+   */
+  readonly authenticated: boolean
   /** Current Remote event generation and the Host facts carried by its opening frame. */
   readonly generation: ConnectionGenerationState
   /** Current recovery lifecycle for connection-specific consumers. */
@@ -141,6 +149,12 @@ export interface ConnectionHandle {
    * @returns lifecycle controls for the loop.
    */
   start(sinks: ConnectionSinks, config?: ConnectionConfig): ConnectionLoop
+  /**
+   * Mark this connection as authenticated by an external auth plugin. Called
+   * after a successful login flow; the client re-reads the flag for
+   * privileged RPC gating.
+   */
+  setAuthenticated(value: boolean): void
 }
 
 /** Controls retained by the sole owner of a running connection loop. */
@@ -224,8 +238,11 @@ export function apply(ctx: Context): void {
     publishGeneration(undefined)
     publishState(undefined)
   }
+  let authenticated = false
   const handle: ConnectionHandle = {
     isLoopback: transport?.ownsHost === true || pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    get authenticated() { return authenticated },
+    setAuthenticated(value: boolean) { authenticated = value },
     generation: {
       getSnapshot: () => generation,
       subscribe: (listener) => {

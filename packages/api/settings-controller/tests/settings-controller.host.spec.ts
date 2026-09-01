@@ -3,7 +3,7 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type { SettingsDescriptor } from '@deepseek-ai/dsh-settings'
 import { RemoteError, remoteErrorOf, remoteMethods } from '@deepseek-ai/dsh-typert-protocol'
-import SettingsController from '../src/index.ts'
+import SettingsController, { type SettingsControllerInternals } from '../src/index.ts'
 import { MemorySettings } from '../../../settings/settings/tests/memory.ts'
 
 const NS = 'ui-test'
@@ -60,13 +60,21 @@ class LiteralRefusingSettings extends MemorySettings {
 
 async function boot(
   provider: typeof MemorySettings = MemorySettings,
-  options: { doc?: Record<string, unknown>; base?: { preference: 'light' | 'dark' } } = {},
+  options: {
+    doc?: Record<string, unknown>
+    base?: { preference: 'light' | 'dark' }
+    internals?: SettingsControllerInternals
+  } = {},
 ): Promise<{ controller: SettingsController; ctx: Context }> {
   const ctx = new Context()
   await ctx.plugin(provider, options.doc === undefined ? {} : { doc: options.doc })
   ctx.settings.register(NS, Profile, options.base === undefined ? {} : { base: options.base })
-  await ctx.plugin(SettingsController)
-  return { controller: ctx.settingsController, ctx }
+  if (options.internals === undefined) {
+    await ctx.plugin(SettingsController)
+    return { controller: ctx.settingsController, ctx }
+  }
+  const controller = new SettingsController(ctx, {}, options.internals)
+  return { controller, ctx }
 }
 
 describe('the settings Remote namespace a configuration page calls', () => {
@@ -118,7 +126,10 @@ describe('the settings Remote namespace a configuration page calls', () => {
   })
 
   it('describes every namespace redacted, with the deployment facts around them', async () => {
-    const { controller } = await boot(DocumentSettings, { doc: { 'ui-test': { apiKey: 'sk-stored' } } })
+    const { controller } = await boot(DocumentSettings, {
+      doc: { 'ui-test': { apiKey: 'sk-stored' } },
+      internals: { canOpenTextFile: () => true },
+    })
     const value = controller.describe()
     expect(value).toMatchObject({ writable: true, hasDocument: true })
     const [view] = value.namespaces
@@ -129,6 +140,13 @@ describe('the settings Remote namespace a configuration page calls', () => {
     // Redaction removes the field rather than replacing it, so the layer that
     // stored a secret comes back empty instead of carrying a placeholder.
     expect(view?.user).toEqual({})
+  })
+
+  it('hides the settings document when no desktop can receive it', async () => {
+    // A provider document without a reachable text opener is unopenable, so
+    // describe reports no document and the client never offers the dead handoff.
+    const { controller } = await boot(DocumentSettings, { internals: { canOpenTextFile: () => false } })
+    expect(controller.describe().hasDocument).toBe(false)
   })
 
   it('reports a read-only provider and omits the layers it has none of', async () => {

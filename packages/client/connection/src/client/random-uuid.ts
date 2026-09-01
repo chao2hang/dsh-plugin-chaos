@@ -5,7 +5,10 @@
  * @returns a UUID backed by `crypto.getRandomValues()`, which browsers expose on insecure origins.
  */
 export function randomUuid(): string {
-  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16))
+  const cryptoApi = globalThis.crypto
+  if (typeof cryptoApi?.randomUUID === 'function') return cryptoApi.randomUUID()
+
+  const bytes = cryptoApi.getRandomValues(new Uint8Array(16))
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   view.setUint8(6, (view.getUint8(6) & 0x0f) | 0x40)
   view.setUint8(8, (view.getUint8(8) & 0x3f) | 0x80)

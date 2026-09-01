@@ -1,0 +1,53 @@
+.dock {
+  display: flex;
+  justify-content: center;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.glyph {
+  display: inline-flex;
+  flex: none;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.label {
+  flex: none;
+  color: var(--dsw-alias-label-primary);
+}
+
+.detail {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.retryBtn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 3px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 999px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+}
+
+.retryBtn:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}

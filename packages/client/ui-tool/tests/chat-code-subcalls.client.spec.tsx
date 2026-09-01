@@ -117,9 +117,11 @@ async function bench(snapshot: ChatSnapshot) {
   })
   const layout = { openDetails: vi.fn(), closeDetails: vi.fn() }
   const openWorkspacePath = vi.fn(async () => ({ ok: true, value: { opened: true } }))
+  // A capable Host: the file sub-row click exercises the open plumbing.
+  const canOpenWorkspacePath = vi.fn(async () => ({ ok: true, value: true }))
   ctx.provide('layout', layout as never)
   ctx.provide('uiWorkspace', {} as never)
-  new TestRemote(ctx, { session: { openWorkspacePath } })
+  new TestRemote(ctx, { session: { openWorkspacePath, canOpenWorkspacePath } })
   const locale = new LocaleRuntime(ctx)
   ctx.provide('locale', locale)
   locale.register(CONVERSATION_NS, { zh: conversationZh, en: conversationEn })
@@ -215,6 +217,10 @@ describe('run_code sub-calls through the real chat machinery', () => {
     ]
     const b = await bench(snapshotWith([codeResult(10, parent)], subCalls))
     const view = mountApp(b.runtime)
+    // The opener link renders once the Host capability probe settles.
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-tool-row-file]')).not.toBeNull()
+    })
     view.getByText('notes/demo.txt').click()
     expect(b.layout.openDetails).not.toHaveBeenCalled()
     await vi.waitFor(() => {

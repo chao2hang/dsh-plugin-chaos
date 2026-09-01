@@ -22,6 +22,8 @@ function header(headers: ConnectionTrustRequest['headers'], name: string): strin
   return typeof value === 'string' ? value : undefined
 }
 
+
+
 /** Normalized URL of a Host-header authority (hostname lowercased, default port stripped, IPv6 bracketed), or undefined when unparsable. */
 function parseAuthority(authority: string): URL | undefined {
   try {

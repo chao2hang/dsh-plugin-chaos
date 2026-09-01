@@ -22,6 +22,7 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: pulls the Session root standard-hook merge.
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type {} from '@deepseek-ai/dsh-session-log-export/client'
 import type { WorkspaceBrowserInjected, WorkspacePickerInjected } from './contract/slots.ts'
 import { UiWorkspaceService } from './navigation.ts'
 import { createWorkspaceViewStore } from './stores.ts'
@@ -116,6 +117,9 @@ export function apply(ctx: Context): void {
         .catch(() => {
           // Fork or child-rename failure keeps the current selection.
         })
+    },
+    downloadSessionLog: (sessionId) => {
+      void ctx.get('sessionLogDownload')?.download(sessionId)
     },
     renameWorkspace: async (workspaceId, title) => { await workspaces.rename(workspaceId, title) },
     deleteWorkspace: async (workspaceId) => { await workspaces.delete(workspaceId) },

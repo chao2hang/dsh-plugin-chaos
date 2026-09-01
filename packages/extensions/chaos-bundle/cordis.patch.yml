@@ -1,0 +1,8 @@
+# dsh-plugin-chaos bundle patch.
+#
+# The web-app bundle already inserts chaos-mobile, chaos-auth, chaos-restart,
+# chaos-models, chaos-retry, and process-control. This bundle adds only the
+# optional think-tag renderer.
+- insert:
+    - id: chaos-think-tags
+      name: '@deepseek-ai/dsh-plugin-chaos-think-tags'

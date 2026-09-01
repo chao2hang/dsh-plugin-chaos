@@ -75,12 +75,12 @@ export function MessageIconActions({
     })
   }, [copied, text])
   const clockEl = time === undefined ? null : (
-    <span className={clock === 'start' ? css.timeStart : css.timeEnd}>
+    <span className={clock === 'start' ? css.timeStart : css.timeEnd} data-message-clock="">
       {formatMessageClock(time, t, day)}
     </span>
   )
   return (
-    <div className={className === undefined ? css.actions : `${css.actions} ${className}`}>
+    <div className={className === undefined ? css.actions : `${css.actions} ${className}`} data-message-chrome="">
       {clock === 'start' ? clockEl : null}
       <Tooltip label={copied ? t('copied') : t('copy')} side="bottom">
         <button type="button" className={css.action} aria-label={copied ? t('copied') : t('copy')} onClick={onCopy}>

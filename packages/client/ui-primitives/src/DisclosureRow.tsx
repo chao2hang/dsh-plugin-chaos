@@ -95,7 +95,7 @@ export function DisclosureRow({
             {leading}
           </span>
         )}
-        <span className={clsx(css.title, titleClassName)}>{title}</span>
+        <span className={clsx(css.title, titleClassName)} data-disclosure-title>{title}</span>
         {(keepContentWhenOpen || !open) && collapsedContent}
       </div>
       {open && children}

@@ -11,6 +11,18 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
  * each body in memory, so this cap is also the per-request resident bound. */
 export const DEFAULT_MAX_REQUEST_BODY_BYTES = 300 * 1024 * 1024
 
+/** Fetch requests created from an authentication-validated HTTP request. */
+const authenticatedRequests = new WeakSet<Request>()
+
+/**
+ * Whether a request passed the web server authentication guard before bridging.
+ * @param request - internal Fetch request created by {@link bridge}.
+ * @returns true when its source HTTP request was authentication-validated.
+ */
+export function isAuthenticatedApiRequest(request: Request): boolean {
+  return authenticatedRequests.has(request)
+}
+
 /** Transport-independent request handler consumed by the Host HTTP bridge. */
 export interface FetchHandler {
   /**
@@ -28,12 +40,14 @@ export interface FetchHandler {
  * @param res - node:http response the bridge writes and owns to completion.
  * @param apiHandler - fetch-shaped API carrier the request is dispatched to.
  * @param maxRequestBodyBytes - maximum body bytes buffered before dispatch.
+ * @param authenticated - whether a preceding server guard validated the source request.
  */
 export async function bridge(
   req: IncomingMessage,
   res: ServerResponse,
   apiHandler: FetchHandler,
   maxRequestBodyBytes = DEFAULT_MAX_REQUEST_BODY_BYTES,
+  authenticated = false,
 ): Promise<void> {
   const abort = new AbortController()
   // Client-disconnect detection MUST hang off the response, not the request:
@@ -72,6 +86,7 @@ export async function bridge(
     ...chunks.length > 0 ? { body: Buffer.concat(chunks) } : {},
     signal: abort.signal,
   })
+  if (authenticated) authenticatedRequests.add(request)
   const response = await apiHandler.fetch(request)
   res.writeHead(response.status, Object.fromEntries(response.headers.entries()))
   if (response.body === null) {

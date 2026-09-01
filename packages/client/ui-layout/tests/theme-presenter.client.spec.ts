@@ -10,7 +10,7 @@ const DARK_THEME_COLOR = 'rgb(21, 21, 23)'
 function snapshot(colorScheme: 'light' | 'dark', tokens: Record<string, string> = {}, fontSize = 14): ThemeSnapshot {
   // The presenter must key off colorScheme, not the id — keep them distinct.
   const active = { id: `${colorScheme}-test`, colorScheme, tokens }
-  return { preference: colorScheme, fontSize, active, themes: [active], revision: 1 }
+  return { preference: colorScheme, fontSize, active, themes: [active], uiFontSize: 14, codeFontSize: 12, revision: 1 }
 }
 
 function clearThemePresentation(): void {
@@ -43,6 +43,8 @@ describe('ThemePresenter', () => {
     presenter.apply(snapshot('light'))
     expect(document.documentElement.style.colorScheme).toBe('light')
     expect(document.body.hasAttribute(DARK_ATTRIBUTE)).toBe(false)
+    expect(document.body.style.getPropertyValue('--dsh-ui-font-size')).toBe('14px')
+    expect(document.body.style.getPropertyValue('--dsh-code-font-size')).toBe('12px')
     expect(themeColorMeta()?.content).toBe(LIGHT_THEME_COLOR)
   })
 
@@ -90,6 +92,8 @@ describe('ThemePresenter', () => {
     expect(document.body.hasAttribute(DARK_ATTRIBUTE)).toBe(false)
     expect(document.body.style.getPropertyValue('--dsw-alias-bg')).toBe('')
     expect(document.body.style.getPropertyValue('--dsh-content-font-size')).toBe('')
+    expect(document.body.style.getPropertyValue('--dsh-ui-font-size')).toBe('')
+    expect(document.body.style.getPropertyValue('--dsh-code-font-size')).toBe('')
     expect(document.body.style.getPropertyValue('--foreign')).toBe('kept')
     expect(meta?.isConnected).toBe(false)
   })

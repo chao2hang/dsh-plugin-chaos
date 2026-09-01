@@ -18,7 +18,9 @@ function div(className: string | undefined, text?: string): HTMLDivElement {
 export class BootPage {
   private readonly root: HTMLDivElement
   private readonly card: HTMLDivElement
+  private readonly seal: HTMLDivElement
   private readonly wordmark: HTMLDivElement
+  private readonly title: HTMLDivElement
   private readonly spinner: HTMLDivElement
   private readonly hint: HTMLDivElement
   private readonly states = new Map<string, LoaderEntryState>()
@@ -34,11 +36,15 @@ export class BootPage {
     this.root = div(css.boot)
     this.root.dataset.dshBoot = ''
     this.card = div(css.card)
-    this.wordmark = div(css.wordmark, 'HARNESS')
+    this.seal = div(css.seal, '启')
+    this.wordmark = div(css.wordmark, 'DEEPSEEK HARNESS')
+    this.title = div(css.title, '正在进入')
     this.spinner = div(css.spinner)
     this.spinner.dataset.dshBootSpinner = ''
-    this.hint = div(css.hint, 'Loading plugins…')
-    this.card.append(this.wordmark, this.spinner, this.hint)
+    this.spinner.setAttribute('aria-hidden', 'true')
+    this.hint = div(css.hint, '正在准备工作区')
+    this.hint.setAttribute('role', 'status')
+    this.card.append(this.seal, this.wordmark, this.title, this.spinner, this.hint)
     this.root.append(this.card)
     container.append(this.root)
     this.updateProgress()
@@ -84,15 +90,16 @@ export class BootPage {
     const failed = [...this.states].filter(([, state]) => state === 'failed').map(([id]) => id)
     if (this.failure === undefined && failed.length === 0) {
       if (this.spinner.parentElement !== this.card) {
-        this.card.replaceChildren(this.wordmark, this.spinner, this.hint)
+        this.card.replaceChildren(this.seal, this.wordmark, this.title, this.spinner, this.hint)
       }
       return
     }
     const report = div(css.failed)
-    report.append(div(css.failedTitle, 'Failed to load plugins'))
+    report.setAttribute('role', 'alert')
+    report.append(div(css.failedTitle, '启动未完成'))
     for (const id of failed) report.append(div(css.failedItem, id))
     if (this.failure !== undefined) report.append(div(css.failedItem, this.failure))
-    this.card.replaceChildren(this.wordmark, report)
+    this.card.replaceChildren(this.seal, this.wordmark, report)
   }
 
   /** Grow the rotating arc monotonically as loader entries activate. */

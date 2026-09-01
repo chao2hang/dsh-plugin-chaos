@@ -53,9 +53,11 @@ export const inject = ['remote', 'remote.settings']
  */
 export function apply(ctx: Context): void {
   const schema = new SettingsSchemaService(ctx)
-  // Resolved once here, where `remote` is declared in this plugin's own
-  // `inject`; the binder hands the same answer to every scope it binds.
-  const persistence = ctx.remote.$host.isLoopback ? 'host' : 'memory'
+  // Chaos serves authenticated remote browsers as a supported web surface.
+  // Keep the shared settings mirror backed by the host there as well, so the
+  // Models page can join the provider directory with its settings namespaces;
+  // the binder hands the same answer to every scope it binds.
+  const persistence = 'host' as const
   const mirror = new SettingsDescribeMirror(ctx, persistence)
   ctx.effect(() => {
     const disposers = [

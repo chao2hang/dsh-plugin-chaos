@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-23-abnormal-end-retry-strip.md
+2026-08-23-abnormal-end-retry-strip.md: 3e12f94e43f6311e9fed5e48daff2f42952edf15
+2026-08-23-abnormal-end-retry-strip.zh.md: a875949c87d5b2fca262039421fca3a2c73fdbb7

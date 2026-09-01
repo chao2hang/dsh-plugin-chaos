@@ -53,6 +53,49 @@ function state(overrides: Partial<ModelDirectoryState> = {}): ModelDirectoryStat
 afterEach(cleanup)
 
 describe('ModelSelect reasoning effort', () => {
+  it('shows no capability entry when no dialog extension is composed', () => {
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore<ModelDirectoryState>(state())}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue(true)}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    expect(screen.queryByRole('button', { name: /模型能力设置/ })).toBeNull()
+  })
+
+  it('opens the composed capability dialog from the model menu without a separate composer button', async () => {
+    const directory = createSnapshotStore<ModelDirectoryState>(state())
+    const dialog = document.createElement('span')
+    dialog.dataset.modelCapabilities = ''
+    document.body.append(dialog)
+    const open = vi.fn()
+    window.addEventListener('dsh:open-model-capabilities', open)
+    try {
+      render(<ModelSelect
+        locked={false}
+        sessionId="session-capabilities"
+        available
+        directory={directory}
+        load={vi.fn()}
+        select={vi.fn().mockResolvedValue(true)}
+        t={t}
+      />)
+      const trigger = screen.getByRole('button', { name: /选择模型/ })
+      fireEvent.click(trigger)
+      fireEvent.click(screen.getByRole('button', { name: /模型能力设置/ }))
+      expect(open).toHaveBeenCalledWith(expect.objectContaining({ detail: 'session-capabilities' }))
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(screen.queryByRole('button', { name: '模型能力设置' })).toBeNull()
+      await waitFor(() => { expect(document.activeElement).toBe(trigger) })
+    } finally {
+      window.removeEventListener('dsh:open-model-capabilities', open)
+      dialog.remove()
+    }
+  })
+
   it('renders effort names without descriptions and submits the effort as part of the session selection', async () => {
     const directory = createSnapshotStore<ModelDirectoryState>(state())
     const select = vi.fn(async (selection: ModelSelection) => {
@@ -72,12 +115,12 @@ describe('ModelSelect reasoning effort', () => {
       name: '选择模型，当前 DeepSeek-V4-Flash，推理等级 High',
     })
     fireEvent.click(trigger)
-    fireEvent.click(screen.getByRole('menuitem', { name: /推理等级/ }))
-    expect(screen.getAllByRole('menuitemradio').map(item => item.textContent))
+    fireEvent.click(screen.getByRole('button', { name: '推理等级' }))
+    expect(screen.getAllByRole('radio').map(item => item.textContent))
       .toEqual(['Off', 'High', 'Max'])
     expect(screen.queryByText('Largest budget')).toBeNull()
 
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Max/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Max/ }))
     await waitFor(() => {
       expect(select).toHaveBeenCalledWith({
         provider: 'deepseek-official',
@@ -113,8 +156,8 @@ describe('ModelSelect reasoning effort', () => {
     fireEvent.click(screen.getByRole('button', {
       name: '选择模型，当前 Model，推理等级 Default',
     }))
-    fireEvent.click(screen.getByRole('menuitem', { name: /推理等级/ }))
-    expect(screen.getAllByRole('menuitemradio').map(item => item.textContent))
+    fireEvent.click(screen.getByRole('button', { name: '推理等级' }))
+    expect(screen.getAllByRole('radio').map(item => item.textContent))
       .toEqual(['Default', 'Standard'])
   })
 
@@ -135,10 +178,10 @@ describe('ModelSelect reasoning effort', () => {
     const trigger = screen.getByRole('button', { name: '选择模型，当前 deepseek-official/removed-model' })
     expect(trigger.textContent).toContain('deepseek-official/removed-model')
     fireEvent.click(trigger)
-    expect(screen.queryByRole('menuitem', { name: /推理等级/ })).toBeNull()
-    fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
-    expect(screen.queryByRole('menuitemradio', { name: 'removed-model' })).toBeNull()
-    expect(screen.getByRole('menuitemradio', { name: 'DeepSeek-V4-Flash' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '推理等级' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '模型' }))
+    expect(screen.queryByText('removed-model')).toBeNull()
+    expect(screen.getByRole('radio', { name: 'DeepSeek-V4-Flash' })).toBeTruthy()
     expect(screen.queryByText('Fast catalog description')).toBeNull()
   })
 
@@ -192,8 +235,8 @@ describe('ModelSelect reasoning effort', () => {
     />)
 
     fireEvent.click(screen.getByRole('button', { name: /选择模型|当前/ }))
-    fireEvent.click(screen.getByRole('menuitem', { name: /模型/ }))
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /DeepSeek-V4-Pro/ }))
+    fireEvent.click(screen.getByRole('button', { name: '模型' }))
+    fireEvent.click(screen.getByRole('radio', { name: /DeepSeek-V4-Pro/ }))
     const toast = await screen.findByRole('alert')
     expect(toast.textContent).toContain('模型操作失败：session/model-unavailable: session already contains images')
     // The selection failure does not render the in-menu load strip (no Retry).
@@ -213,5 +256,56 @@ describe('ModelSelect reasoning effort', () => {
 
     expect(screen.queryByRole('button')).toBeNull()
     expect(load).not.toHaveBeenCalled()
+  })
+})
+
+describe('ModelSelect visual viewport menu', () => {
+  it('uses viewport-fixed menu positioning when the visual viewport is narrow', () => {
+    const visualViewport = new EventTarget() as VisualViewport
+    Object.defineProperty(visualViewport, 'width', { value: 390 })
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: visualViewport })
+    try {
+      render(<ModelSelect
+        locked={false}
+        available
+        directory={createSnapshotStore<ModelDirectoryState>(state())}
+        load={vi.fn()}
+        select={vi.fn().mockResolvedValue(true)}
+        t={t}
+      />)
+      fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+      expect(screen.getByRole('dialog').className).toContain('menuCompact')
+    } finally {
+      if (descriptor === undefined) delete (window as { visualViewport?: VisualViewport }).visualViewport
+      else Object.defineProperty(window, 'visualViewport', descriptor)
+    }
+  })
+})
+
+describe('ModelSelect model filtering', () => {
+  it('filters model rows by name, identifier, and provider', () => {
+    const groups = [
+      { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash' }] },
+      { id: 'local', name: 'Local models', models: [{ id: 'qwen3-8b-awq', name: 'Qwen3 8B AWQ' }] },
+    ]
+    render(<ModelSelect
+      locked={false}
+      available
+      directory={createSnapshotStore<ModelDirectoryState>(state({ groups }))}
+      load={vi.fn()}
+      select={vi.fn().mockResolvedValue(true)}
+      t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: /选择模型/ }))
+    fireEvent.click(screen.getByRole('button', { name: '模型' }))
+    const search = screen.getByRole('searchbox', { name: '搜索模型' })
+    fireEvent.change(search, { target: { value: 'qwen3-8b' } })
+    expect(screen.getByRole('radio', { name: /Qwen3 8B AWQ/ })).toBeTruthy()
+    expect(screen.queryByRole('radio', { name: /DeepSeek-V4-Flash/ })).toBeNull()
+    fireEvent.change(search, { target: { value: 'deepseek' } })
+    expect(screen.getByRole('radio', { name: /DeepSeek-V4-Flash/ })).toBeTruthy()
+    fireEvent.change(search, { target: { value: 'missing' } })
+    expect(screen.getByText('未找到匹配的模型。')).toBeTruthy()
   })
 })

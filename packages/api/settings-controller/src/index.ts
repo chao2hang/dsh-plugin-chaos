@@ -48,6 +48,7 @@ export interface SettingsControllerInternals {
   readonly openPath?: (path: string, signal: AbortSignal) => Promise<void>
   readonly openTextFile?: (path: string, signal: AbortSignal) => Promise<void>
   readonly canOpenPath?: () => boolean
+  readonly canOpenTextFile?: () => boolean
 }
 
 /**
@@ -91,6 +92,7 @@ export class SettingsController extends TypertRemoteService {
   private readonly openPath: (path: string, signal: AbortSignal) => Promise<void>
   private readonly openTextFile: (path: string, signal: AbortSignal) => Promise<void>
   private readonly canOpenPath: () => boolean
+  private readonly canOpenTextFile: () => boolean
 
   /**
    * Register the settings namespace and mount the credentials namespace beside
@@ -104,12 +106,17 @@ export class SettingsController extends TypertRemoteService {
     this.openTextFile = internals.openTextFile ?? openNativeTextFile
     this.canOpenPath = internals.canOpenPath
       ?? (() => config.nativeOpen ?? (internals.openPath !== undefined || canOpenNativePath()))
+    this.canOpenTextFile = internals.canOpenTextFile
+      ?? (() => internals.openTextFile !== undefined || canOpenNativePath())
     ctx.plugin(CredentialsController)
   }
 
   /**
    * Describe every registered namespace for a configuration page: redacted
    * layered values plus the serialized schema the page renders its form from.
+   * `hasDocument` reports whether a file-backed provider owns a local document
+   * the Host can hand to its text-document opener (provider document plus a
+   * reachable desktop) without exposing its Host path.
    * @returns provider writability, local-document presence, and one view per namespace.
    * @throws RemoteError when no settings provider is mounted.
    */
@@ -118,7 +125,7 @@ export class SettingsController extends TypertRemoteService {
     const settings = this.provider()
     return {
       writable: settings.writable,
-      hasDocument: settings.documentPath !== undefined,
+      hasDocument: settings.documentPath !== undefined && this.canOpenTextFile(),
       namespaces: settings.describe({ redactSecrets: true }).map(namespaceView),
     }
   }

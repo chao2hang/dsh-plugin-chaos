@@ -434,3 +434,33 @@ describe('AppFrame — unmount with an in-flight resize frame', () => {
     expect(tracks(frame)).toEqual([280, 330])
   })
 })
+
+describe('AppFrame — stable layout anchors', () => {
+  // The data-shell-column / data-shell-handle attributes are the contract
+  // mobile-adaptation plugins target instead of CSS-module hashed class
+  // fragments. Removing or renaming them breaks chaos-mobile's selectors.
+  it('emits data-shell-column on all three columns', () => {
+    const { frame } = mountFrame()
+    expect(frame.hasAttribute('data-shell-frame')).toBe(true)
+    const cols = frame.querySelectorAll('[data-shell-column]')
+    expect(cols).toHaveLength(3)
+    expect(Array.from(cols).map(el => el.getAttribute('data-shell-column')))
+      .toEqual(['sidebar', 'center', 'details'])
+  })
+
+  it('emits data-shell-handle on drag handles', () => {
+    const { frame, instance } = mountFrame()
+    expect(frame.querySelectorAll('[data-shell-handle]')).toHaveLength(1)
+    act(() => { instance.actions.openDetails() })
+    expect(frame.querySelectorAll('[data-shell-handle]')).toHaveLength(2)
+  })
+
+  it('keeps data-details-collapsed in sync with the details track', () => {
+    const { frame, instance } = mountFrame()
+    expect(frame.hasAttribute('data-details-collapsed')).toBe(true)
+    act(() => { instance.actions.openDetails() })
+    expect(frame.hasAttribute('data-details-collapsed')).toBe(false)
+    act(() => { instance.actions.closeDetails() })
+    expect(frame.hasAttribute('data-details-collapsed')).toBe(true)
+  })
+})

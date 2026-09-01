@@ -24,6 +24,7 @@ function props(
   selectedCallId?: string,
   home?: string,
   owners?: ToolCallOwnerProps[],
+  canOpenPath?: boolean,
 ): ToolTreeProps {
   const snapshot = {} as SessionSnapshot
   const useSession = ((selector: (value: SessionSnapshot) => unknown) => selector(snapshot)) as ToolTreeProps['useSession']
@@ -50,6 +51,8 @@ function props(
     forkAt: vi.fn(),
     fileMentions: vi.fn(),
     useHostInfo: ((selector: (info: { home: string | undefined }) => unknown) => selector({ home })) as ToolTreeProps['useHostInfo'],
+    useWorkspacePathOpen: ((selector: (value: boolean | undefined) => unknown) => selector(canOpenPath ? true : undefined)) as ToolTreeProps['useWorkspacePathOpen'],
+    ensureWorkspacePathOpen: vi.fn(),
     t,
   } as unknown as ToolTreeProps
 }
@@ -99,5 +102,16 @@ describe('ToolCallTree', () => {
     const block = root('w1', { name: 'read', argsRaw: '{"path":"/h/docs/a.ts"}' })
     const view = render(<ToolCallTree {...props(block, 'w1', '/h')} />)
     expect(view.getByText('~/docs/a.ts')).toBeTruthy()
+  })
+
+  it('hands rows an opener only when the Host advertises one', () => {
+    const block = root('w1', { name: 'read', argsRaw: '{"path":"a.ts"}' })
+    const withOpener = render(<ToolCallTree {...props(block, undefined, '/h', undefined, true)} />)
+    expect(withOpener.container.querySelector('[data-tool-row-file]')).not.toBeNull()
+    withOpener.unmount()
+    // Without the capability the path degrades to plain text — no dead link.
+    const without = render(<ToolCallTree {...props(block, undefined, '/h', undefined, false)} />)
+    expect(without.container.querySelector('[data-tool-row-file]')).toBeNull()
+    expect(without.getByText('a.ts', { exact: false })).toBeTruthy()
   })
 })

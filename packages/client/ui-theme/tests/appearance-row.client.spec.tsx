@@ -38,7 +38,7 @@ const useSessionPendingInteraction: AppearanceRowComponentProps['useSessionPendi
 function mount(preference: ThemePreference = 'system') {
   // Real store instance — the sanctioned zero-machinery path for tests.
   const store = createAppearanceRowStore().create()
-  store.actions.sync(preference, 0)
+  store.actions.sync(preference, 14, 12, 0)
   const setTheme = vi.fn()
   const props: AppearanceRowComponentProps = {
     useSessions: emptySessions(),
@@ -48,6 +48,8 @@ function mount(preference: ThemePreference = 'system') {
     actions: store.actions,
     t: (key: string) => COPY[key] ?? key,
     setTheme,
+    setUiFontSize: vi.fn(),
+    setCodeFontSize: vi.fn(),
   }
   render(<AppearanceRow {...props} />)
   return { store, setTheme }
@@ -71,7 +73,7 @@ describe('AppearanceRow', () => {
     expect(b.setTheme).toHaveBeenCalledWith('light')
     // No store write yet: selection is unchanged.
     expect(pressed(/Dark/)).toBe('true')
-    act(() => { b.store.actions.sync('light', 1) })
+    act(() => { b.store.actions.sync('light', 14, 12, 1) })
     expect(pressed(/Light/)).toBe('true')
     expect(pressed(/Dark/)).toBe('false')
   })

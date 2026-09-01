@@ -448,17 +448,53 @@ describe('workspace browser rows', () => {
     }
   })
 
-  it('session row menu opens without opening the session and dispatches rename, fork, and archive', () => {
+
+  it('reveals leading or trailing session actions only after a horizontal touch swipe', () => {
     const onOpen = vi.fn()
     const onRename = vi.fn()
     const onFork = vi.fn()
     const onArchive = vi.fn()
     const node: SessionNode = {
-      id: sid('s1'), title: 'One', blank: false, running: false,
+      id: sid('swipe'), title: 'Swipe me', blank: false, running: false,
       runningSubagentCount: 0, completed: false, hasActiveSchedule: false, updatedAt: 0,
     }
     render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={onOpen}
       onRename={onRename} onFork={onFork} onArchive={onArchive} t={t} />)
+    const row = screen.getByRole('treeitem')
+
+    fireEvent.pointerDown(row, { pointerType: 'touch', isPrimary: true, pointerId: 1, clientX: 100, clientY: 20 })
+    fireEvent.pointerMove(row, { pointerType: 'touch', pointerId: 1, clientX: 30, clientY: 22 })
+    fireEvent.pointerUp(row, { pointerType: 'touch', pointerId: 1, clientX: 30, clientY: 22 })
+    expect(row.parentElement?.getAttribute('data-session-swipe')).toBe('trailing')
+    expect(onOpen).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '归档会话' }))
+    expect(onArchive).toHaveBeenCalledWith(node.id)
+
+    fireEvent.pointerDown(row, { pointerType: 'touch', isPrimary: true, pointerId: 2, clientX: 30, clientY: 20 })
+    fireEvent.pointerUp(row, { pointerType: 'touch', pointerId: 2, clientX: 100, clientY: 20 })
+    expect(row.parentElement?.getAttribute('data-session-swipe')).toBe('leading')
+    fireEvent.click(screen.getByRole('button', { name: '重命名' }))
+    expect(onRename).toHaveBeenCalledWith(node.id, node.title)
+    expect(onOpen).not.toHaveBeenCalled()
+
+    fireEvent.pointerDown(row, { pointerType: 'touch', isPrimary: true, pointerId: 3, clientX: 30, clientY: 20 })
+    fireEvent.pointerMove(row, { pointerType: 'touch', pointerId: 3, clientX: 32, clientY: 100 })
+    fireEvent.pointerUp(row, { pointerType: 'touch', pointerId: 3, clientX: 110, clientY: 102 })
+    expect(row.parentElement?.getAttribute('data-session-swipe')).toBeNull()
+  })
+
+  it('puts download in the selected session menu and dispatches every menu action without opening the session', () => {
+    const onOpen = vi.fn()
+    const onRename = vi.fn()
+    const onFork = vi.fn()
+    const onDownload = vi.fn()
+    const onArchive = vi.fn()
+    const node: SessionNode = {
+      id: sid('s1'), title: 'One', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, hasActiveSchedule: false, updatedAt: 0,
+    }
+    render(<SessionNodeItem node={node} currentId={node.id} now={0} onOpen={onOpen}
+      onRename={onRename} onFork={onFork} onDownload={onDownload} onArchive={onArchive} t={t} />)
     fireEvent.click(screen.getByRole('button', { name: '会话“One”的操作' }))
     expect(onOpen).not.toHaveBeenCalled()
     // Archive is not destructive (log and accounting slot remain): no danger styling.
@@ -471,6 +507,9 @@ describe('workspace browser rows', () => {
     fireEvent.click(screen.getByRole('button', { name: '会话“One”的操作' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '分叉会话' }))
     expect(onFork).toHaveBeenCalledWith(node.id)
+    fireEvent.click(screen.getByRole('button', { name: '会话“One”的操作' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '下载日志' }))
+    expect(onDownload).toHaveBeenCalledWith(node.id)
     // Archive dispatches without opening the session.
     fireEvent.click(screen.getByRole('button', { name: '会话“One”的操作' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '归档会话' }))

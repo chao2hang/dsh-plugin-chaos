@@ -60,7 +60,9 @@ const LAYOUT_CHILDREN = {
 async function bench(nodes: ToolResultNode[]) {
   const runtime = await SlotTestRuntime.create()
   const openWorkspacePath = vi.fn(async () => ({ ok: true, value: { opened: true } }))
-  new TestRemote(runtime.ctx, { session: { openWorkspacePath } })
+  // A capable Host: the file-path click cases exercise the open plumbing.
+  const canOpenWorkspacePath = vi.fn(async () => ({ ok: true, value: true }))
+  new TestRemote(runtime.ctx, { session: { openWorkspacePath, canOpenWorkspacePath } })
   runtime.ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
   const layout = { openDetails: vi.fn(), closeDetails: vi.fn() }
   runtime.ctx.provide('layout', layout)
@@ -129,6 +131,10 @@ describe('keyed toolview hole through the real machinery', () => {
   it('file-path clicks travel owner openFile → chat inject → session.openWorkspacePath', async () => {
     const b = await bench([toolResult(3, 'c1', 'read', '{"path":"src/a.ts"}')])
     const view = b.runtime.renderRoot()
+    // The opener link renders once the Host capability probe settles.
+    await vi.waitFor(() => {
+      expect(view.container.querySelector('[data-tool-row-file]')).not.toBeNull()
+    })
     view.getByText('src/a.ts').click()
     expect(b.layout.openDetails).not.toHaveBeenCalled()
     await vi.waitFor(() => {
@@ -204,6 +210,7 @@ describe('registrant declaration injection', () => {
     new TestRemote(runtime.ctx, {
       session: {
         openWorkspacePath: vi.fn(async () => ({ ok: true, value: { opened: true } })),
+        canOpenWorkspacePath: vi.fn(async () => ({ ok: true, value: true })),
       },
     })
     runtime.ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)

@@ -74,6 +74,7 @@ async function bench(nodes: ToolResultNode[]) {
   new TestRemote(runtime.ctx, {
     session: {
       openWorkspacePath: vi.fn(async () => ({ ok: true, value: { opened: true } })),
+      canOpenWorkspacePath: vi.fn(async () => ({ ok: true, value: true })),
     },
   })
   runtime.ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)

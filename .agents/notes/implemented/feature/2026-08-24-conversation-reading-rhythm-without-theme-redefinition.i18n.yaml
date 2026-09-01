@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-24-conversation-reading-rhythm-without-theme-redefinition.md
+2026-08-24-conversation-reading-rhythm-without-theme-redefinition.md: 410a13c01180066c970777788573eb16d3d38610
+2026-08-24-conversation-reading-rhythm-without-theme-redefinition.zh.md: f3de82fc305758bf13151ed89130fbdf4037a03c

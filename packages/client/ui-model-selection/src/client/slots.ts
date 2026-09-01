@@ -10,6 +10,8 @@ import type { ModelDirectoryState } from './directory.ts'
 
 /** Injected business face of the composer model seat. */
 export interface ModelSelectInjected {
+  /** Session that owns this selector and its capability dialog request. */
+  sessionId?: string
   /** Whether this session supports Agent-bound model inspection and selection. */
   available: boolean
   /** The session's shared directory store (same instance the /model popup reads). */

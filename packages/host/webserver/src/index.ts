@@ -1,12 +1,14 @@
 /**
  * @deepseek-ai/dsh-host-webserver — node:http route registration with optional
- * gzip, index injection, and one fallback seat. It knows no harness concepts
- * and serves no files; the composing application owns dist serving. Electron
- * uses file:// plus IPC instead, and this package never prints the URL.
- * Route handlers retain direct response ownership.
+ * gzip, optional TLS, index injection, and one fallback seat. It knows no
+ * harness concepts and serves no files; the composing application owns dist
+ * serving. Electron uses file:// plus IPC instead, and this package never
+ * prints the URL. Route handlers retain direct response ownership.
  */
 
 import { createServer } from 'node:http'
+import { createServer as createHttpsServer } from 'node:https'
+import { readFileSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse, Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import type { Duplex } from 'node:stream'
@@ -55,7 +57,7 @@ export interface WebUpgradeRoute {
   handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => void | Promise<void>
 }
 
-/** Web server listen and response-compression config. */
+/** Web server listen, response-compression, and optional TLS config. */
 export interface Config {
   /** Listen host; the two supported values are loopback and all-interfaces. */
   host: '127.0.0.1' | '0.0.0.0'
@@ -67,6 +69,8 @@ export interface Config {
   compressionLevel?: number
   /** Minimum known response length eligible for gzip; unknown-length streams are eligible. @default 1024 */
   compressionThresholdBytes?: number
+  /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+  tls: { cert: string; key: string }
 }
 
 const DEFAULT_COMPRESSION = 'none' as const
@@ -115,6 +119,21 @@ function createGzipMiddleware(config: ResolvedConfig): NodeMiddleware {
 }
 
 /**
+ * Request guard: runs before route matching on every HTTP request. Return
+ * `true` to continue to route matching; return `false` to stop (the guard
+ * is expected to have written the response, e.g. a login redirect). Guards
+ * run in registration order; the first `false` stops the chain.
+ */
+export type RequestGuard = (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>
+
+/**
+ * Upgrade guard: runs before upgrade route matching on every WebSocket
+ * upgrade request. Same contract as {@link RequestGuard}: `true` continues,
+ * `false` stops (the guard owns the socket). Guards run in registration order.
+ */
+export type UpgradeGuard = (req: IncomingMessage, socket: Duplex, head: Buffer) => boolean | Promise<boolean>
+
+/**
  * The browser HTTP carrier service. Activation listens immediately. Route
  * registration order does not affect requests because configured named routes
  * must be distinct, and the fallback handler answers anything not yet claimed
@@ -128,6 +147,10 @@ export class WebServer extends Service {
     compression: z.union([z.const('none'), z.const('gzip')]).default(DEFAULT_COMPRESSION),
     compressionLevel: z.number().step(1).min(0).max(9).default(DEFAULT_COMPRESSION_LEVEL),
     compressionThresholdBytes: z.natural().default(DEFAULT_COMPRESSION_THRESHOLD_BYTES),
+    tls: z.object({
+      cert: z.string().default(''),
+      key: z.string().default(''),
+    }).default({ cert: '', key: '' }),
   })
 
   private readonly exact = new Map<string, WebRoute>()
@@ -135,6 +158,9 @@ export class WebServer extends Service {
   private readonly upgrades = new Map<string, WebUpgradeRoute>()
   private readonly upgradedSockets = new Set<Duplex>()
   private readonly indexTaps: ((html: string) => string)[] = []
+  private readonly requestGuards: RequestGuard[] = []
+  private readonly upgradeGuards: UpgradeGuard[] = []
+  private readonly authenticatedRequests = new WeakSet<IncomingMessage>()
   private fallback: WebRoute['handler'] | undefined
   private server!: Server
   private listenedPort!: number
@@ -154,6 +180,24 @@ export class WebServer extends Service {
   /** The configured bind host (the loopback or all-interfaces literal). */
   get host(): Config['host'] {
     return this.config.host
+  }
+
+  /**
+   * Mark a request that a preceding authentication guard has validated.
+   * The marker is request-local and never derived from a client-controlled header.
+   * @param req - validated HTTP or upgrade request.
+   */
+  markAuthenticated(req: IncomingMessage): void {
+    this.authenticatedRequests.add(req)
+  }
+
+  /**
+   * Whether a preceding authentication guard validated this request.
+   * @param req - HTTP or upgrade request being dispatched.
+   * @returns true only for a request marked by this server instance.
+   */
+  isAuthenticated(req: IncomingMessage): boolean {
+    return this.authenticatedRequests.has(req)
   }
 
   /**
@@ -183,6 +227,37 @@ export class WebServer extends Service {
     }
     this.upgrades.set(route.path, route)
     return () => { this.upgrades.delete(route.path) }
+  }
+
+  /**
+   * Register a request guard: runs before route matching on every HTTP
+   * request. Guards run in registration order; the first `false` result
+   * stops the chain (the guard owns the response). This is the generic
+   * extension point for request interception — authentication, rate limiting,
+   * logging — anything that must run before route dispatch.
+   * @param guard - the guard function.
+   * @returns the disposer removing the guard.
+   */
+  registerGuard(guard: RequestGuard): () => void {
+    this.requestGuards.push(guard)
+    return () => {
+      const at = this.requestGuards.indexOf(guard)
+      if (at !== -1) this.requestGuards.splice(at, 1)
+    }
+  }
+
+  /**
+   * Register an upgrade guard: runs before upgrade route matching on every
+   * WebSocket upgrade. Same chain semantics as {@link registerGuard}.
+   * @param guard - the upgrade guard function.
+   * @returns the disposer removing the guard.
+   */
+  registerUpgradeGuard(guard: UpgradeGuard): () => void {
+    this.upgradeGuards.push(guard)
+    return () => {
+      const at = this.upgradeGuards.indexOf(guard)
+      if (at !== -1) this.upgradeGuards.splice(at, 1)
+    }
   }
 
   /**
@@ -219,6 +294,13 @@ export class WebServer extends Service {
   /** Listen; resolves once the socket is bound (rejection = FAILED fiber). */
   async [Service.init](): Promise<void> {
     const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+      // Request guards run before route matching. A guard returning false
+      // is expected to have written the response (e.g. a 401 or login
+      // redirect); the chain stops and no route handler runs.
+      for (const guard of this.requestGuards) {
+        const ok = await guard(req, res)
+        if (!ok) return
+      }
       /* v8 ignore next -- `?? '/'` arm: node:http always sets url on server
       requests; the field is only optional on the client-side IncomingMessage type */
       const rawPath = new URL(req.url ?? '/', 'http://x').pathname
@@ -239,7 +321,10 @@ export class WebServer extends Service {
     // rejection killing the process on one malformed request (bad %-escape,
     // client dropping mid-body). Per-request failures log and answer 400 —
     // never a process exit.
-    this.server = createServer((req, res) => {
+    // TLS: when cert and key paths are configured, create an HTTPS server
+    // instead of plain HTTP. The request handler and upgrade logic are
+    // identical — only the transport differs.
+    const requestHandler = (req: IncomingMessage, res: ServerResponse): void => {
       const next = (): void => {
         void handle(req, res).catch((err: unknown) => {
           this.ctx.logger.warn(err instanceof Error ? err : new Error(String(err)))
@@ -253,7 +338,15 @@ export class WebServer extends Service {
       }
       if (this.gzip === undefined) next()
       else this.gzip(req, res, next)
-    })
+    }
+    if (this.config.tls.cert !== '' && this.config.tls.key !== '') {
+      this.server = createHttpsServer({
+        cert: readFileSync(this.config.tls.cert),
+        key: readFileSync(this.config.tls.key),
+      }, requestHandler)
+    } else {
+      this.server = createServer(requestHandler)
+    }
     this.server.on('upgrade', (req, socket, head) => {
       const onError = (error: Error): void => {
         this.ctx.logger.warn(error)
@@ -264,29 +357,23 @@ export class WebServer extends Service {
         socket.off('error', onError)
         this.upgradedSockets.delete(socket)
       })
-      let route: WebUpgradeRoute | undefined
-      try {
-        /* v8 ignore next -- node:http always sets url on server requests. */
-        route = this.upgrades.get(new URL(req.url ?? '/', 'http://x').pathname)
-      } catch (error) {
+      // Upgrade guards run before route matching, same chain semantics as
+      // request guards. A guard returning false is expected to have
+      // handled the socket (e.g. by destroying it or sending a 401).
+      const runUpgradeGuards = async (): Promise<boolean> => {
+        for (const guard of this.upgradeGuards) {
+          const ok = await guard(req, socket, head)
+          if (!ok) return false
+        }
+        return true
+      }
+      Promise.resolve(runUpgradeGuards()).then((guarded) => {
+        if (!guarded) return
+        this.handleUpgradeRoute(req, socket, head)
+      }).catch((error: unknown) => {
         this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
         socket.destroy()
-        return
-      }
-      if (route === undefined) {
-        socket.destroy()
-        return
-      }
-      this.upgradedSockets.add(socket)
-      try {
-        Promise.resolve(route.handler(req, socket, head)).catch((error: unknown) => {
-          this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
-          socket.destroy()
-        })
-      } catch (error) {
-        this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
-        socket.destroy()
-      }
+      })
     })
 
     await new Promise<void>((resolve, reject) => {
@@ -312,6 +399,40 @@ export class WebServer extends Service {
       }))
       await Promise.all([serverClosed, ...upgradedClosed])
     }, 'webServer.listen')
+  }
+
+  /**
+   * Match and dispatch one upgrade route after guards have passed. Extracted
+   * from the upgrade event handler so guard logic stays separate from route
+   * matching. A missing route destroys the socket.
+   * @param req - the upgrade request.
+   * @param socket - the duplex socket.
+   * @param head - the first packet of the upgraded data.
+   */
+  private async handleUpgradeRoute(req: IncomingMessage, socket: Duplex, head: Buffer): Promise<void> {
+    let route: WebUpgradeRoute | undefined
+    try {
+      /* v8 ignore next -- node:http always sets url on server requests. */
+      route = this.upgrades.get(new URL(req.url ?? '/', 'http://x').pathname)
+    } catch (error) {
+      this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
+      socket.destroy()
+      return
+    }
+    if (route === undefined) {
+      socket.destroy()
+      return
+    }
+    this.upgradedSockets.add(socket)
+    try {
+      Promise.resolve(route.handler(req, socket, head)).catch((error: unknown) => {
+        this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
+        socket.destroy()
+      })
+    } catch (error) {
+      this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
+      socket.destroy()
+    }
   }
 
   /** Longest-prefix-wins over the prefix table after an exact-table miss. */

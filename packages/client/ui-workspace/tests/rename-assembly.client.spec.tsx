@@ -84,7 +84,7 @@ describe('session rename through the assembled browser', () => {
     const input = await view.findByLabelText('会话名称') as HTMLInputElement
     expect(input.value).toBe('旧标题')
     fireEvent.change(input, { target: { value: '  分叉  实验记录  ' } })
-    fireEvent.click(view.getByRole('button', { name: '重命名' }))
+    fireEvent.click(within(view.getByRole('dialog')).getByRole('button', { name: '重命名' }))
 
     // The injected hop reached the session face with the edge-trimmed draft
     // (the dialog trims edges; interior normalization is host-side).
@@ -128,7 +128,7 @@ describe('session rename through the assembled browser', () => {
     fireEvent.click(view.getByRole('menuitem', { name: '重命名', hidden: true }))
     const input = await view.findByLabelText('会话名称')
     fireEvent.change(input, { target: { value: '新名' } })
-    fireEvent.click(view.getByRole('button', { name: '重命名' }))
+    fireEvent.click(within(view.getByRole('dialog')).getByRole('button', { name: '重命名' }))
 
     // Failure: the injected hop rethrows the business error; the dialog
     // stays open with the alert and the row keeps its title.

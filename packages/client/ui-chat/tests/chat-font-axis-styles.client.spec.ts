@@ -60,12 +60,12 @@ describe('chat flow font-size axis', () => {
     ]))
   })
 
-  it('compaction rows follow the axis like the disclosure rows they mirror', () => {
+  it('compaction rows follow the user font-size axis', () => {
     const css = read('MessageItem.module.css')
     for (const selector of ['.compactionTitle', '.compactionSummary', '.compactionBody']) {
       expect(declarationsFrom(css, selector)).toEqual(expect.arrayContaining([
-        'font-size: var(--dsh-content-font-size-secondary, 13px)',
-        'line-height: calc(24px + var(--dsh-content-font-delta, 0px))',
+        'font-size: var(--dsh-ui-font-size)',
+        'line-height: calc(var(--dsh-ui-font-size) + 10px)',
       ]))
     }
     expect(declarationsFrom(css, '.compactionLeading svg')).toEqual(expect.arrayContaining([

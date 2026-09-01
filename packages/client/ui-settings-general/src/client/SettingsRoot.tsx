@@ -11,6 +11,7 @@
  * to the step, so a mounted-but-deciding step paints nothing here.
  */
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import {
   ConnectionIndicator,
@@ -62,18 +63,21 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
   const closeButton = useRef<HTMLButtonElement | null>(null)
   useEffect(() => { closeButton.current?.focus() }, [])
 
-  return (
-    <div className={css.overlay} role="presentation">
+  if (typeof document === 'undefined') return null
+
+  return createPortal((
+    <div className={css.overlay} data-settings-overlay role="presentation">
       <div className={css.mask} aria-hidden="true" onClick={onClose} />
-      <div className={css.panel} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <nav className={css.nav}>
+      <div className={css.panel} data-settings-page role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <nav className={css.nav} data-settings-page-nav>
           <div className={css.navTitle} id={titleId}>{renderSlot('settings.header', {})}</div>
-          <div className={css.navList}>
+          <div className={css.navList} data-settings-page-sections>
             {rows.map(row => (
               <button
                 key={row.id}
                 type="button"
                 className={clsx(css.navCell, row.id === active && css.active)}
+                data-settings-page-section
                 aria-current={row.id === active ? 'true' : undefined}
                 onClick={() => { onSelect(row.id) }}
               >
@@ -83,10 +87,10 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
             ))}
           </div>
         </nav>
-        <div className={css.content}>
+        <div className={css.content} data-settings-page-content>
           <div className={css.header}>
             <div className={css.actions}>{renderSlot('settings.action', {})}</div>
-            <button ref={closeButton} type="button" className={css.close} onClick={onClose}>
+            <button ref={closeButton} type="button" className={css.close} data-settings-page-close onClick={onClose}>
               <IconCloseOutline16 size={14} />
               <span className={css.hiddenLabel}>{renderSlot('settings.close', {})}</span>
             </button>
@@ -97,7 +101,7 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
         </div>
       </div>
     </div>
-  )
+  ), document.body)
 }
 
 /**

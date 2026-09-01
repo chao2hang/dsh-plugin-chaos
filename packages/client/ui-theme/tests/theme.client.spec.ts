@@ -68,10 +68,25 @@ describe('ThemeRuntime', () => {
 
   it('adopts a published Host font size without writing it back', () => {
     const { theme, events, host } = make()
-    host.publish({ status: 'ready', value: { preference: 'system', fontSize: 12 }, revision: 1, writable: true })
+    host.publish({ status: 'ready', value: { preference: 'system', fontSize: 12, uiFontSize: 14, codeFontSize: 12 }, revision: 1, writable: true })
     expect(theme.getTheme().fontSize).toBe(12)
     expect(events).toHaveLength(1)
     expect(host.set).not.toHaveBeenCalled()
+  })
+
+  it('setUiFontSize and setCodeFontSize switch, write through the scope, and republish; same value is a no-op', () => {
+    const { theme, events, host } = make()
+    theme.setUiFontSize(15)
+    expect(theme.getTheme().uiFontSize).toBe(15)
+    expect(host.set).toHaveBeenCalledWith('uiFontSize', 15)
+    theme.setCodeFontSize(13)
+    expect(theme.getTheme().codeFontSize).toBe(13)
+    expect(host.set).toHaveBeenCalledWith('codeFontSize', 13)
+    expect(events).toHaveLength(2)
+    theme.setUiFontSize(15)
+    theme.setCodeFontSize(13)
+    expect(events).toHaveLength(2)
+    expect(host.set).toHaveBeenCalledTimes(2)
   })
 
   it('setTheme switches, writes through the scope, republishes, and keeps DOM untouched', () => {
@@ -92,17 +107,17 @@ describe('ThemeRuntime', () => {
 
   it('adopts a published Host section without writing it back', () => {
     const { theme, events, host } = make()
-    host.publish({ status: 'ready', value: { preference: 'dark', fontSize: 14 }, revision: 1, writable: true })
+    host.publish({ status: 'ready', value: { preference: 'dark', fontSize: 14, uiFontSize: 14, codeFontSize: 12 }, revision: 1, writable: true })
     expect(theme.getTheme().preference).toBe('dark')
     expect(events).toHaveLength(1)
     expect(host.set).not.toHaveBeenCalled()
-    host.publish({ value: { preference: 'dark', fontSize: 14 }, revision: 2 })
+    host.publish({ value: { preference: 'dark', fontSize: 14, uiFontSize: 14, codeFontSize: 12 }, revision: 2 })
     expect(events).toHaveLength(1)
   })
 
   it('adopts a section already standing at construction', () => {
     const host = stubSettingsScope<ThemeSettings>()
-    host.publish({ status: 'ready', value: { preference: 'dark', fontSize: 14 }, revision: 1, writable: true })
+    host.publish({ status: 'ready', value: { preference: 'dark', fontSize: 14, uiFontSize: 14, codeFontSize: 12 }, revision: 1, writable: true })
     const { theme } = make(host)
     expect(theme.getTheme().preference).toBe('dark')
   })

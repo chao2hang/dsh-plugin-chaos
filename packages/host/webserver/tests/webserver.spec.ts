@@ -98,15 +98,16 @@ async function upgrade(port: number, path: string): Promise<ReturnType<typeof co
 
 describe('real Loader composition', () => {
   it('applies gzip only to eligible socket-backed HTTP responses', { timeout: 60_000 }, async () => {
-    expect(HttpServer.Config({ host: '127.0.0.1', port: 0 })).toEqual({
+    expect(HttpServer.Config({ host: '127.0.0.1', port: 0, tls: { cert: '', key: '' } })).toEqual({
       host: '127.0.0.1',
       port: 0,
       compression: 'none',
       compressionLevel: 1,
       compressionThresholdBytes: 1024,
+      tls: { cert: '', key: '' },
     })
     expect(() => HttpServer.Config({
-      host: '127.0.0.1', port: 0, compressionLevel: 10,
+      host: '127.0.0.1', port: 0, compressionLevel: 10, tls: { cert: '', key: '' },
     })).toThrow()
 
     const loaded = await loadComposition(0, true)
@@ -301,6 +302,39 @@ describe('real Loader composition', () => {
     expect(upgradedServerClosed).toBe(true)
     upgraded.destroy()
     await expect(request(port, '/probe')).rejects.toThrow()
+  })
+
+  it('request guards run before route matching and can block requests', { timeout: 60_000 }, async () => {
+    const loaded = await loadComposition()
+    const server = loaded.webServer
+    const port = server.port
+
+    // Register a route that should be reachable.
+    server.register({ kind: 'exact', path: '/guarded', handler: (_req, res) => { res.writeHead(200); res.end('OK') } })
+
+    // Without a guard, the route is reachable.
+    expect(await request(port, '/guarded')).toMatchObject({ status: 200, body: 'OK' })
+
+    // Register a guard that blocks all requests.
+    const disposeGuard = server.registerGuard((_req, res) => {
+      res.writeHead(403)
+      res.end('BLOCKED')
+      return false
+    })
+
+    // The guard intercepts: the route handler never runs.
+    expect(await request(port, '/guarded')).toMatchObject({ status: 403, body: 'BLOCKED' })
+
+    // Remove the guard: the route is reachable again.
+    disposeGuard()
+    expect(await request(port, '/guarded')).toMatchObject({ status: 200, body: 'OK' })
+
+    // A guard that returns true passes through to route matching.
+    const disposePass = server.registerGuard(() => true)
+    expect(await request(port, '/guarded')).toMatchObject({ status: 200, body: 'OK' })
+    disposePass()
+
+    await loaded.fiber.dispose()
   })
 
   it('collects injection rows fresh per render and layers taps over the rendered rows', { timeout: 60_000 }, async () => {

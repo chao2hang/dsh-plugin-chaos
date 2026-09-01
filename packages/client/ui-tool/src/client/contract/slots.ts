@@ -39,8 +39,12 @@ export interface ToolCallOwnerProps {
   cwd?: string | undefined
   /** Host account home; POSIX home-rooted summaries display as `~`. */
   home?: string | undefined
-  /** Open a Tool argument path through the Host. */
-  openFile: (path: string) => void
+  /**
+   * Open a Tool argument path through the Host. Absent when this deployment
+   * reports no native opener (`host.describe.canOpenPath === false`), so a
+   * view renders its path as plain text instead of a dead open affordance.
+   */
+  openFile?: ((path: string) => void) | undefined
   /** Inspect this call in the trajectory view when available. */
   inspect?: (() => void) | undefined
 }
@@ -50,6 +54,12 @@ export type ToolCallViewProps = PropsRuntime<'tool.call.toolview'>
 
 /** Injected Host description for POSIX home-path display. */
 export type ToolHostInfoInjected = {
+  /**
+   * Probe the Host's native path-open capability once; idempotent. Tool rows
+   * gate their open affordance on the result, so the tree fires this when it
+   * first renders.
+   */
+  ensureWorkspacePathOpen(): void
   hooks: {
     /**
      * Fixed Host facts, reached through a hook rather than injected as values:
@@ -58,6 +68,8 @@ export type ToolHostInfoInjected = {
      * saw. Select the field the view needs (`info => info.home`).
      */
     hostInfo: HostObservable<RemoteHostFacts>
+    /** The Host's native path-open capability; `undefined` until the probe settles. */
+    workspacePathOpen: HostObservable<boolean | undefined>
   }
 }
 

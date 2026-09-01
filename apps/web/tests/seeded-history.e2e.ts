@@ -39,6 +39,9 @@ const UI_EXPANDED_EXPECTED = fileURLToPath(
 const COMMAND_ROW_EXPECTED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/command-row.expected.md', import.meta.url))
 const FEEDBACK_ROW_EXPECTED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/feedback-row.expected.md', import.meta.url))
 const FILE_OPEN_FAILURE_EXPECTED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/file-open-failure.expected.md', import.meta.url))
+// The file-link cases click the read summary's host-open affordance, which the
+// client only renders when the gateway advertises a native opener.
+const OVERLAY = fileURLToPath(new URL('./native-open.overlay.yml', import.meta.url))
 const MODE = webSnapshotMode()
 const SEED_ID = 'seeded-history-web-e2e'
 
@@ -189,7 +192,7 @@ describe('web e2e: seeded history renders through cold resume', () => {
   let seededThroughSeq = -1
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({})
+    scaffold = await launchWebScaffold({ extraOverlayPath: OVERLAY })
     // The workspace-aware flow runs sessions in <workspaceCwd>/workspace
     // (the composer's default draft name); the read-tool targets must live in
     // that session cwd. Pre-creating the directory is safe because the picker

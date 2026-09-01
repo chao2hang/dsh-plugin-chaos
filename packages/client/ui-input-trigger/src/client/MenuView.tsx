@@ -74,7 +74,7 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
   return (
     // The listbox role sits on the scrolling viewport, not this shell: a
     // breadcrumb header is not an option, and a listbox may not carry one.
-    <div ref={listRef} className={css.menu} style={{ maxHeight }} data-trigger-menu="">
+    <div ref={listRef} className={css.menu} style={{ maxHeight }} data-slash-command-menu data-trigger-menu="">
       {state.groups.map((group) => {
         const trail = crumbs.get(group.source)
         return trail === undefined ? null : (
@@ -115,10 +115,10 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
                   shows its raw name — hence the cast past the typed key union. */}
               {group.showGroupTitle === false || group.items.some(item => item.section !== undefined)
                 ? null
-                : <div className={css.groupTitle} role="presentation" data-source={group.source}>{t(group.source as MenuKey)}</div>}
+                : <div className={css.groupTitle} role="presentation" data-slash-command-group data-source={group.source}>{t(group.source as MenuKey)}</div>}
               {group.status === 'pending' && group.items.length === 0
                 ? (
-                  <div role="status" aria-label={t('loading')} data-source={group.source}>
+                  <div role="status" aria-label={t('loading')} data-slash-command-loading data-source={group.source}>
                     <div className={css.skeletonRow}><span className={css.skeletonBar} style={{ width: '32%' }} /></div>
                     <div className={css.skeletonRow}><span className={css.skeletonBar} style={{ width: '48%' }} /></div>
                   </div>
@@ -128,7 +128,7 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
                   return (
                     <Fragment key={optionId(group.source, index)}>
                       {item.section !== undefined && item.section !== group.items[index - 1]?.section
-                        ? <div className={css.sectionTitle} role="presentation">{item.section}</div>
+                        ? <div className={css.sectionTitle} role="presentation" data-slash-command-section>{item.section}</div>
                         : null}
                       <button
                         id={optionId(group.source, index)}
@@ -136,6 +136,7 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
                         role="option"
                         aria-selected={active}
                         className={clsx(css.item, active && css.active)}
+                        data-slash-command-option
                         // mousedown, not click: the textarea keeps focus (combobox
                         // pattern) — preventing default stops the focus steal, and the
                         // pick runs before any blur-driven teardown.
@@ -149,7 +150,7 @@ export function MenuView({ menu, headers, onPick, onCrumb, onHover, onDismiss, t
                         onMouseMove={active ? undefined : () => { onHover(group.source, index) }}
                       >
                         {item.icon !== undefined && (
-                          <span className={css.itemIcon} aria-hidden>
+                          <span className={css.itemIcon} data-slash-command-icon aria-hidden>
                             <ReferenceIcon kind={item.icon} size={16} />
                           </span>
                         )}
