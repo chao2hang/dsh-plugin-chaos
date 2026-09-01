@@ -180,6 +180,10 @@ describe('ui-theme apply', () => {
     declareItems(remote.slots)
     await remote.ctx.plugin({ inject: [...inject], apply }).await()
     const remoteTheme = remote.ctx.get('theme') as ThemeRuntime
+    // Remote scope initialization may complete after the fiber settles; isolate
+    // the user gesture from that one initial read.
+    await vi.waitFor(() => { expect(remote.describe).toHaveBeenCalledTimes(1) })
+    remote.describe.mockClear()
     remoteTheme.setTheme('dark')
     await Promise.resolve()
     expect(remote.describe).not.toHaveBeenCalled()

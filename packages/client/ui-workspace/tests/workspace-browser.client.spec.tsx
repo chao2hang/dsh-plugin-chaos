@@ -77,6 +77,7 @@ function mount(overrides: Partial<WorkspaceBrowserProps> = {}) {
     searchResultLimit: 20,
     renameSession: vi.fn(async () => {}),
     forkSession: vi.fn(),
+    downloadSessionLog: vi.fn(),
     renameWorkspace: vi.fn(async () => {}),
     deleteWorkspace: vi.fn(async () => {}),
     archiveSession: vi.fn(async () => {}),
@@ -421,8 +422,10 @@ describe('WorkspaceBrowser', () => {
     fireEvent.click(screen.getByRole('button', { name: '会话“gone-s”的操作' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '归档会话' }))
     expect(archiveSession).toHaveBeenCalledWith(sid('gone-s'))
+    // An optimistic set hides the row before the asynchronous archive echo.
+    expect(screen.queryByText('gone-s')).toBeNull()
 
-    // The archive-set echo hides the row in grouped and flat modes.
+    // The archive-set echo keeps the row hidden in grouped and flat modes.
     rerender(b, { useWorkspaces: hook(workspaceState([workspace('alpha', ['kept-s', 'gone-s'])], [sid('gone-s')])) })
     expect(screen.queryByText('gone-s')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: '视图选项' }))
@@ -444,9 +447,8 @@ describe('WorkspaceBrowser', () => {
       fireEvent.click(screen.getByText('alpha'))
       fireEvent.click(screen.getByRole('button', { name: '会话“alpha-s”的操作' }))
       fireEvent.click(screen.getByRole('menuitem', { name: '归档会话' }))
-      await Promise.resolve()
-      await Promise.resolve()
-      expect(warn).toHaveBeenCalledWith('session archive rejected:', rejection)
+      expect(screen.queryByText('alpha-s')).toBeNull()
+      await vi.waitFor(() => { expect(warn).toHaveBeenCalledWith('session archive rejected:', rejection) })
       expect(screen.getByText('alpha-s')).toBeTruthy()
     } finally {
       warn.mockRestore()

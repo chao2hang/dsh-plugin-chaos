@@ -176,6 +176,7 @@ function bench(over?: BenchOptions) {
     keyboard: shell,
     addImages: over?.addImages ?? (() => null),
     removeImage,
+    notifyInputError: vi.fn(),
     draftImages: ids => ids.flatMap((id) => {
       const attachment = over?.attachments?.find(candidate => candidate.id === id)
       return attachment === undefined ? [] : [attachment]
@@ -1294,10 +1295,12 @@ describe('strips and variants', () => {
   })
 })
 
-describe('command launcher chrome and control seats', () => {
-  it('renders the command launcher; the Access chip is absent without the permissions projection; the control seats render EMPTY without entries', () => {
+describe('composer controls and control seats', () => {
+  it('exposes the command launcher; the Access chip is absent without the permissions projection; the control seats render EMPTY without entries', () => {
     const { view, slotCalls } = bench()
-    expect(view.getByLabelText('指令')).toBeTruthy()
+    const commands = view.getByLabelText('指令')
+    expect(commands.getAttribute('aria-haspopup')).toBe('listbox')
+    expect(commands.getAttribute('aria-expanded')).toBe('false')
     // Capability absent (no projection value): the chip renders nothing.
     expect(view.queryByLabelText(/^访问模式/)).toBeNull()
     // Every seat dispatched, nothing rendered (render passes may repeat; the

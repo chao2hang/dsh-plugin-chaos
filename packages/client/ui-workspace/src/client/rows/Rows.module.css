@@ -192,6 +192,14 @@
   flex: 1;
 }
 
+.sessionSwipe {
+  position: relative;
+}
+
+.swipeActions {
+  display: none;
+}
+
 .meta {
   overflow: hidden;
   text-overflow: ellipsis;

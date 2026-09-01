@@ -1,7 +1,12 @@
-/** Register the Tool call tree, details renderer, and built-in atomic views. */
+/**
+ * Register the Tool call tree, details renderer, and built-in atomic views.
+ * Rows show an open affordance only when the Host can serve a native open;
+ * the probe is lazy (first render) and re-runs on reconnect.
+ */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { RemoteHostFacts } from '@deepseek-ai/dsh-api-remotes/client'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
@@ -17,8 +22,12 @@ import { searchToolview } from './tool/toolviews/search-row.tsx'
 import { todoToolview } from './tool/toolviews/todo-row.tsx'
 import { webToolview } from './tool/toolviews/web-row.tsx'
 
-/** Required services: the slot registry and the Remote face carrying the Host home used for POSIX `~`. */
-export const inject = ['slots', 'remote']
+/**
+ * Required services: the slot registry, the Remote face carrying the Host
+ * home used for POSIX `~`, and the session Remote that probes the Host's
+ * native path-open capability.
+ */
+export const inject = ['slots', 'remote', 'remote.session']
 
 /**
  * Mount the whole-Tool renderers and built-in atomic Tool registrations.
@@ -29,7 +38,33 @@ export function apply(ctx: ClientContext): void {
     getSnapshot: () => ctx.remote.$host,
     subscribe: listener => ctx.on('connection/reset', listener),
   }
-  const toolInject = () => ({ hooks: { hostInfo } })
+  const workspacePathOpen = createSnapshotStore<boolean | undefined>(undefined)
+  let requestedWorkspacePathOpen = false
+  let capabilityRevision = 0
+  let pendingCapability: Promise<void> | undefined
+  const loadWorkspacePathOpen = (): void => {
+    if (pendingCapability !== undefined) return
+    const revision = capabilityRevision
+    const pending = ctx.remote.session.canOpenWorkspacePath()
+      .then((result) => {
+        if (revision === capabilityRevision) workspacePathOpen.set(result.ok && result.value)
+      })
+      .finally(() => {
+        if (pendingCapability === pending) pendingCapability = undefined
+      })
+    pendingCapability = pending
+  }
+  const ensureWorkspacePathOpen = (): void => {
+    requestedWorkspacePathOpen = true
+    if (workspacePathOpen.getSnapshot() === undefined) loadWorkspacePathOpen()
+  }
+  ctx.on('connection/reset', () => {
+    capabilityRevision++
+    pendingCapability = undefined
+    workspacePathOpen.set(undefined)
+    if (requestedWorkspacePathOpen) loadWorkspacePathOpen()
+  })
+  const toolInject = () => ({ ensureWorkspacePathOpen, hooks: { hostInfo, workspacePathOpen } })
   ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
     name: 'conversation.chat.node',
     key: 'tool-call',

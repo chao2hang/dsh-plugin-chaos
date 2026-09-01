@@ -1,0 +1,95 @@
+/* MobileNavBar: 44pt top navigation bar. */
+
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: calc(44px + env(safe-area-inset-top, 0));
+  padding: env(safe-area-inset-top, 0) 8px 0;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1, #1a1a2e) 80%, transparent);
+  border-bottom: 0.5px solid color-mix(in srgb, var(--dsw-alias-border-l1, currentColor) 70%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--dsw-alias-bg-base, #000) 8%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  backdrop-filter: saturate(180%) blur(18px);
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 4px;
+}
+
+.title {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary, #f5f7fa);
+}
+
+.titleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mode {
+  flex: none;
+  color: var(--dsw-alias-label-secondary, #b6bac4);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary, #f5f7fa);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.button:active {
+  background: var(--dsw-alias-interactive-bg-hover, color-mix(in srgb, currentColor 12%, transparent));
+  transform: scale(0.92);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary, currentColor);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+}
+
+/* Context-aware left button: menu shows while details is closed, back while
+   open. The state lives on [data-shell-frame]'s data-details-collapsed; the
+   bar portals outside it, so select through the root with :has(). */
+html[data-chaos-mobile]:has([data-shell-frame][data-details-collapsed]) [data-chaos-back],
+html[data-chaos-mobile]:not(:has([data-shell-frame][data-details-collapsed])) [data-chaos-menu-toggle] {
+  display: none;
+}

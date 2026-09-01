@@ -187,6 +187,7 @@ export function ToolRow({
               <button
                 type="button"
                 className={css.fileLink}
+                data-tool-row-file
                 onClick={openFile}
                 onKeyDown={fileLinkKeyDown}
               >
@@ -195,6 +196,7 @@ export function ToolRow({
             ) : (
               <span
                 className={clsx(css.summary, failureLine !== null && css.errorSummary)}
+                data-tool-row-summary
               >
                 {summaryText}
               </span>

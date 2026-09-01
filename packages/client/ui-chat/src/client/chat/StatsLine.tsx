@@ -148,7 +148,7 @@ const StatsLineContent = memo(function StatsLineContent({
   useLayoutEffect(measure, [line, measure])
   return (
     <Tooltip label={line} side="top" delayMs={500} disabled={!truncated}>
-      <div ref={rootRef} className={css.root}>
+      <div ref={rootRef} className={css.root} data-stats-line="">
         {groups.map((group, i) => (
           <Fragment key={group}>
             {i > 0 && <><span className={css.sep} aria-hidden>|</span>{' '}</>}

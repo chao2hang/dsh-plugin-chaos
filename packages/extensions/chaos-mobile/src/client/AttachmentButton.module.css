@@ -1,0 +1,6 @@
+.picker { display: none; }
+.button { display: none; flex: 0 0 28px; order: -1; width: 28px; min-width: 28px; height: 28px; min-height: 28px; place-items: center; overflow: hidden; padding: 0; border: 0; border-radius: 999px; corner-shape: round; color: var(--dsw-alias-label-primary, #f5f7fa); background: var(--dsw-specific-selector, #2d3440); cursor: pointer; font-size: 0; line-height: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.button svg { display: block; flex: none; }
+.button:active:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover-solid, #3a4352); }
+.button:disabled { opacity: .5; cursor: default; }
+@media (max-width: 767px) { .button { display: inline-grid; } }

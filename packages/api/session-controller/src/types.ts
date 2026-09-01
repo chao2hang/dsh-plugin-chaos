@@ -552,3 +552,43 @@ declare module '@deepseek-ai/cordis' {
 
 /** JSON-compatible projection value accepted by list consumers. */
 export type SessionProjectionValue = JsonValue
+
+/** Token totals for a collection of completed provider requests. */
+export interface UsageTotals {
+  readonly requests: number
+  readonly inputTokens: number
+  readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
+}
+
+/** Real provider usage observed for one route on one viewer calendar day. */
+export interface UsageReportDayRoute extends UsageTotals {
+  readonly provider: string
+  readonly model: string
+}
+
+/** Real provider usage observed on one viewer calendar day. */
+export interface UsageReportDay extends UsageTotals {
+  readonly date: string
+  readonly routes: readonly UsageReportDayRoute[]
+}
+
+/** Real provider usage grouped by the route recorded before each request. */
+export interface UsageReportModel extends UsageTotals {
+  readonly provider: string
+  readonly model: string
+}
+
+/** Historical usage reconstructed from all readable durable session logs. */
+export interface UsageReport {
+  readonly days: readonly UsageReportDay[]
+  readonly models: readonly UsageReportModel[]
+  readonly unattributed: UsageTotals
+}
+
+/** Viewer calendar zone used to group completed requests by date. */
+export interface UsageReportReadRequest {
+  /** IANA time zone the report buckets completed requests into. */
+  readonly timeZone: string
+}

@@ -6,15 +6,21 @@ import type {
   AssistantMessageNode, ChatSnapshot, LegacyConversationSlice, ToolResultNode,
 } from '@deepseek-ai/dsh-client-ui-chat/client'
 import { bindSnapshotSelector, makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { en as commonEn } from '@deepseek-ai/dsh-client-locale/src/locales/en.ts'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import { StatsLine, deriveStats, formatDuration, type StatsLineProps } from '../src/client/chat/StatsLine.tsx'
+import { StatsView } from '../src/client/chat/StatsView.tsx'
 import { formatTokens } from '../src/client/chat/token-format.ts'
 import { en, zh } from '../src/client/locale.ts'
 import { chatSnapshotFixture } from './chat-snapshot-fixture.client.ts'
 
 const t: StatsLineProps['t'] = makeTranslate(zh, commonZh)
 const tEn: StatsLineProps['t'] = makeTranslate(en, commonEn)
+
+const SID = 's1' as SessionId
 
 /** jsdom has no ResizeObserver; StatsLine watches its row for ellipsis truncation through one. */
 class ResizeObserverStub {
@@ -179,6 +185,42 @@ describe('StatsLine', () => {
 
     act(() => { set({ nodes: [assistant(1, 1), assistant(2, 1)] }) })
     expect(observers).toBe(1)
+  })
+
+  it('renders durable statistics cards in the dedicated tab view', () => {
+    const { source } = makeSource({ nodes: [assistant(1, 1)] })
+    const values = {
+      tokenUsage: USAGE,
+      sessionStats: sessionStats({ turns: 3, steps: 8, llmMs: 2_500, toolMs: 500 }),
+    }
+    const sessions = createSnapshotStore<SessionListState>({
+      ids: [SID],
+      byId: { [SID]: { id: SID, displayTitle: 'Stats', running: false, blank: false, updatedAt: 1, projectionValues: values } },
+      current: SID, phase: 'ready' as const, subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+    })
+    const view = render((
+      <StatsView
+        viewRequest={null}
+        openView={() => {}}
+        completeViewRequest={() => {}}
+        useChat={bindSnapshotSelector(source)}
+        useSessions={bindSnapshotSelector(sessions)}
+        useSession={(() => undefined) as never}
+        sessionId={'first' as never}
+        useConversation={(() => undefined) as never}
+        useInput={(() => undefined) as never}
+        inputActions={{} as never}
+        useTrajectory={(() => undefined) as never}
+        useSessionPendingInteraction={(() => undefined) as never}
+        useWorkspaces={(() => undefined) as never}
+        useProjection={projections(values)}
+        t={tEn}
+      />
+    ))
+    expect(view.getByRole('region', { name: 'Statistics' })).toBeTruthy()
+    expect(view.container.textContent).toContain('Turns3')
+    expect(view.container.textContent).toContain('Input tokens100')
+    expect(view.container.textContent).toContain('Cache hit90%')
   })
 
   it('renders the grouped stats row and hides a brand-new empty session', () => {

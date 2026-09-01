@@ -251,6 +251,7 @@ function mount(
           keyboard={wiring}
           addImages={() => null}
           removeImage={() => {}}
+          notifyInputError={vi.fn()}
           draftImages={() => []}
           resolveSubmitMode={() => 'queue'}
           toggleCommandMenu={vi.fn()}
@@ -423,7 +424,7 @@ describe('ConversationRoot resident composer', () => {
     const b = mount(sessionSnapshotOf())
     const host = b.view.container.querySelector('[data-conversation-scroll]')
     const seat = b.view.container.querySelector('[data-composer-seat]')
-    const header = b.view.container.querySelector('header')
+    const header = b.view.container.querySelector('[data-conversation-session-header]')
     const textarea = b.view.container.querySelector<HTMLDivElement>('[data-composer-input]')
     expect(host).not.toBeNull()
     expect(seat).not.toBeNull()
@@ -456,7 +457,7 @@ describe('ConversationRoot resident composer', () => {
     )
     // Hero chrome is present and the selected View slot remains absent.
     const host = b.view.container.querySelector('[data-conversation-scroll]')
-    const header = b.view.container.querySelector('header')
+    const header = b.view.container.querySelector('[data-conversation-session-header]')
     expect(host).not.toBeNull()
     expect(header?.getAttribute('aria-hidden')).toBe('true')
     expect(b.view.getByText('探索未至之境')).toBeTruthy()
@@ -545,6 +546,19 @@ describe('ConversationRoot resident composer', () => {
     expect(b.view.container.querySelector('[data-conversation-scroll]')?.contains(after)).toBe(true)
     expect(b.view.queryByTestId('hero-headline')).toBeNull()
     expect(b.view.getByTestId('view-chat')).toBeTruthy()
+  })
+
+  it('selects the Statistics tab beside Chat and Trajectory', () => {
+    const viewTabs: ViewTab[] = [
+      { id: 'chat', label: 'Chat' },
+      { id: 'trajectory', label: 'Trajectory' },
+      { id: 'statistics', label: 'Statistics' },
+    ]
+    const b = mount(sessionSnapshotOf(), undefined, undefined, { viewTabs })
+    fireEvent.click(b.view.getByRole('tab', { name: 'Statistics' }))
+    expect(b.store.store.getSnapshot().view).toBe('statistics')
+    expect(b.view.getByTestId('view-statistics')).toBeTruthy()
+    expect(b.view.getByRole('tab', { name: 'Statistics' }).getAttribute('aria-selected')).toBe('true')
   })
 
   it('keeps the Chat fallback selected by id when a view is inserted before it', () => {

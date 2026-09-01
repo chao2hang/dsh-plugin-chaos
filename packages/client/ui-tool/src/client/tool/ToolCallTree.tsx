@@ -1,5 +1,5 @@
 /** Root/subcall Tool composition with one keyed atomic dispatch path. */
-import { memo, useMemo, type ReactNode } from 'react'
+import { memo, useEffect, useMemo, type ReactNode } from 'react'
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { ToolCallOwnerProps, ToolTreeProps } from '../contract/slots.ts'
 import { GenericToolCard } from './toolviews/GenericToolCard.tsx'
@@ -13,12 +13,14 @@ function callName(node: ToolCallBlock): string {
 /** One atomic call dispatched through the Tool-owned keyed slot. */
 const ToolCall = memo(function ToolCall({
   renderSlot, callId, toolName, block, openFile, selected, cwd, home, inspectCall, t, children,
-}: Pick<ToolTreeProps, 'renderSlot' | 'openFile' | 'cwd' | 'inspectCall' | 't'> & {
+}: Omit<Pick<ToolTreeProps, 'renderSlot' | 'openFile' | 'cwd' | 'inspectCall' | 't'>, 'openFile'> & {
   callId: string
   toolName: string
   block: ToolCallBlock
   selected: boolean
   home?: string | undefined
+  /** Present only when the Host advertises a native opener. */
+  openFile?: ((path: string) => void) | undefined
   children?: ReactNode
 }) {
   const owner: ToolCallOwnerProps = useMemo(() => ({
@@ -48,9 +50,11 @@ const ToolCall = memo(function ToolCall({
 
 const ToolCallBranch = memo(function ToolCallBranch({
   renderSlot, block, selectedCallId, cwd, home, openFile, inspectCall, t,
-}: Pick<ToolTreeProps, 'renderSlot' | 'selectedCallId' | 'cwd' | 'openFile' | 'inspectCall' | 't'> & {
+}: Omit<Pick<ToolTreeProps, 'renderSlot' | 'selectedCallId' | 'cwd' | 'openFile' | 'inspectCall' | 't'>, 'openFile'> & {
   block: ToolCallBlock
   home?: string | undefined
+  /** Present only when the Host advertises a native opener. */
+  openFile?: ((path: string) => void) | undefined
 }) {
   return (
     <ToolCall
@@ -93,9 +97,15 @@ const ToolCallBranch = memo(function ToolCallBranch({
  * @returns the Tool call tree.
  */
 export function ToolCallTree({
-  renderSlot, node, selectedCallId, cwd, openFile, inspectCall, useHostInfo, t,
+  renderSlot, node, selectedCallId, cwd, openFile, inspectCall,
+  useHostInfo, useWorkspacePathOpen, ensureWorkspacePathOpen, t,
 }: ToolTreeProps) {
   const home = useHostInfo(info => info.home)
+  // A Host without a reachable desktop cannot serve the open handoff, so the
+  // owner currency omits it and rows render paths as plain text instead of a
+  // link that would only fail with "path open failed: spawn xdg-open ENOENT".
+  const canOpenPath = useWorkspacePathOpen(available => available === true)
+  useEffect(() => { ensureWorkspacePathOpen() }, [ensureWorkspacePathOpen])
   const block = node.data.root
   return (
     <ToolCallBranch
@@ -104,7 +114,7 @@ export function ToolCallTree({
       selectedCallId={selectedCallId}
       cwd={cwd}
       home={home}
-      openFile={openFile}
+      openFile={canOpenPath ? openFile : undefined}
       inspectCall={inspectCall}
       t={t}
     />

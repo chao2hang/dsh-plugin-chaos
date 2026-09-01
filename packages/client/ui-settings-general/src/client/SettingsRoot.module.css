@@ -1,3 +1,12 @@
+/* Settings shell (figma 501:29904 mask context / 501:29947 panel): sidebar
+   foot trigger row + centered 1080x700 modal panel. The trigger uses the
+   sidebar foot's 42px row / 36px rail circle rhythm; the
+   panel is a two-column layout — 188px nav rail + content column with a
+   54px header and the 24px-padded options area. On phone widths the panel
+   collapses to one column: the fixed nav rail would otherwise eat the
+   viewport and squeeze the content column to a character per line. */
+
+/* Trigger row: the 42px foot-row box shared with the Cordis footer action. */
 .triggerRow {
   flex: none;
   display: flex;
@@ -223,6 +232,54 @@
   min-height: 0;
   padding: 0 24px 24px;
   overflow-y: auto;
+}
+
+/* Phone (same 560px breakpoint as the models onboarding dialogs): the panel
+   fills the viewport and the nav rail becomes a horizontal chip row, so the
+   content column keeps a readable width instead of collapsing under the
+   fixed 188px rail. */
+@media (max-width: 560px) {
+  .panel {
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .nav {
+    flex-direction: row;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 12px 0;
+    overflow-x: auto;
+  }
+
+  .navTitle {
+    flex: none;
+  }
+
+  .navList {
+    flex-direction: row;
+  }
+
+  .navCell {
+    flex: none;
+    height: 36px;
+    padding: 6px 12px;
+  }
+
+  .header {
+    height: auto;
+    padding: 12px 14px 4px 10px;
+  }
+
+  .options {
+    padding: 0 16px 16px;
+  }
 }
 
 /* Visually-hidden text seat (close button accessible name from slot content). */

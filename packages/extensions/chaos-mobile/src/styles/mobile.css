@@ -1,0 +1,746 @@
+/* ═══ Chaos mobile adaptation CSS ══════════════════════════════════════
+   Mode gate: MobileOverlay decides the mobile mode (narrow portrait below
+   768px, OR a short landscape viewport — a rotated phone) and marks
+   <html data-chaos-mobile>. Every layout rule keys off that attribute so
+   the stylesheet cannot re-derive a different answer than the nav bar at
+   the breakpoint. Capability queries (pointer / hover / reduced motion)
+   stay media-scoped — they describe hardware, not mode.
+   Targets stable data-* anchors emitted by ui-layout's AppFrame
+   (data-shell-frame, data-shell-column, data-shell-handle) instead of
+   CSS-module hashed class fragments. One [class*=] selector remains for
+   headerUtilities (ui-conversation has no stable anchor yet — known
+   limitation). */
+
+/* ═══ Viewport adaptation ══════════════════════════════════════════════ */
+
+html[data-chaos-mobile],
+html[data-chaos-mobile] body {
+  height: 100dvh;
+  overflow: hidden;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Horizontal safe-area only here; the top inset is consumed exactly once by
+   the fixed nav bar + the center column's padding (never by #root too). */
+html[data-chaos-mobile] #root {
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* ═══ Drawer sidebar ════════════════════════════════════════════════════ */
+
+/* The sidebar drawer begins below the persistent mobile navigation bar. Its
+   own scroll region therefore never hides the workspace heading under it. */
+html[data-chaos-mobile] [data-shell-column='sidebar'] {
+  position: fixed !important;
+  top: calc(44px + env(safe-area-inset-top, 0)) !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: min(300px, 85vw) !important;
+  max-width: 85vw !important;
+  z-index: 55 !important;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 8px;
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+  box-shadow: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Frame without data-sidebar-collapsed: sidebar is open, slide it in. */
+html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) [data-shell-column='sidebar'] {
+  transform: translateX(0) !important;
+  box-shadow: 4px 0 32px rgba(0,0,0,0.35) !important;
+}
+
+/* Hide drag handles on mobile (no resizing needed). */
+html[data-chaos-mobile] [data-shell-handle] { display: none !important; }
+
+/* The grid frame: single column on mobile (conversation only). */
+html[data-chaos-mobile] [data-shell-frame] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: 1fr !important;
+}
+
+/* Details column: full-screen sheet when open. */
+html[data-chaos-mobile] [data-shell-column='details'] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  z-index: 56 !important;
+  border-left: none !important;
+  background: var(--dsw-alias-bg-base, #1a1a2e);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html[data-chaos-mobile] [data-shell-frame]:not([data-details-collapsed]) [data-shell-column='details'] {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* The center column: always full width on mobile. Its rectangle tracks the
+   Visual Viewport, including offsetTop, so a browser that pans for the keyboard
+   cannot leave the sticky composer detached from the visible bottom edge. */
+html[data-chaos-mobile] [data-shell-column='center'] {
+  /* border-box is load-bearing here: the column is content-box by default, so
+     the explicit height plus this top/bottom padding would render taller than
+     the viewport and push the composer's model + send row below the fold. */
+  box-sizing: border-box;
+  width: 100% !important;
+  height: var(--chaos-visual-viewport-height, 100%);
+  transform: translateY(var(--chaos-visual-viewport-offset-top, 0px));
+  padding-top: calc(44px + env(safe-area-inset-top, 0));
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Hero phase (new session): dock the composer stack at the column floor
+   instead of flex-centering it. A centered hero strands the input card in the
+   middle of a phone screen with the lower half empty, and detaches the model
+   popup from its trigger — the compact model menu pins to
+   calc(88px + safe-area-inset-bottom), the spot of a DOCKED composer. */
+html[data-chaos-mobile] [data-phase='hero'] [data-conversation-scroll] {
+  justify-content: flex-end;
+}
+
+/* ═══ Backdrop ══════════════════════════════════════════════════════════ */
+
+html[data-chaos-mobile] .chaos-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 54;
+  display: none;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: chaos-fade-in 0.25s ease;
+  touch-action: manipulation;
+}
+
+/* Show the backdrop while the sidebar drawer is open. */
+html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) .chaos-backdrop {
+  display: block;
+}
+
+@keyframes chaos-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══ Session swipe management ═══════════════════════════════════════════
+   The workspace browser owns session operations; mobile only reveals those
+   existing controls after a deliberate horizontal touch swipe. */
+html[data-chaos-mobile] [data-session-swipe] {
+  position: relative;
+  overflow: hidden;
+}
+
+html[data-chaos-mobile] [data-session-swipe] [role='treeitem'] {
+  position: relative;
+  z-index: 1;
+  transition: transform 180ms var(--ds-ease-in-out);
+  touch-action: pan-y;
+}
+
+html[data-chaos-mobile] [data-session-swipe-actions] {
+  position: absolute;
+  inset-block: 0;
+  display: none;
+  align-items: stretch;
+}
+
+html[data-chaos-mobile] [data-session-swipe-actions='leading'] { left: 0; }
+html[data-chaos-mobile] [data-session-swipe-actions='trailing'] { right: 0; }
+
+html[data-chaos-mobile] [data-session-swipe='leading'] [data-session-swipe-actions='leading'],
+html[data-chaos-mobile] [data-session-swipe='trailing'] [data-session-swipe-actions='trailing'] { display: flex; }
+
+html[data-chaos-mobile] [data-session-swipe-actions] button {
+  min-width: 72px;
+  border: 0;
+  padding: 0 12px;
+  color: var(--dsw-alias-label-on-fill, #fff);
+  font: inherit;
+}
+
+html[data-chaos-mobile] [data-session-swipe-actions='leading'] button { background: var(--dsw-alias-state-business-primary, #2f6feb); }
+html[data-chaos-mobile] [data-session-swipe-actions='trailing'] button { background: var(--dsw-alias-state-danger, #d1242f); }
+html[data-chaos-mobile] [data-session-swipe='leading'] [role='treeitem'] { transform: translateX(144px); }
+html[data-chaos-mobile] [data-session-swipe='trailing'] [role='treeitem'] { transform: translateX(-88px); }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-chaos-mobile] [data-session-swipe] [role='treeitem'] { transition: none; }
+}
+
+/* ═══ Dedicated settings page ════════════════════════════════════════════
+   The desktop settings modal is a separate mobile page below the persistent
+   nav bar. Section navigation stays vertical and occupies only its content,
+   so labels never collapse into a clipped horizontal chip row. */
+html[data-chaos-mobile] [data-settings-overlay] {
+  position: fixed;
+  inset: calc(44px + env(safe-area-inset-top, 0)) 0 0;
+  z-index: 58;
+}
+
+html[data-chaos-mobile] [data-settings-overlay] > [aria-hidden='true'] {
+  display: none;
+}
+
+html[data-chaos-mobile] [data-settings-page] {
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html[data-chaos-mobile] [data-settings-page-nav] {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px 10px;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+  box-sizing: border-box;
+}
+
+/* A two-column section grid preserves every destination while leaving the
+   active settings content as the page's primary reading area. */
+html[data-chaos-mobile] [data-settings-page-sections] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+html[data-chaos-mobile] [data-settings-page-section] {
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+html[data-chaos-mobile] [data-settings-page-content] {
+  min-height: 0;
+}
+
+html[data-chaos-mobile] [data-settings-page-content] > :first-child {
+  flex: none;
+  min-height: 44px;
+  padding: 8px 16px 4px;
+}
+
+html[data-chaos-mobile] [data-settings-page-content] > :last-child {
+  padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0));
+}
+
+/* ═══ Overflow sheet menu ═══════════════════════════════════════════════ */
+
+.chaos-overflow-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0));
+}
+
+.chaos-overflow-item {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chaos-overflow-item:active {
+  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, 0.15));
+}
+
+/* Secondary hint text right-aligned inside an overflow row. */
+.chaos-overflow-hint {
+  margin-left: auto;
+  color: var(--dsw-alias-label-tertiary, #8a8f98);
+  font-size: 12px;
+}
+
+.chaos-overflow-stats {
+  margin: 12px 12px 4px;
+  padding: 12px;
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 12px;
+  background: var(--dsw-specific-selector);
+  /* Elevated-surface scrollbar rebind (ui-theme contract): the l2 pair. */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+.chaos-overflow-stats h2 {
+  margin: 0 0 6px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.chaos-overflow-stats p {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+/* ═══ Mobile nav bar: menu vs. back visibility ══════════════════════════ */
+
+/* The nav bar is the mobile home for session identity; hide the duplicated
+   desktop identity cluster. */
+html[data-chaos-mobile] [data-conversation-header-identity] {
+  display: none;
+}
+
+
+/* Default: show menu toggle, hide back. */
+[data-chaos-mobile-overlay] [data-chaos-menu-toggle] { display: flex; }
+[data-chaos-mobile-overlay] [data-chaos-back] { display: none; }
+
+/* The navigation bar is portaled to document.body, outside the overlay seat.
+   Target its stable anchor directly so Settings always supplies an exit path. */
+[data-chaos-nav-bar] [data-chaos-settings-hidden] { display: none !important; }
+[data-chaos-nav-bar] [data-chaos-settings-back] { display: flex !important; }
+
+/* When details is open (data-details-collapsed absent on the frame):
+   show back, hide menu. The overlay is a descendant of the frame. */
+[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-menu-toggle] {
+  display: none;
+}
+[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-back] {
+  display: flex;
+}
+
+/* Hide header utilities while details is open (clean push-page look). */
+html[data-chaos-mobile] [data-shell-frame]:not([data-details-collapsed]) [data-shell-column='center'] [data-header-utilities] {
+  display: none;
+}
+
+/* The view-tab ring hides on mobile: the … menu's 轨迹/对话 row switches
+   views, so the header keeps only the session title. */
+html[data-chaos-mobile] [data-view-tabs] {
+  display: none !important;
+}
+
+/* The session title already lives in the nav bar, so the desktop header
+   would only reserve an empty band on mobile. */
+html[data-chaos-mobile] [data-conversation-session-header] {
+  display: none !important;
+}
+
+/* ═══ Clean workspace ══════════════════════════════════════════════════
+   Conversation statistics live in the … sheet, not in the composer dock.
+   The stats line stays mounted as the sheet's formatted data source. */
+html[data-chaos-mobile] [data-stats-line],
+html[data-chaos-mobile] [data-message-clock] {
+  display: none !important;
+}
+
+/* ═══ Composer action row: one line ════════════════════════════════════
+   The capabilities trigger moves into the model popup on mobile (its entry
+   row lives there), and the remaining tools + model seat + meter + send
+   share one nowrap line with tightened gaps. */
+html[data-chaos-mobile] [data-model-capabilities-trigger] {
+  display: none !important;
+}
+
+html[data-chaos-mobile] [data-input-actions-row] {
+  flex-wrap: nowrap !important;
+  gap: 4px !important;
+}
+
+html[data-chaos-mobile] [data-input-actions-row] [data-input-tools],
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-trailing] {
+  flex-wrap: nowrap !important;
+  min-width: 0;
+  gap: 4px !important;
+}
+
+/* Bottom rail: every auxiliary action is a 32px rounded-square control.
+   The model remains a readable text chip and send is the one 40px primary
+   action, so the hierarchy stays obvious without mixed circular dimensions. */
+html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker],
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-command],
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission],
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-context] {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0;
+  border-radius: 10px;
+  background: var(--dsw-specific-selector);
+}
+
+html[data-chaos-mobile] [data-composer-permission-label] {
+  display: none;
+}
+
+/* The icon itself is the permission affordance on phone; retaining a
+   second chevron inside the 32px control makes the glyph pair look crowded. */
+html[data-chaos-mobile] [data-composer-permission-chevron] {
+  display: none;
+}
+
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-model] {
+  height: 32px;
+  padding-inline: 8px 6px;
+  border-radius: 10px;
+  background: var(--dsw-specific-selector);
+}
+
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  margin: 0;
+  transform: none;
+  border-radius: 12px;
+}
+
+/* Normalize the icon language across the bottom rail. The controls keep their
+   established hit areas; only glyph scale and contrast are unified. */
+html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker] svg,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-command] svg,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] svg,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-context] svg {
+  width: 18px;
+  height: 18px;
+}
+
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] svg {
+  width: 20px;
+  height: 20px;
+}
+
+html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker]:active,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-command]:active,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission]:active,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-context]:active,
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-model]:active {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+
+/* Queued-message controls are contextual, not composer controls. Keep their
+   28px hit targets but use a 14px glyph and tighter visual rhythm so edit,
+   remove, and steer do not compete with the queued text. */
+html[data-chaos-mobile] [data-queue-dock] [data-queue-action] {
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+  border-radius: 8px;
+  color: var(--dsw-alias-label-caption);
+}
+
+html[data-chaos-mobile] [data-queue-dock] [data-queue-action] svg {
+  width: 14px;
+  height: 14px;
+}
+
+html[data-chaos-mobile] [data-queue-dock] [data-queue-action]:active:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+}
+
+html[data-chaos-mobile] [data-queue-dock] [data-queue-action] + [data-queue-action] {
+  margin-left: 2px;
+}
+
+/* Slash commands stay keyboard-first (type /), then open as a roomy list
+   above the composer. This is distinct from generic sheet menus: focus remains
+   in the textarea while arrow keys and Enter navigate the listbox. */
+html[data-chaos-mobile] [data-slash-command-menu] {
+  /* The overlay anchor is only as wide as the composer card. Keep the vertical
+     bottom anchor there, but center a viewport-width surface across the phone. */
+  box-sizing: border-box;
+  left: 50%;
+  right: auto;
+  width: calc(100vw - 24px);
+  min-width: 0;
+  max-width: none;
+  transform: translateX(-50%);
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: var(--dsw-shadow-lv3);
+}
+
+html[data-chaos-mobile] [data-slash-command-option] {
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+html[data-chaos-mobile] [data-slash-command-menu] [data-slash-command-option]:active,
+html[data-chaos-mobile] [data-slash-command-menu] [data-slash-command-option][aria-selected='true'] {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+
+html[data-chaos-mobile] [data-slash-command-icon] {
+  width: 18px;
+  height: 18px;
+}
+
+html[data-chaos-mobile] [data-slash-command-group],
+html[data-chaos-mobile] [data-slash-command-section] {
+  padding-inline: 12px;
+}
+
+/* The model chip keeps its container-query cap but yields further at 375px
+   so meter + send stay on the same line. */
+html[data-chaos-mobile] [data-input-actions-row] select,
+html[data-chaos-mobile] [data-input-actions-row] [role='combobox'] {
+  max-width: 34vw !important;
+}
+
+/* Model-capability sheet: inputs form a compact settings list, the multimodal
+   choice reads as one row, and effort choices become tappable chips instead of
+   an unstructured cluster of native checkboxes. */
+html[data-chaos-mobile] [data-model-capabilities-fields] {
+  gap: 12px;
+  padding: 0 16px 12px;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-field] {
+  gap: 5px;
+  font-weight: 500;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-field] > span {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: var(--dsw-specific-selector);
+}
+
+html[data-chaos-mobile] [data-model-capabilities-field] > span > input {
+  min-width: 0;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-multimodal] {
+  display: flex;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-specific-selector);
+}
+
+html[data-chaos-mobile] [data-model-capabilities-multimodal] input {
+  margin: 0;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-efforts] {
+  padding: 10px 12px 12px;
+  border-radius: 10px;
+  background: var(--dsw-specific-selector);
+}
+
+html[data-chaos-mobile] [data-model-capabilities-efforts] legend {
+  padding: 0;
+  font-weight: 500;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-effort-list] {
+  gap: 8px;
+}
+
+html[data-chaos-mobile] [data-model-capabilities-effort] {
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+}
+
+html[data-chaos-mobile] [data-model-capabilities-actions] {
+  position: sticky;
+  bottom: 0;
+  justify-content: stretch;
+  gap: 10px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+html[data-chaos-mobile] [data-model-capabilities-actions] button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+/* Conversation typography at phone width: left-aligned text (justified
+   rivers read badly), inline chips break long paths instead of stretching
+   gaps, and chips shrink one step. */
+html[data-chaos-mobile] [data-shell-column='center'] p,
+html[data-chaos-mobile] [data-shell-column='center'] li {
+  text-align: left !important;
+}
+html[data-chaos-mobile] [data-shell-column='center'] p code,
+html[data-chaos-mobile] [data-shell-column='center'] li code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 12px;
+  padding: 1px 4px;
+}
+
+/* ═══ Conversation density ═════════════════════════════════════════════
+   ZCode's phone transcript keeps the reading column calm: generous outer
+   gutters for prose, but tool work stays as compact, expandable summaries.
+   These selectors use chat/tool data anchors so desktop composition is
+   untouched. */
+html[data-chaos-mobile] [data-chat-flow] {
+  gap: 12px;
+}
+
+html[data-chaos-mobile] [data-chat-flow-kind='tool-call'] {
+  margin-block: -4px;
+}
+
+html[data-chaos-mobile] [data-chat-call-id] {
+  padding: 3px 0;
+}
+
+/* Subcalls are a quiet grouped stack rather than a deep, space-consuming
+   tree. Each row remains a normal disclosure target for its full details. */
+html[data-chaos-mobile] [data-chat-call-id] [data-subcalls] {
+  gap: 1px;
+  margin: 2px 0 1px 18px;
+  padding-left: 6px;
+  border-left-color: color-mix(in srgb, var(--dsw-alias-border-l2) 62%, transparent);
+}
+
+html[data-chaos-mobile] [data-chat-call-id] [data-disclosure-row] {
+  height: 22px;
+}
+
+html[data-chaos-mobile] [data-chat-call-id] [data-disclosure-title],
+html[data-chaos-mobile] [data-chat-call-id] [data-tool-row-summary],
+html[data-chaos-mobile] [data-chat-call-id] [data-tool-row-file] {
+  font-size: 13px;
+  line-height: 22px;
+}
+
+/* The input becomes a stable writing surface like the reference: compact
+   tool rail, ample text area, restrained elevation and a slightly squarer
+   radius so it reads as a dock rather than a floating speech bubble. */
+html[data-chaos-mobile] [data-composer-card] {
+  gap: 8px;
+  padding-top: 12px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 10%, transparent);
+}
+
+html[data-chaos-mobile] [data-composer-card] [data-input-actions-row] {
+  min-height: 40px;
+  padding-bottom: 2px;
+}
+
+html[data-chaos-mobile] [data-composer-card] textarea {
+  min-height: 72px;
+  line-height: 24px;
+}
+
+@media (max-height: 700px) {
+  html[data-chaos-mobile] [data-composer-card] textarea {
+    min-height: 52px;
+  }
+}
+
+/* ═══ Touch adaptation ══════════════════════════════════════════════════ */
+
+/* Long model names truncate in the input area. */
+html[data-chaos-mobile] select,
+html[data-chaos-mobile] [role='combobox'],
+html[data-chaos-mobile] [role='listbox'] {
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Long titles truncate. */
+html[data-chaos-mobile] h1,
+html[data-chaos-mobile] h2,
+html[data-chaos-mobile] h3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Coarse pointers: enlarge touch targets via pseudo-element without
+   changing visual size. Covers the whole shell (input bar + sidebar), not
+   just the overlay's own buttons. */
+@media (pointer: coarse) {
+  [data-chaos-mobile-overlay] button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  html[data-chaos-mobile] [data-shell-column='center'] button,
+  html[data-chaos-mobile] [data-shell-column='sidebar'] button {
+    position: relative;
+  }
+
+  html[data-chaos-mobile] [data-shell-column='center'] button::after,
+  html[data-chaos-mobile] [data-shell-column='sidebar'] button::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+}
+
+/* Hover-none: disable hover-driven affordances. */
+@media (hover: none) {
+  html[data-chaos-mobile] [data-shell-handle]::after { opacity: 0 !important; }
+}
+
+/* ═══ Reduced motion ══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .chaos-backdrop { animation: none; }
+  [data-shell-column='sidebar'] {
+    transition: none;
+  }
+}
+
+/* ═══ Landscape: shrink input area ═══════════════════════════════════════ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+  html[data-chaos-mobile] textarea { max-height: 25dvh; }
+}

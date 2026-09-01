@@ -12,27 +12,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   /* The figma 525px cap held as a share of the width axis (525/748 ≈ 0.702):
      resolves to the original 525px on the default column and widens with a
      dragged or adaptive column. The 748px fallback covers mounts outside the
      conversation column, where the axis variable is absent. */
-  max-width: min(calc(var(--dsh-chat-content-width, 748px) * 0.702), 82%);
+  max-width: min(calc(var(--dsh-chat-content-width, 748px) * 0.702), 76%);
 }
 .bubble {
-  /* Figma's 525px cap held as a share of the width axis (525/748 ≈ 0.702) so
-     the bubble widens with a user-dragged or adaptive column; percentage
-     keeps narrow windows sane. */
+  /* The user note stays compact beside the primary reading column. */
   max-width: 100%;
   background: var(--dsw-specific-bubble);
-  border-radius: 22px;
-  /* 42px single-line bubble at the default size: 22 line + 10 vertical
-     padding each side; the Settings font-size preference moves size and line
-     height together through the body-published axis. */
-  padding: 10px 16px;
-  font-size: var(--dsh-content-font-size, 14px);
-  line-height: calc(22px + var(--dsh-content-font-delta, 0px));
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 18px;
+  padding: 9px 14px;
+  font-size: var(--dsh-ui-font-size);
+  line-height: calc(var(--dsh-ui-font-size) + 10px);
   color: var(--dsw-alias-label-primary);
   /* The projected user text is inline runs; the bubble owns wrapping so a
      decorated single-line message stays one line. */
@@ -120,8 +116,8 @@
 
 .compactionTitle {
   flex: none;
-  font-size: var(--dsh-content-font-size-secondary, 13px);
-  line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+  font-size: var(--dsh-ui-font-size);
+  line-height: calc(var(--dsh-ui-font-size) + 10px);
   color: var(--dsw-alias-label-primary-dimmed);
 }
 
@@ -139,8 +135,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
-  font-size: var(--dsh-content-font-size-secondary, 13px);
-  line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+  font-size: var(--dsh-ui-font-size);
+  line-height: calc(var(--dsh-ui-font-size) + 10px);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -149,8 +145,8 @@
   /* Indent under the title, which starts at leading (16 + delta) + gap 6. */
   padding: 4px 0 4px calc(22px + var(--dsh-content-font-delta, 0px));
   color: var(--dsw-alias-label-tertiary);
-  font-size: var(--dsh-content-font-size-secondary, 13px);
-  line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+  font-size: var(--dsh-ui-font-size);
+  line-height: calc(var(--dsh-ui-font-size) + 10px);
 }
 
 .retryRow {

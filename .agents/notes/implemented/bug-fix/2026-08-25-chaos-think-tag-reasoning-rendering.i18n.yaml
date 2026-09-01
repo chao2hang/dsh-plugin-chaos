@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-25-chaos-think-tag-reasoning-rendering.md
+2026-08-25-chaos-think-tag-reasoning-rendering.md: 8722b9ae54441509a4bfbe52a720943292764ad3
+2026-08-25-chaos-think-tag-reasoning-rendering.zh.md: 0cb744acd9fcb9c8a853ee53352c80ea16e22990

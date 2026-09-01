@@ -165,6 +165,7 @@ export function apply(ctx: ClientContext): void {
         const directory = models.directoryFor(sessionId)
         const available = sessions.subagentAddress(sessionId) === undefined
         return {
+          sessionId,
           available,
           directory: directory.store,
           load: () => {

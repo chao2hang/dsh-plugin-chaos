@@ -161,19 +161,19 @@ body {
   --dsw-font-markdown-code-font-size: 12px;
   --dsw-font-markdown-code-font-style: normal;
 
-  --dsw-font-markdown-code-block: 11px/19px var(--ds-font-family-code);
+  --dsw-font-markdown-code-block: var(--dsh-code-font-size) / calc(var(--dsh-code-font-size) + 9px) var(--ds-font-family-code);
   --dsw-font-markdown-code-block-font-family: var(--ds-font-family-code);
   --dsw-font-markdown-code-block-font-weight: 400;
-  --dsw-font-markdown-code-block-line-height: 19px;
-  --dsw-font-markdown-code-block-font-size: 11px;
+  --dsw-font-markdown-code-block-line-height: calc(var(--dsh-code-font-size) + 9px);
+  --dsw-font-markdown-code-block-font-size: var(--dsh-code-font-size);
   --dsw-font-markdown-code-block-font-style: normal;
 
   /* 手工补充（非插件导出）：tool row 展开卡片内的小号 code 字体。 */
-  --dsw-font-markdown-code-block-small: 11px/16px var(--ds-font-family-code);
+  --dsw-font-markdown-code-block-small: var(--dsh-code-font-size-small) / calc(var(--dsh-code-font-size-small) + 6px) var(--ds-font-family-code);
   --dsw-font-markdown-code-block-small-font-family: var(--ds-font-family-code);
   --dsw-font-markdown-code-block-small-font-weight: 400;
-  --dsw-font-markdown-code-block-small-line-height: 16px;
-  --dsw-font-markdown-code-block-small-font-size: 11px;
+  --dsw-font-markdown-code-block-small-line-height: calc(var(--dsh-code-font-size-small) + 6px);
+  --dsw-font-markdown-code-block-small-font-size: var(--dsh-code-font-size-small);
   --dsw-font-markdown-code-block-small-font-style: normal;
 
   --dsw-font-xl-24: 600 24px/32px var(--dsw-font-family);

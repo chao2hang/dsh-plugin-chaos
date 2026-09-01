@@ -28,6 +28,9 @@ const SEARCH_EXPECTED = join(SNAPSHOT_DIR, 'search-results.expected.md')
 const TERMINAL_EXPECTED = join(SNAPSHOT_DIR, 'terminal-card.expected.md')
 const MODE = webSnapshotMode()
 const SEED_ID = 'navigation-panes-web-e2e'
+// The file-path row case clicks the read summary's host-open affordance, which
+// the client only renders when the gateway advertises a native opener.
+const OVERLAY = fileURLToPath(new URL('./native-open.overlay.yml', import.meta.url))
 
 // Turn 1 leads with a distinctive word: the session-title fallback takes the
 // first words of the first message, so the sidebar-search scenario has a
@@ -84,7 +87,7 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
   let slotErrors: string[] = []
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({})
+    scaffold = await launchWebScaffold({ extraOverlayPath: OVERLAY })
     // The workspace-aware flow runs sessions in <workspaceCwd>/workspace;
     // the read targets must live in that session cwd (pre-creation is safe
     // because the picker adopts an existing directory by path).

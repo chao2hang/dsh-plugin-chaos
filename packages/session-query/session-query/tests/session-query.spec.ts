@@ -577,6 +577,31 @@ describe('session-query exact reads', () => {
     expect(TestPersistence.inspectSignals).toEqual([signal, signal])
   })
 
+  it('projects complete logical logs through one bounded corpus observation', async () => {
+    const first = header('batch-project-first', 1)
+    const second = header('batch-project-second', 2)
+    const missing = SessionId('batch-project-missing')
+    TestPersistence.reset([
+      { meta: first, events: eventLog('first') },
+      { meta: second, events: eventLog('second') },
+    ])
+    const ctx = await liveContext()
+    await ctx.plugin(TestPersistence)
+
+    const results = await ctx.sessionQuery.projectSessions(
+      [second.id, first.id, second.id, missing],
+      source => ({ id: source.header.id, text: (source.events[0]?.data as { content?: Array<{ text?: string }> }).content?.[0]?.text }),
+    )
+
+    expect(results).toEqual([
+      { sessionId: second.id, status: 'fulfilled', value: { id: second.id, text: 'second' } },
+      { sessionId: first.id, status: 'fulfilled', value: { id: first.id, text: 'first' } },
+      expect.objectContaining({ sessionId: missing, status: 'rejected' }),
+    ])
+    expect(TestPersistence.listCalls).toBe(1)
+    expect(TestPersistence.inspectCalls).toEqual([second.id, first.id])
+  })
+
   it('bounds persisted title inspection concurrency while preserving ordered results', async () => {
     const entries = Array.from({ length: 12 }, (_, index) => {
       const meta = header(`bounded-title-${index}`, index)

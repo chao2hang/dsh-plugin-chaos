@@ -1,70 +1,108 @@
 /* The framework-free boot page cannot depend on theme delivery succeeding. */
 
 .boot {
-  --dsh-boot-bg: #fff;
-  --dsh-boot-label-primary: #0f1115;
-  --dsh-boot-label-secondary: #61666b;
-  --dsh-boot-label-tertiary: #81858c;
-  --dsh-boot-border: rgb(0 0 0 / 10%);
-  --dsh-boot-brand: #0f1115;
+  --dsh-boot-bg: #f4eee3;
+  --dsh-boot-label-primary: #2a251d;
+  --dsh-boot-label-secondary: #716858;
+  --dsh-boot-label-tertiary: #938977;
+  --dsh-boot-border: rgb(58 47 34 / 14%);
+  --dsh-boot-accent: #b3402f;
+  --dsh-boot-accent-pressed: #93331f;
 
   height: 100%;
   display: grid;
   place-items: center;
-  background: var(--dsw-alias-bg-base, var(--dsh-boot-bg));
+  overflow: hidden;
+  background-color: var(--dsh-boot-bg);
+  background-image: radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 38%) 0, transparent 60%);
+  color: var(--dsh-boot-label-primary);
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 :global(body[data-ds-dark-theme]) .boot {
-  --dsh-boot-bg: #151517;
-  --dsh-boot-label-primary: #f9fafb;
-  --dsh-boot-label-secondary: #cfd3d6;
-  --dsh-boot-label-tertiary: #adb2b8;
-  --dsh-boot-border: rgb(255 255 255 / 12%);
-  --dsh-boot-brand: #f9fafb;
+  --dsh-boot-bg: #171410;
+  --dsh-boot-label-primary: #ece5d3;
+  --dsh-boot-label-secondary: #b8ad99;
+  --dsh-boot-label-tertiary: #837967;
+  --dsh-boot-border: rgb(237 230 214 / 14%);
+  --dsh-boot-accent: #b3402f;
+  --dsh-boot-accent-pressed: #93331f;
+
+  background-image: radial-gradient(120% 60% at 50% 0%, rgb(236 229 211 / 4.5%) 0, transparent 60%);
 }
 
 .card {
+  width: min(100% - 48px, 400px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  text-align: center;
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 2px;
+  border-radius: 6px;
+  background: var(--dsh-boot-accent);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%), inset 0 -3px 6px rgb(0 0 0 / 28%);
+  color: #f4ead8;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .wordmark {
-  font-size: 16px;
-  line-height: 24px;
+  color: var(--dsh-boot-label-secondary);
+  font-family: ui-sans-serif, -apple-system, "Helvetica Neue", sans-serif;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--dsw-alias-label-primary, var(--dsh-boot-label-primary));
+  letter-spacing: 0.42em;
+  line-height: 16px;
+  text-indent: 0.42em;
+}
+
+.title {
+  margin-top: 10px;
+  color: var(--dsh-boot-label-primary);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 34px;
+  text-indent: 0.12em;
 }
 
 .hint {
-  font-size: 12px;
-  line-height: 18px;
-  color: var(--dsw-alias-label-tertiary, var(--dsh-boot-label-tertiary));
+  color: var(--dsh-boot-label-tertiary);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  line-height: 20px;
 }
 
 .spinner {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  margin-top: 6px;
+  border: 2px solid var(--dsh-boot-border);
   border-radius: 50%;
   corner-shape: round;
   border: 2px solid var(--dsw-alias-border-l2, var(--dsh-boot-border));
-  animation: spin 0.8s linear infinite;
+  animation: spin 1.1s linear infinite;
 }
 
 .spinner::after {
-  content: '';
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: conic-gradient(
-    var(--dsw-alias-brand-primary, var(--dsh-boot-brand)) var(--dsh-boot-arc, 72deg),
-    transparent 0
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+  background: conic-gradient(var(--dsh-boot-accent) var(--dsh-boot-arc, 72deg), transparent 0);
+  content: '';
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0);
 }
 
 @keyframes spin {
@@ -72,34 +110,50 @@
 }
 
 .failed {
-  max-width: 480px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--dsh-boot-accent) 45%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dsh-boot-accent) 8%, transparent);
+  text-align: left;
 }
 
 .failedTitle {
-  font-size: 14px;
-  line-height: 22px;
+  color: var(--dsh-boot-label-primary);
+  font-size: 17px;
   font-weight: 600;
-  color: var(--dsw-alias-label-primary, var(--dsh-boot-label-primary));
+  letter-spacing: 0.1em;
+  line-height: 24px;
 }
 
 .failedItem {
+  color: var(--dsh-boot-label-secondary);
   font-family: var(
     --ds-font-family-code,
-    'SF Mono',
-    'JetBrains Mono',
-    'Fira Code',
+    "SF Mono",
+    "JetBrains Mono",
+    "Fira Code",
     Consolas,
-    'Liberation Mono',
+    "Liberation Mono",
     Menlo,
     Courier,
-    'PingFang SC',
-    'Microsoft YaHei'
+    "PingFang SC",
+    "Microsoft YaHei"
   );
   font-size: 12px;
   line-height: 18px;
-  color: var(--dsw-alias-label-secondary, var(--dsh-boot-label-secondary));
   white-space: pre-wrap;
+}
+
+@media (max-width: 480px) {
+  .card { width: min(100% - 40px, 400px); }
+  .title { font-size: 25px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
 }

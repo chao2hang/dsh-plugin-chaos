@@ -287,6 +287,7 @@ export function apply(ctx: Context): void {
           addImages: undefined,
           removeImage: undefined,
           draftImages: undefined,
+          notifyInputError: undefined,
           resolveSubmitMode: (running, gesture, steeringAvailable) =>
             submissionPolicy.resolve(running, gesture, steeringAvailable),
           toggleCommandMenu: undefined,
@@ -321,6 +322,7 @@ export function apply(ctx: Context): void {
           shell.removeImage(id)
         },
         draftImages: ids => conversation.draftImages(ids),
+        notifyInputError: (text) => { shell.notify('error', text) },
         resolveSubmitMode: (running, gesture, steeringAvailable) =>
           submissionPolicy.resolve(running, gesture, steeringAvailable),
         toggleCommandMenu: inputTriggers === undefined
@@ -363,6 +365,10 @@ export function apply(ctx: Context): void {
     yield registerComposerBar()
   })
 
+  // Class-plugin mount (packages/AGENTS.md service form): the service
+  // registers itself as `conversation` and lives on its own child fiber.
+  // Presentation registrants depend directly on their slot declarations;
+  // this service remains only where conversation actions are required.
   ctx.plugin(ConversationController, { input: inputHub, blocks: composerBlocks })
   ctx.plugin(todoDockEntry)
   ctx.plugin(queueDockEntry)

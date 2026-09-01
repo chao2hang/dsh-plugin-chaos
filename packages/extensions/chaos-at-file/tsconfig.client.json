@@ -1,0 +1,69 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "types": [
+      "node"
+    ],
+    "jsx": "react-jsx"
+  },
+  "files": [
+    "src/types.ts",
+    "src/defaults.ts",
+    "src/paste.ts",
+    "src/client/FilesDock.tsx",
+    "src/client/FolderNavigator.tsx",
+    "src/client/icons.tsx",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/model.ts",
+    "src/client/search.ts",
+    "src/client/SettingsSection.tsx",
+    "src/client/source.ts",
+    "src/client/styles.ts",
+    "src/remote.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../api/remotes/tsconfig.client.json"
+    },
+    {
+      "path": "../../client/locale"
+    },
+    {
+      "path": "../../api/session-controller/tsconfig.client.json"
+    },
+    {
+      "path": "../../client/store"
+    },
+    {
+      "path": "../../client/ui-conversation"
+    },
+    {
+      "path": "../../client/ui-input-trigger"
+    },
+    {
+      "path": "../../client/ui-renderer"
+    },
+    {
+      "path": "../../client/ui-settings"
+    },
+    {
+      "path": "../../client/ui-slots"
+    },
+    {
+      "path": "../../typert/protocol"
+    },
+    {
+      "path": "../../settings/settings"
+    }
+  ]
+}

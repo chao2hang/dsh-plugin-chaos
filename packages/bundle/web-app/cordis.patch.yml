@@ -183,6 +183,36 @@
     - id: ui-layout
       name: '@deepseek-ai/dsh-client-ui-layout'
 
+    # Mobile adaptation adds drawer controls, touch targets, and bottom sheets
+    # through ui-layout's existing slots. Remove this row for desktop-only layout.
+    - id: chaos-mobile
+      name: '@deepseek-ai/dsh-plugin-chaos-mobile'
+
+    # Module B: Remote access auth (active only on 0.0.0.0 bind).
+    - id: chaos-auth
+      name: '@deepseek-ai/dsh-plugin-chaos-auth'
+      config:
+        tokenRef: DSH_AUTH_TOKEN
+        publicUrl: ''
+
+    # Module C: Server self-restart.
+    - id: chaos-restart
+      name: '@deepseek-ai/dsh-plugin-chaos-restart'
+      config:
+        enabled: true
+
+    # Module D: Model selection UX enhancement.
+    - id: chaos-models
+      name: '@deepseek-ai/dsh-plugin-chaos-models'
+
+    # Retry strip for abnormally ended conversations: docked above the composer.
+    - id: chaos-retry
+      name: '@deepseek-ai/dsh-plugin-chaos-retry'
+
+    # ProcessControl service (Module C dependency).
+    - id: process-control
+      name: '@deepseek-ai/dsh-process-control'
+
     - id: ui-renderer
       name: '@deepseek-ai/dsh-client-ui-renderer'
 

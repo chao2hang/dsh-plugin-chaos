@@ -56,6 +56,14 @@ beforeEach(() => {
 const SID = 's1' as SessionId
 type RoutedChatNodeOwner = ChatNodeOwnerProps & { readonly node: ChatNode }
 
+/** Drain the stubbed rAF queue in order: restore settlement runs per frame. */
+function pumpFrames(frames: FrameRequestCallback[]): void {
+  act(() => {
+    const pending = frames.splice(0, frames.length)
+    for (const frame of pending) frame(0)
+  })
+}
+
 function sessionSnapshot(overrides: Partial<SessionSnapshot> = {}): SessionSnapshot {
   return {
     sessionId: SID,
@@ -2491,6 +2499,86 @@ describe('ChatView', () => {
       expect(host.scrollTop).toBe(580) // approximate 100 + the row's 480px reflow shift
       // The restored position is above the floor: follow stays disarmed.
       expect(view.getByLabelText('回到底部')).toBeTruthy()
+    } finally {
+      rect.mockRestore()
+      host.remove()
+    }
+  })
+
+  it('settles an above-bottom restore after the remounted flow reflows', () => {
+    const host = document.createElement('div')
+    host.setAttribute('data-conversation-scroll', '')
+    Object.defineProperty(host, 'scrollHeight', { value: 2_000, writable: true, configurable: true })
+    Object.defineProperty(host, 'clientHeight', { value: 500, writable: true, configurable: true })
+    Object.defineProperty(host, 'scrollTop', { value: 0, writable: true, configurable: true })
+    document.body.appendChild(host)
+    let anchorTop = 80
+    // The rail schedules its active-turn frame before the restore settlement
+    // frame, so the pump drains every pending frame, not just the first.
+    const frames: FrameRequestCallback[] = []
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback)
+      return frames.length
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.spyOn(host, 'getBoundingClientRect').mockImplementation(
+      () => ({ top: 0, bottom: 500 } as DOMRect),
+    )
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.chatAnchorKey === 'fixture:user:1') {
+        return { top: anchorTop, bottom: anchorTop + 40 } as DOMRect
+      }
+      return { top: 0, bottom: 40 } as DOMRect
+    })
+    try {
+      const h = makeHarness({ nodes: [user(1, 'q'), assistant(2, 'a')] })
+      h.chatScroll.save({ anchorKey: 'fixture:user:1', anchorTop: 80, scrollTop: 100 })
+      const view = render(<h.ChatView {...h.props} />, { container: host })
+      expect(host.scrollTop).toBe(100)
+      // The session remount has restored, but its committed flow has not
+      // reached its post-layout geometry when the first correction runs.
+      anchorTop = 560
+      pumpFrames(frames)
+      expect(host.scrollTop).toBe(580)
+      view.unmount()
+    } finally {
+      rect.mockRestore()
+      host.remove()
+    }
+  })
+
+  it('leaves a reader scroll alone while a restored flow settles', () => {
+    const host = document.createElement('div')
+    host.setAttribute('data-conversation-scroll', '')
+    Object.defineProperty(host, 'scrollHeight', { value: 2_000, writable: true, configurable: true })
+    Object.defineProperty(host, 'clientHeight', { value: 500, writable: true, configurable: true })
+    Object.defineProperty(host, 'scrollTop', { value: 0, writable: true, configurable: true })
+    document.body.appendChild(host)
+    let anchorTop = 80
+    const frames: FrameRequestCallback[] = []
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback)
+      return frames.length
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    vi.spyOn(host, 'getBoundingClientRect').mockImplementation(
+      () => ({ top: 0, bottom: 500 } as DOMRect),
+    )
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.chatAnchorKey === 'fixture:user:1') {
+        return { top: anchorTop, bottom: anchorTop + 40 } as DOMRect
+      }
+      return { top: 0, bottom: 40 } as DOMRect
+    })
+    try {
+      const h = makeHarness({ nodes: [user(1, 'q'), assistant(2, 'a')] })
+      h.chatScroll.save({ anchorKey: 'fixture:user:1', anchorTop: 80, scrollTop: 100 })
+      const view = render(<h.ChatView {...h.props} />, { container: host })
+      anchorTop = 560
+      readerScroll(host, 350)
+      pumpFrames(frames)
+      expect(host.scrollTop).toBe(350)
+      view.unmount()
     } finally {
       rect.mockRestore()
       host.remove()

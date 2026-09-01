@@ -154,6 +154,7 @@ async function scopedBench(register?: (inputTriggers: InputTriggerService) => vo
     keyboard: shell,
     addImages: () => null,
     removeImage: () => {},
+    notifyInputError: vi.fn(),
     // Every id resolves so the bar's registry prune never drops a test image.
     draftImages: ids => ids.map(id => ({
       kind: 'image' as const, id,

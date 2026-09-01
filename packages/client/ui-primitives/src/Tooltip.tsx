@@ -3,6 +3,7 @@
 
 import { cloneElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { FocusEventHandler, MouseEventHandler, MutableRefObject, ReactElement, Ref } from 'react'
+import { useSurfacePresentation } from './SurfacePresentation.tsx'
 import css from './Tooltip.module.css'
 
 /** Bubble placement relative to the anchor. */
@@ -32,6 +33,7 @@ type TooltipLabel = string | (() => string)
  * @returns the cloned anchor plus a fixed-position bubble while hovered/focused.
  */
 export function Tooltip({ label, side = 'right', delayMs = 0, disabled = false, maxWidth, children }: { label: TooltipLabel; side?: TooltipSide; delayMs?: number; disabled?: boolean; maxWidth?: number; children: ReactElement<AnchorProps> }) {
+  const presentation = useSurfacePresentation()
   const anchor = useRef<HTMLElement | null>(null)
   // React 18 keeps the element's ref outside props; forward it so wrapping an
   // anchor in Tooltip never silently severs the owner's ref.
@@ -145,10 +147,11 @@ export function Tooltip({ label, side = 'right', delayMs = 0, disabled = false, 
         onFocus: (e) => { children.props.onFocus?.(e); triggers.current.focus = true; cancelShow(); show() },
         onBlur: (e) => { children.props.onBlur?.(e); triggers.current.focus = false; hide() },
       })}
-      {pos !== null && (
+      {pos !== null && presentation.mode !== 'sheet' && (
         <span
           ref={bubble}
           className={css.bubble}
+          data-surface="tooltip"
           data-side={placement}
           style={{ left: pos.x, top: y, ...maxWidth === undefined ? {} : { maxWidth } }}
           role="tooltip"

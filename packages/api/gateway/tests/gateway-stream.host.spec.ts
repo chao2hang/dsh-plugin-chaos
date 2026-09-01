@@ -999,7 +999,7 @@ async function setup(
   const ctx = new Context()
   roots.push(ctx)
   if (transport) {
-    await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0 })
+    await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0, tls: { cert: '', key: '' } })
     provideBrowserCredentials(ctx)
   }
   await ctx.plugin(TypertRegistry)
