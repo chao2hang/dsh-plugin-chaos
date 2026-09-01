@@ -6,7 +6,7 @@
 
 ## 行为
 
-插件在每次 agent request 时读取会话的有效 sandbox policy。在 `danger-full-access` 下，它要求模型直接调用 Bash 和文件系统工具，不传 `sandbox_permissions` 或 `justification`。在受限模式下，它保留原有规则：仅在真实 sandbox 拒绝后单次重试，且请求的模式必须严格宽于当前模式。
+插件在每次 agent request 时读取会话的有效 sandbox policy。在 `danger-full-access` 下，它要求模型直接调用 Bash 和文件系统工具，不传 `sandbox_permissions` 或 `justification`；同时明确说明 "not strictly wider than this call's current" 错误表示应删除这些参数，而不是再次提权。在受限模式下，它保留原有规则：仅在真实 sandbox 拒绝后单次重试，且请求的模式必须严格宽于当前模式。
 
 该指引会根据当前会话 policy 在每个请求中重新生成，包含恢复的会话。它不放宽执行限制，也不改写工具参数。
 

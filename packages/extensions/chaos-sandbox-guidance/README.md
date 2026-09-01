@@ -6,7 +6,7 @@ Adds dynamic model guidance for sandbox escalation arguments.
 
 ## Behavior
 
-For every agent request, the plugin reads the session's effective sandbox policy. In `danger-full-access`, it tells the model to call Bash and filesystem tools directly, without `sandbox_permissions` or `justification`. In confined modes, it retains the rule that escalation is only a one-shot retry after an actual sandbox denial and must request a strictly wider mode.
+For every agent request, the plugin reads the session's effective sandbox policy. In `danger-full-access`, it tells the model to call Bash and filesystem tools directly, without `sandbox_permissions` or `justification`; it also explicitly identifies the "not strictly wider than this call's current" error as a signal to remove those arguments, not retry them. In confined modes, it retains the rule that escalation is only a one-shot retry after an actual sandbox denial and must request a strictly wider mode.
 
 The guidance is model-visible and is regenerated from the current session policy for every request, including resumed sessions. It does not weaken enforcement or rewrite tool arguments.
 

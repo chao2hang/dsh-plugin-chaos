@@ -31,6 +31,8 @@ async function contextFor(mode: 'workspace-write' | 'danger-full-access'): Promi
 describe('chaos sandbox escalation guidance', () => {
   it('tells a danger-full-access session to omit redundant escalation arguments', async () => {
     await expect(contextFor('danger-full-access')).resolves.toBe(ChaosSandboxGuidance.DANGER_FULL_ACCESS_GUIDANCE)
+    await expect(contextFor('danger-full-access')).resolves.toContain('not strictly wider than this call')
+    await expect(contextFor('danger-full-access')).resolves.toContain('Never try to change to workspace-write or danger-full-access')
   })
 
   it('keeps strictly-wider retry guidance for a confined session', async () => {
