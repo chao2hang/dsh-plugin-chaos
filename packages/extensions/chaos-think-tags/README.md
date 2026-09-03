@@ -16,13 +16,15 @@ The `@deepseek-ai/dsh-plugin-chaos` bundle inserts this plugin as `chaos-think-t
 
 ## Model Experience
 
-No effect. The plugin reads browser conversation snapshots after the provider request completes or streams.
+None, as the plugin renders think tags as presentation in the browser; nothing here reaches a model request.
 
-#### KV Cache Impact
+#### KV Cache effect
 
-No effect. The plugin does not assemble or send provider requests.
+None; this package neither assembles nor sends a provider request.
 
 ## Known Limitations and Deferred Work
 
 - Delimiter parsing is presentation-only. A historical export or a provider retry still contains the original text blocks and delimiters.
 - An unmatched `<think>` treats the remainder of that assistant step as reasoning, matching the provider's apparent open region.
+
+**Runtime invariant:** No companion is published. The plugin owns one disposed keyed UI registration.

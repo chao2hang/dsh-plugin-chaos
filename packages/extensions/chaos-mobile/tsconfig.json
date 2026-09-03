@@ -15,9 +15,6 @@
       "path": "../../api/session-controller/tsconfig.client.json"
     },
     {
-      "path": "../../runtime-diagnostics/invariants"
-    },
-    {
       "path": "../../client/ui-conversation"
     },
     {

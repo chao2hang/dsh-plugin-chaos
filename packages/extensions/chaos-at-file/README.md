@@ -40,15 +40,17 @@ On screens up to 560px wide, the picker stays inside the viewport, path chips us
 
 ## Model Experience
 
-### What the model sees
+### Workspace references
+
+#### What the model sees
 
 The plugin contributes no fixed prompt section. A valid user-selected `@path` contributes one short `workspace-reference` marker at the next model step. The original `@path` remains in the user's text.
 
-### Token effect
+#### Token effect
 
 Variable: one short marker per valid distinct reference in the claimed user messages. The picker index, settings, chips, and filtered candidates add no request tokens.
 
-### KV Cache effect
+#### KV Cache effect
 
 No stable prefix changes. A changed reference marker changes that step's user-message suffix only.
 
@@ -57,3 +59,5 @@ No stable prefix changes. A changed reference marker changes that step's user-me
 - The Host filesystem index and the session's effective `read` tool must address the same workspace namespace; deployments with remote or virtual filesystems need a matching provider.
 - The bounded index may omit entries after `maxIndexedFiles`; inaccessible and broken-link targets are omitted.
 - The default ignored-directory list is fixed at plugin activation. Change it in the profile configuration and restart the Host.
+
+**Runtime invariant:** No companion is published. Every index answer is derived per call from the live filesystem, the settings section is owned by the settings provider, and the pre-step marker appends messages the agent loop itself logs — the package holds no mutable state relating two event streams, and registration disposal is proven by the HMR-safety spec instead.

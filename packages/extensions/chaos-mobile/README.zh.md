@@ -40,3 +40,5 @@ DeepSeek Harness Web GUI 的移动适配插件。
 
 - **布局选择器**：抽屉和 sheet 的 CSS 针对 ui-layout 的稳定 data 属性（`data-shell-frame`、`data-shell-column`、`data-sidebar-collapsed`、`data-details-collapsed`）。这些属性的变更需协同更新。
 - **历史集成**：详情推进页尚未拦截 `history.pushState` 以支持系统返回键。计划在后续工作中实现。
+
+**运行时不变式：** 不发布伴生入口。本包只提供浏览器呈现；面板状态及其可观察的状态转换归 ui-layout 所有。

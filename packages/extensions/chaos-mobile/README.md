@@ -40,3 +40,5 @@ The plugin changes no model request, so it neither adds tokens nor changes KV Ca
 
 - **Layout selectors**: the drawer and sheet CSS targets ui-layout's stable data attributes (`data-shell-frame`, `data-shell-column`, `data-sidebar-collapsed`, `data-details-collapsed`). Changes to those emitted attributes require a coordinated update.
 - **History integration**: the details push-page does not yet intercept `history.pushState` for system back-button support. This is planned for a follow-up.
+
+**Runtime invariant:** No companion is published. The package contributes browser presentation only; ui-layout owns the panel state and its observable state transitions.

@@ -25,8 +25,18 @@ Restart is an operator action behind a confirmation rather than an automatic rec
 
 `chaos-bundle/cordis.patch.yml` and the web-app patch mount this package as `chaos-restart`; its `enabled` config defaults to true. The host half needs `processControl` (`@deepseek-ai/dsh-process-control`) — absent it, the routes still answer and report no capability. Removing the row removes both the routes and the settings section. The package tsconfig restores the ambient `node` types the client base drops, because the host half serves HTTP routes.
 
+## Model Experience
+
+None, as the package renders a settings section and host restart routes in the browser; nothing here reaches a model request.
+
+#### KV Cache effect
+
+None; this package neither assembles nor sends a provider request.
+
 ## Known Limitations and Deferred Work
 
 - The section reports acceptance, not completion: it cannot observe an independent successor startup failure. The launcher disposes the current application tree and releases its listener before spawning the successor, so a fixed port is not such a failure.
 - `canRestart` is a launcher capability, not a permission. The endpoint's protection comes from the auth plugin's request guard when remote access is enabled; on loopback it is reachable as any other local route.
 - The count in the confirmation covers sessions this browser knows about, not turns running for other connected clients.
+
+**Runtime invariant:** No companion is published. The host routes are stateless pass-throughs to the processControl service and the settings section derives its state from that service each render; registration disposal is proven by the HMR-safety spec.

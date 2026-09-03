@@ -1,22 +1,20 @@
 # `@deepseek-ai/dsh-plugin-chaos`
 
-Chaos plugin bundle: composes all chaos plugins over the web-app layer.
+English | [中文](README.zh.md)
+
+Chaos plugin bundle: a composition layer over the web-app layer that declares the chaos plugin set as package dependencies and inserts the optional `chaos-think-tags` row.
 
 ## Composition
 
-The bundle's `cordis.patch.yml` inserts five plugin rows:
+The web-app bundle already inserts `chaos-mobile`, `chaos-auth`, `chaos-restart`, `chaos-models`, `chaos-retry`, and `process-control`. This bundle's `cordis.patch.yml` adds one optional row:
 
-| Row | Package | Module | Purpose |
-|---|---|---|---|
-| `chaos-mobile` | `dsh-plugin-chaos-mobile` | A | Mobile adaptation: drawer sidebar, touch controls, bottom sheets |
-| `chaos-auth` | `dsh-plugin-chaos-auth` | B | Remote access auth: token login, sessions, request guards |
-| `chaos-restart` | `dsh-plugin-chaos-restart` | C | Server self-restart: process replacement RPC |
-| `chaos-models` | `dsh-plugin-chaos-models` | D | Model selection UX: cache, virtual scroll |
-| `process-control` | `dsh-process-control` | C | ProcessControl service (canRestart + restart) |
+| Row | Package | Purpose |
+|---|---|---|
+| `chaos-think-tags` | `@deepseek-ai/dsh-plugin-chaos-think-tags` | Render assistant think-tag output through the conversation reasoning disclosure |
 
 ## Usage
 
-Add the bundle to a profile to enable all chaos plugins:
+Add the bundle to a profile's bundles list to install the chaos plugin set as its dependencies and insert the think-tag renderer row:
 
 ```yaml
 # In the profile's bundles list:
@@ -36,7 +34,7 @@ dsh --profile web --host 0.0.0.0
 
 ## Main-repo Extension Points
 
-This bundle relies on three generic extension points opened in the main repo:
+This bundle relies on four generic extension points opened in the main repo:
 
 1. **WebServer guards** (`dsh-host-webserver`): `registerGuard`, `registerUpgradeGuard`, and TLS config. The auth plugin requires a dsh build that exports both Guard APIs; older WebServer builds fail during auth activation.
 2. **ConnectionHandle.authenticated** (`dsh-client-connection`): allows authenticated remote sessions to access settings/credentials.
@@ -45,7 +43,17 @@ This bundle relies on three generic extension points opened in the main repo:
 
 All are designed as generic extension points, not specific to this bundle.
 
+## Model Experience
+
+None, as the package is a composition patch with no runtime of its own; nothing here reaches a model request.
+
+#### KV Cache effect
+
+None; this package neither assembles nor sends a provider request.
+
 ## Known Limitations and Deferred Work
 
 - **Auth plugin integration**: the auth plugin requires the `credentials` service to resolve the token; a composition without it disables login.
 - **Restart on Electron**: the ProcessControl service spawns a successor via `process.execPath`; an Electron build may need a different launch mechanism.
+
+**Runtime invariant:** No companion is published. The package is a composition patch (cordis.patch.yml) and holds no runtime registrations, services, or mutable state of its own.

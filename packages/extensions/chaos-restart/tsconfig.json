@@ -7,7 +7,6 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../../runtime-diagnostics/invariants" },
     { "path": "../../host/webserver" },
     { "path": "../../boot/process-control" },
     { "path": "../../client/locale" },

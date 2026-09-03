@@ -29,8 +29,18 @@ The web-app patch mounts this package as `chaos-retry`. The client half contribu
 
 It pairs with `chaos-restart`, whose System settings section performs the restart this plugin then offers to recover from.
 
+## Model Experience
+
+None, as the plugin resends the last user message through the ordinary composer input path; the resent text reaches the model as plain user text, and the plugin contributes no fixed prompt section.
+
+#### KV Cache effect
+
+None; this package neither assembles nor sends a provider request.
+
 ## Known Limitations and Deferred Work
 
 - The retry resends text only. A last user message that carried images (or no text at all) leaves the strip off, because the draft write path here is text-only.
 - Clicking **Retry** replaces whatever is currently in the composer draft with the resent text.
 - The resend does not roll back the failed turn's partial history; it appends a new turn on top of it.
+
+**Runtime invariant:** No companion is published. The single conversation.input.dock registration's disposal is proven by the HMR-safety spec, and the plugin owns no store — the abnormal-end state derives from the session snapshot each render, it emits no cordis events, and it holds no cross-plugin mutable state.

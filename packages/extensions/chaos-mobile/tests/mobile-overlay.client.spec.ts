@@ -31,8 +31,9 @@ describe('client/index.ts integration', () => {
     expect(indexSource).toMatch(/closeDetails: \(\) => \{ ctx\.layout\.closeDetails\(\) \}/)
   })
 
-  it('injects a new-session action backed by the workspaces service', () => {
-    expect(indexSource).toContain("'slots', 'conversation', 'layout', 'workspaces'")
-    expect(indexSource).toMatch(/newSession: \(\) => \{ ctx\.workspaces\.startSession\(\) \}/)
+  it('injects a new-session action backed by the uiWorkspace service', () => {
+    expect(indexSource).toContain("'slots', 'conversation', 'layout', 'uiWorkspace'")
+    expect(indexSource).toMatch(/workspaceNavigation = ctx\.get\('uiWorkspace'\)/)
+    expect(indexSource).toMatch(/newSession: \(\) => \{ workspaceNavigation\.startSession\(\) \}/)
   })
 })

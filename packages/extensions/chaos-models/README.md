@@ -21,7 +21,17 @@ Official adapters and providers outside `llm-pi-ai` are not changed. They show a
 
 `chaos-bundle/cordis.patch.yml` mounts this package as `chaos-models`. The client half waits for `conversation.input.right` to mount its dialog, while the stock `conversation.input.model` menu provides the only visible entry point. Removing this plugin removes the menu entry and its dialog.
 
+## Model Experience
+
+None, as the capability dialog renders in the browser and its selections persist through the pi-ai settings route; nothing here reaches a model request.
+
+#### KV Cache effect
+
+None; this package neither assembles nor sends a provider request.
+
 ## Known Limitations and Deferred Work
 
 - The dialog cannot discover a provider's capabilities. Enter only values supported by the endpoint.
 - A selected model absent from the pi-ai settings route can receive an override, but the route must already be configured in `llm-pi-ai`.
+
+**Runtime invariant:** No companion is published. The package owns one keyed `conversation.input.right` slot registration, and the dialog state it renders derives from the pi-ai settings snapshot each render — it holds no cross-event mutable state of its own.
