@@ -1,8 +1,32 @@
 # dsh-plugin-chaos bundle patch.
 #
 # The web-app bundle already inserts chaos-mobile, chaos-auth, chaos-restart,
-# chaos-models, chaos-retry, and process-control. This bundle adds only the
-# optional think-tag renderer.
+# chaos-models, chaos-retry, and process-control. This bundle adds the
+# optional think-tag renderer, the sandbox escalation guidance, the workspace
+# upload service behind the mobile attachment chooser's 附件 action, and the
+# archived-session retention sweeper.
 - insert:
     - id: chaos-think-tags
       name: '@deepseek-ai/dsh-plugin-chaos-think-tags'
+
+    - id: chaos-sandbox-guidance
+      name: '@deepseek-ai/dsh-plugin-chaos-sandbox-guidance'
+
+    - id: chaos-upload
+      name: '@deepseek-ai/dsh-plugin-chaos-upload'
+      config:
+        dir: uploads
+        maxFileBytes: 20971520
+        markers: true
+        # Retention: 0 keeps uploads forever; a positive value deletes a
+        # stored upload once its file is older than this many days.
+        maxAgeDays: 0
+
+    - id: chaos-janitor
+      name: '@deepseek-ai/dsh-plugin-chaos-janitor'
+      config:
+        # Retention: 0 disables the sweeper; a positive value deletes an
+        # archived session once its log has been quiet this many days.
+        maxArchivedDays: 0
+        intervalMinutes: 60
+        dryRun: false

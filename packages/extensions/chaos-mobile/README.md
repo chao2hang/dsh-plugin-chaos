@@ -15,7 +15,7 @@ At widths below 768px, this plugin adapts the existing layout without replacing 
 - `Tooltip` suppresses its bubble entirely on mobile (no hover on touch devices).
 - Safe-area padding, dynamic viewport height, and 44px minimum touch targets improve touch use.
 - The Visual Viewport API continuously tracks visible height and vertical offset so the composer remains aligned with the keyboard during mobile viewport panning.
-- The composer includes an image-attachment button that uses the existing admission, preview, limit, and removal flow.
+- The composer's paperclip opens a three-action chooser: camera capture, image library, and document upload. Images use the existing admission, preview, limit, and removal flow; documents route through the optional `chaosUpload` service (chaos-upload), which stores the file in the session workspace and appends an `@path` mention to the draft. The document action appears only when chaos-upload is mounted, and its picker accepts `application/*,text/*` — a bare file input makes several mobile browsers open the camera/gallery sheet instead of the file picker.
 - CSS targets stable `data-shell-column`, `data-shell-frame`, `data-shell-handle`, and `data-conversation-session-header` anchors — no `[class*=]` hashed-class selectors.
 
 Desktop widths retain ui-layout's unmodified three-column frame, drag handles, and column solver.

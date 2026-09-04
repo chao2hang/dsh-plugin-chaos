@@ -2,19 +2,22 @@
 
 English | [中文](README.zh.md)
 
-Chaos plugin bundle: a composition layer over the web-app layer that declares the chaos plugin set as package dependencies and inserts the optional `chaos-think-tags` row.
+Chaos plugin bundle: a composition layer over the web-app layer that declares the chaos plugin set as package dependencies and inserts the optional plugin rows.
 
 ## Composition
 
-The web-app bundle already inserts `chaos-mobile`, `chaos-auth`, `chaos-restart`, `chaos-models`, `chaos-retry`, and `process-control`. This bundle's `cordis.patch.yml` adds one optional row:
+The web-app bundle already inserts `chaos-mobile`, `chaos-auth`, `chaos-restart`, `chaos-models`, `chaos-retry`, and `process-control`. This bundle's `cordis.patch.yml` adds four optional rows:
 
 | Row | Package | Purpose |
 |---|---|---|
 | `chaos-think-tags` | `@deepseek-ai/dsh-plugin-chaos-think-tags` | Render assistant think-tag output through the conversation reasoning disclosure |
+| `chaos-sandbox-guidance` | `@deepseek-ai/dsh-plugin-chaos-sandbox-guidance` | Runtime guidance preventing redundant sandbox escalation arguments |
+| `chaos-upload` | `@deepseek-ai/dsh-plugin-chaos-upload` | Workspace document upload behind the mobile attachment chooser; stores files under `<workspace>/uploads/` and marks `@uploads/...` references |
+| `chaos-janitor` | `@deepseek-ai/dsh-plugin-chaos-janitor` | Retention sweeper: deletes archived sessions once their log has been quiet past `maxArchivedDays` (default 0 keeps them) |
 
 ## Usage
 
-Add the bundle to a profile's bundles list to install the chaos plugin set as its dependencies and insert the think-tag renderer row:
+Add the bundle to a profile's bundles list to install the chaos plugin set as its dependencies and insert the optional plugin rows:
 
 ```yaml
 # In the profile's bundles list:

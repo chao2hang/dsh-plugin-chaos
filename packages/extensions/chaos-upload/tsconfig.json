@@ -1,0 +1,47 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+  },
+  "files": [
+    "src/index.ts",
+    "src/invariant.ts",
+    "src/marker.ts",
+    "src/remote.ts",
+    "src/runtime.ts",
+    "src/sweep.ts",
+    "src/types.ts",
+    "src/upload.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../../vendor/timer"
+    },
+    {
+      "path": "../../core/agent"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../session/session-persistence"
+    },
+    {
+      "path": "../../typert/protocol"
+    },
+    {
+      "path": "../../typert/registry"
+    }
+  ]
+}

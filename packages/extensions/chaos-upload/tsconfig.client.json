@@ -1,0 +1,41 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "types": [
+      "node"
+    ],
+    "jsx": "react-jsx"
+  },
+  "files": [
+    "src/types.ts",
+    "src/remote.ts",
+    "src/client/base64.ts",
+    "src/client/index.ts",
+    "src/client/insert.ts",
+    "src/client/intake.ts",
+    "src/client/service.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../api/remotes/tsconfig.client.json"
+    },
+    {
+      "path": "../../api/session-controller/tsconfig.client.json"
+    },
+    {
+      "path": "../../client/ui-conversation"
+    },
+    {
+      "path": "../../typert/protocol"
+    }
+  ]
+}

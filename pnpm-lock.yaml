@@ -5045,6 +5045,9 @@ importers:
       '@deepseek-ai/dsh-plugin-chaos-auth':
         specifier: workspace:^
         version: link:../chaos-auth
+      '@deepseek-ai/dsh-plugin-chaos-janitor':
+        specifier: workspace:^
+        version: link:../chaos-janitor
       '@deepseek-ai/dsh-plugin-chaos-mobile':
         specifier: workspace:^
         version: link:../chaos-mobile
@@ -5054,9 +5057,15 @@ importers:
       '@deepseek-ai/dsh-plugin-chaos-restart':
         specifier: workspace:^
         version: link:../chaos-restart
+      '@deepseek-ai/dsh-plugin-chaos-sandbox-guidance':
+        specifier: workspace:^
+        version: link:../chaos-sandbox-guidance
       '@deepseek-ai/dsh-plugin-chaos-think-tags':
         specifier: workspace:^
         version: link:../chaos-think-tags
+      '@deepseek-ai/dsh-plugin-chaos-upload':
+        specifier: workspace:^
+        version: link:../chaos-upload
       '@deepseek-ai/dsh-process-control':
         specifier: workspace:^
         version: link:../../boot/process-control
@@ -5064,6 +5073,33 @@ importers:
       '@deepseek-ai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+
+  packages/extensions/chaos-janitor:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/cordis-plugin-timer':
+        specifier: workspace:^
+        version: link:../../../vendor/timer
+      '@deepseek-ai/dsh-home-paths':
+        specifier: workspace:^
+        version: link:../../util/home-paths
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:^
+        version: link:../../session/session-persistence
+      '@deepseek-ai/dsh-session-persistence-jsonl':
+        specifier: workspace:^
+        version: link:../../session/session-persistence-jsonl
+      '@deepseek-ai/dsh-workspace':
+        specifier: workspace:^
+        version: link:../../workspace/workspace
 
   packages/extensions/chaos-mobile:
     devDependencies:
@@ -5233,6 +5269,27 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
 
+  packages/extensions/chaos-sandbox-guidance:
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-sandbox-policy':
+        specifier: workspace:^
+        version: link:../../sandbox/sandbox-policy
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-session-projection':
+        specifier: workspace:^
+        version: link:../../session/session-projection
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+
   packages/extensions/chaos-think-tags:
     devDependencies:
       '@deepseek-ai/cordis':
@@ -5262,6 +5319,40 @@ importers:
       react:
         specifier: ^18.2.0
         version: 18.3.1
+
+  packages/extensions/chaos-upload:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@deepseek-ai/dsh-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@deepseek-ai/dsh-api-session-controller':
+        specifier: workspace:^
+        version: link:../../api/session-controller
+      '@deepseek-ai/dsh-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../../client/ui-conversation
+      '@deepseek-ai/dsh-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@deepseek-ai/dsh-llm':
+        specifier: workspace:^
+        version: link:../../llm/llm
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
+      '@deepseek-ai/dsh-typert-registry':
+        specifier: workspace:^
+        version: link:../../typert/registry
 
   packages/extensions/cordis-client-runner:
     devDependencies:

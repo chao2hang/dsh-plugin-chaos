@@ -739,6 +739,12 @@ html[data-chaos-mobile] h3 {
   }
 }
 
+/* ═══ Hide command slash button ═════════════════════════════════════════ */
+
+[data-composer-modes] > button[aria-haspopup="listbox"] {
+  display: none !important;
+}
+
 /* ═══ Landscape: shrink input area ═══════════════════════════════════════ */
 
 @media (orientation: landscape) and (max-height: 500px) {

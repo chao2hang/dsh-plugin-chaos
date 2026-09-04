@@ -69,6 +69,7 @@
     { "path": "./packages/extensions/chaos-restart" },
     { "path": "./packages/extensions/chaos-think-tags" },
     { "path": "./packages/extensions/chaos-at-file/tsconfig.client.json" },
+    { "path": "./packages/extensions/chaos-upload/tsconfig.client.json" },
     { "path": "./packages/extensions/ui-cordis" },
     { "path": "./packages/test-support/client-runtime" },
     { "path": "./packages/client/ui-layout" },

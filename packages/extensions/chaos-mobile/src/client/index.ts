@@ -22,6 +22,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 // Type-only: pulls the renderer's Context merge (ctx.slots) into this program.
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the optional chaosUpload service face into this program.
+import type {} from '@deepseek-ai/dsh-plugin-chaos-upload/client'
 import { MobileOverlay, type MobileOverlayInjected } from './MobileOverlay.tsx'
 import { AttachmentButton } from './AttachmentButton.tsx'
 import mobileCss from '../styles/mobile.css?inline'
@@ -74,8 +76,11 @@ export function apply(ctx: ClientContext): void {
     id: 'chaos-mobile-attachment-picker',
     inject: () => ({
       conversation: ctx.conversation as ConversationController,
+      // Optional service (packages/AGENTS.md): strict ctx.get, so the
+      // attachment option appears exactly when chaos-upload is mounted.
+      upload: () => ctx.get('chaosUpload'),
       unsupportedImageNotice: '仅支持 PNG、JPEG、WebP 和 GIF 图片。',
-      notifyInputError: (text: string) => { ctx.conversation.input.for(ctx).notify('error', text) },
+      notifyInput: (level: 'info' | 'error', text: string) => { ctx.conversation.input.for(ctx).notify(level, text) },
     }),
   }, AttachmentButton))
 }

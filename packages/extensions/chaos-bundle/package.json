@@ -32,11 +32,14 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-plugin-chaos-mobile": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-auth": "workspace:^",
-    "@deepseek-ai/dsh-plugin-chaos-restart": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-janitor": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-mobile": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-models": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-restart": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-sandbox-guidance": "workspace:^",
     "@deepseek-ai/dsh-plugin-chaos-think-tags": "workspace:^",
+    "@deepseek-ai/dsh-plugin-chaos-upload": "workspace:^",
     "@deepseek-ai/dsh-process-control": "workspace:^"
   },
   "peerDependencies": {

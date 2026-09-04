@@ -15,6 +15,9 @@
       "path": "../../api/session-controller/tsconfig.client.json"
     },
     {
+      "path": "../chaos-upload/tsconfig.client.json"
+    },
+    {
       "path": "../../client/ui-conversation"
     },
     {

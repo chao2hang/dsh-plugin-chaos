@@ -94,6 +94,12 @@ function useDetailsHistory(closeDetails: () => void, mobile: boolean): void {
       }
     })
     observer.observe(frame, { attributes: true, attributeFilter: ['data-details-collapsed'] })
+    // Claim an entry when the details panel is already open at mount. This can
+    // happen after a mobile remount or a resumed Web UI session.
+    if (!frame.hasAttribute('data-details-collapsed')) {
+      history.pushState({ dshDetailsOpen: true }, '')
+      pushedRef.current = true
+    }
 
     const onPopState = (): void => {
       if (pushedRef.current) {

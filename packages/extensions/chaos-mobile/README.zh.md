@@ -15,7 +15,7 @@ DeepSeek Harness Web GUI 的移动适配插件。
 - `Tooltip` 在移动端完全抑制气泡（触屏设备无悬停）。
 - 安全区内边距、动态视口高度和 44px 最小触控目标改善触屏体验。
 - 通过 Visual Viewport API 持续跟踪可见高度和垂直偏移，输入栏在移动端键盘导致视口平移时仍贴住可见底部。
-- 输入栏包含图片附件按钮，使用现有的准入、预览、限制和移除流程。
+- 输入栏的回形针按钮打开三选一菜单：拍照、图片、附件。图片沿用现有的准入、预览、限制和移除流程；附件经由可选的 `chaosUpload` 服务（chaos-upload）存入会话工作区，并在草稿末尾追加 `@path` 引用。仅当 chaos-upload 已挂载时才显示附件项；附件选择器只接受 `application/*,text/*`——不设 accept 的文件输入会让部分手机浏览器弹出相机/相册面板而非文件选择器。
 - CSS 针对稳定的 `data-shell-column`、`data-shell-frame`、`data-shell-handle` 和 `data-conversation-session-header` 锚点编写选择器——不使用 `[class*=]` 哈希类名选择器。
 
 桌面宽度保留 ui-layout 未修改的三栏框架、拖动手柄和列求解器。
