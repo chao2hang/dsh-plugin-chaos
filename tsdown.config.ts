@@ -11,13 +11,15 @@ function isBuildFaceClient(value: unknown): boolean {
  * The ordinary workspace build consumes JavaScript emitted by the Host
  * TypeScript project and runs Typert. The Client pass selects packages that
  * declare a browser bundle and lets their package-local configs emit both
- * their Node loader entry and browser artifact.
+ * their Node loader entry and browser artifact. The workspace root itself
+ * ships no entry: nothing consumes a root bundle, and no program emits the
+ * historical `lib/types/{index,invariant,startup}.js` the entry named.
  */
 export default defineConfig(({ env }) => {
   const client = isBuildFaceClient(env?.DSH_BUILD_FACE)
   return {
     workspace: ['vendor/*', 'packages/*/*', 'apps/cli'],
-    entry: client ? '' : ['lib/types/{index,invariant,startup}.js'],
+    entry: '',
     outDir: 'lib',
     format: ['esm'],
     platform: 'node',
