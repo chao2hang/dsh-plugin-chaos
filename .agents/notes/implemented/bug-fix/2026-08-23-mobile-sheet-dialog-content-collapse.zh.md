@@ -14,6 +14,12 @@ Status: implemented
 
 MobileSheet 的主体改为确定高度的 flex 列（`display: flex; flex-direction: column; min-height: 0`），与桌面卡片的布局契约一致。headless 对话框内容继续拥有自己的弹性中部；sheet 只保证该中部所需的父级。菜单与其他 sheet 表面布局不变（全宽块级子元素作为 auto 高度的 flex item 表现相同）。
 
+## 考虑过的替代方案
+
+**给 sheet 主体固定像素高度。** 否决：写死的高度会破坏其他 sheet 表面与视口；flex 契约在不出现具体数字的情况下与桌面卡片一致。
+
+**逐个对话框修补自己的内容尺寸。** 否决：对滚动容器内容，自动高度链在每一层都会塌缩，每个 headless 对话框都会重新推导同样的父级要求。
+
 ## 后果
 
 目录选择器在手机上可见地列出条目；`apps/web/tests/mobile-directory-picker.e2e.ts` 在手机视口下钉住行几何，对塌缩布局会失败。未来任何带弹性中部的 headless sheet 对话框都按构造获得正确尺寸，无需重新推导。

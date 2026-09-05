@@ -29,8 +29,9 @@ export interface SessionStoreConfig {
   absoluteTimeoutMs: number
 }
 
-/** Default timeouts: 7 days idle, 30 days absolute. */
+/** Default idle timeout: 7 days. */
 export const DEFAULT_IDLE_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000
+/** Default absolute timeout: 30 days. */
 export const DEFAULT_ABSOLUTE_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000
 
 /** Cookie name for the session. */
@@ -195,7 +196,11 @@ export function buildCookie(session: Session, now: number, config: SessionStoreC
   return flags.join('; ')
 }
 
-/** Build a cookie-clearing Set-Cookie header (for logout). */
+/**
+ * Build a cookie-clearing Set-Cookie header (for logout).
+ * @param secure - whether the connection is HTTPS, adding the `Secure` flag.
+ * @returns the `Set-Cookie` header value that expires the session cookie.
+ */
 export function clearCookie(secure: boolean): string {
   const flags = [
     `${SESSION_COOKIE}=`,

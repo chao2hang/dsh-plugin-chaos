@@ -3,7 +3,11 @@ import type { AssistantBlock } from '@deepseek-ai/dsh-client-ui-conversation/cli
 const OPEN_TAG = '<think>'
 const CLOSE_TAG = '</think>'
 
-/** Convert provider-emitted think delimiters in text blocks into reasoning blocks. */
+/**
+ * Convert provider-emitted think delimiters in text blocks into reasoning blocks.
+ * @param blocks - the assistant blocks as emitted by the provider.
+ * @returns the blocks with think-delimited spans split out as reasoning blocks.
+ */
 export function normalizeThinkTags(blocks: readonly AssistantBlock[]): AssistantBlock[] {
   const normalized: AssistantBlock[] = []
   let reasoning = false

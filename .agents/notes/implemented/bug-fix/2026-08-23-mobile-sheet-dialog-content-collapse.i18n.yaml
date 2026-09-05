@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-mobile-sheet-dialog-content-collapse.md
-2026-08-23-mobile-sheet-dialog-content-collapse.md: 8a6b313209005eeeb518c0b4044debbcedb85a88
-2026-08-23-mobile-sheet-dialog-content-collapse.zh.md: ed2635b085436f23f8bb64e40669b17cc4b98b50
+2026-08-23-mobile-sheet-dialog-content-collapse.md: 99e1c8fc4834d9e7530f0dcbe5275e1287cb600e
+2026-08-23-mobile-sheet-dialog-content-collapse.zh.md: 6bdcb40cee58e5cec21c53ce9929e450b93f9c25
