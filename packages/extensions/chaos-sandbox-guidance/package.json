@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-plugin-chaos-sandbox-guidance",
   "description": "Model guidance that prevents redundant sandbox escalation calls",
-  "version": "0.1.0",
+  "version": "0.1.2-alpha.5",
   "publishConfig": {
     "access": "public"
   },
