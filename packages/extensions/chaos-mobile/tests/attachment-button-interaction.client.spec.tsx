@@ -30,7 +30,6 @@ function baseProps(overrides: {
     useChat: (() => undefined) as never,
     useTrajectory: (() => undefined) as never,
     useSessionPendingInteraction: (() => undefined) as never,
-    session: { sessionId: 's1' } as never,
     input: {} as never,
     conversation: overrides.conversation
       ?? { createDraftImages: () => { throw new Error('unsupported') }, releaseDraftImages: vi.fn() },

@@ -40,7 +40,11 @@ function escapeAttribute(value: string): string {
     .replaceAll('>', '&gt;')
 }
 
-/** The existence-only reference text one validated mention contributes. */
+/**
+ * The existence-only reference text one validated mention contributes.
+ * @param mention - the validated upload mention to render.
+ * @returns the self-closing `workspace-reference` element for the mention.
+ */
 export function uploadReferenceForm(mention: UploadMention): string {
   return `<workspace-reference path="${escapeAttribute(mention.relative)}" kind="file" />`
 }

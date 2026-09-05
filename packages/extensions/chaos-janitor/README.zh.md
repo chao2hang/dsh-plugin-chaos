@@ -27,7 +27,11 @@ Chaos profile 的归档会话保留清理器。插件按间隔删除日志已静
 
 ## Model Experience
 
-无：插件在任何模型回合之外删除持久化会话存储，不贡献任何模型可见输入。
+无——插件在任何模型回合之外删除持久化会话存储，不贡献任何模型可见输入。
+
+#### KV Cache effect
+
+插件不改变任何模型请求，既不增加 token，也不改变 KV Cache 复用。
 
 ## Known Limitations and Deferred Work
 
@@ -35,3 +39,5 @@ Chaos profile 的归档会话保留清理器。插件按间隔删除日志已静
 - 扫描只看见 jsonl 后端物化的会话；换用其他持久化后端时所有会话原样保留。
 - 删除会话不会删除只有该会话引用的附件库图片；这些字节在附件保留机制出现前保持孤儿状态。
 - registry 的 `archivedSessionIds` 保留已删除会话的 id；它们是惰性的（registry 从所有分组表面过滤缺失会话），但在 registry 清理它们之前会累积。
+
+**运行时不变式：** 不发布 companion。每次清扫都通过持久化布局契约从会话 registry 与日志文件 mtime 重新推导候选；插件在两次清扫之间不持有状态，timer 注册随 fiber 一起销毁。

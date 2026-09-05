@@ -17,6 +17,7 @@
  * mobile breakpoint.
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type { ConversationController } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
@@ -31,8 +32,8 @@ import mobileCss from '../styles/mobile.css?inline'
 /** Stable Cordis plugin name. */
 const PLUGIN_ID = '@deepseek-ai/dsh-plugin-chaos-mobile'
 
-/** Required services: slots, conversation, layout actions, and the workspace session starter. */
-export const inject = ['slots', 'conversation', 'layout', 'uiWorkspace']
+/** Required services: slots, conversation, layout actions, workspace session starter, and session scopes. */
+export const inject = ['slots', 'conversation', 'layout', 'uiWorkspace', 'sessions']
 
 /** Workspace UI navigation slice this plugin uses (New Session button). */
 interface WorkspaceNavigation {
@@ -74,13 +75,21 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
     name: 'conversation.input.left',
     id: 'chaos-mobile-attachment-picker',
-    inject: () => ({
+    inject: sessionId => ({
       conversation: ctx.conversation as ConversationController,
       // Optional service (packages/AGENTS.md): strict ctx.get, so the
       // attachment option appears exactly when chaos-upload is mounted.
       upload: () => ctx.get('chaosUpload'),
       unsupportedImageNotice: '仅支持 PNG、JPEG、WebP 和 GIF 图片。',
-      notifyInput: (level: 'info' | 'error', text: string) => { ctx.conversation.input.for(ctx).notify(level, text) },
+      // Session-routed notice: the input facade resolves through the
+      // session scope, so a result landing after a session switch still
+      // reaches its own composer.
+      notifyInput: (level: 'info' | 'error', text: string) => {
+        const actx = ctx.sessions.scope(sessionId)
+        if (actx !== undefined) {
+          ;(ctx.conversation as ConversationController).input.for(actx).notify(level, text)
+        }
+      },
     }),
   }, AttachmentButton))
 }

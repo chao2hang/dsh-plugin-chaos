@@ -4,7 +4,6 @@
   "include": ["src"],
   "references": [
     { "path": "../../core/agent" },
-    { "path": "../../runtime-diagnostics/invariants" },
     { "path": "../../sandbox/sandbox-policy" },
     { "path": "../../core/system-prompt" }
   ]

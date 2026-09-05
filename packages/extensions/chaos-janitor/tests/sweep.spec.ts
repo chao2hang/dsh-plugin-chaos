@@ -31,7 +31,7 @@ async function session(id: string, ageDays: number, logName = 'session.jsonl.zst
 }
 
 const header = (id: string): SessionHeader => ({
-  version: 0, id: id as never, createdAt: NOW, cwd: CWD,
+  version: 0, id: id as never, createdAt: NOW, cwd: CWD, isSeeded: false,
 })
 
 /** Sweep inputs resolved per call so `root` is read after beforeAll assigns it. */
@@ -128,7 +128,7 @@ describe('sweepArchivedSessions', () => {
     const at = new Date(NOW - 60 * DAY_MS)
     await utimes(join(directory, 'session.jsonl'), at, at)
     const outcome = await sweepArchivedSessions(
-      { archived: new Set([id]), headers: [{ version: 0, id: id as never, createdAt: NOW }], isLive: () => false },
+      { archived: new Set([id]), headers: [{ version: 0, id: id as never, createdAt: NOW, isSeeded: false }], isLive: () => false },
       options(),
     )
     expect(outcome.deleted.map(d => d.id)).toEqual([id])

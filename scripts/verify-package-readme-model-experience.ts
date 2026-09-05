@@ -67,6 +67,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/hmr': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
   'packages/extensions/chaos-mobile': { kind: 'none', reason: 'Browser-side mobile adaptation; registers neither model context nor tool schema.' },
   'packages/extensions/chaos-bundle': { kind: 'none', reason: 'Composition patch layer with no runtime of its own; the plugins it inserts own every model-facing registration.' },
+  'packages/extensions/chaos-janitor': { kind: 'none', reason: 'Deletes durable session storage outside any model turn; registers nothing model-facing.' },
   'packages/extensions/chaos-models': { kind: 'none', reason: 'Browser-side capability dialog; selections persist through the pi-ai settings route, which owns any model-visible effect.' },
   'packages/extensions/chaos-restart': { kind: 'none', reason: 'Browser-side settings section and host restart routes; registers nothing model-facing.' },
   'packages/extensions/chaos-retry': { kind: 'none', reason: 'The resend rides the ordinary composer input path; the agent loop owns the model-visible turn it produces.' },

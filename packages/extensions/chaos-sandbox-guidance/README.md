@@ -16,7 +16,15 @@ The Chaos bundle mounts this package as `chaos-sandbox-guidance`. It requires `s
 
 ## Model Experience
 
-The plugin adds a short policy reminder to each model request. It adds no tool schema and does not change tool execution.
+### Sandbox policy reminder
+
+#### What the model sees
+
+One `chaos:sandbox-escalation` system-prompt section per request: a short reminder whose text depends on the session's resolved sandbox mode (`danger-full-access` guidance differs from confined-mode guidance). No tool schema is added and tool execution is unchanged.
+
+#### Token effect
+
+One short reminder sentence per request while a sandbox mode applies.
 
 #### KV Cache effect
 
@@ -25,3 +33,5 @@ The dynamic policy reminder can change when the session's sandbox mode changes, 
 ## Known Limitations and Deferred Work
 
 - The plugin guides compliant models but cannot repair an already emitted tool call. The sandbox executor remains the enforcement owner.
+
+**Runtime invariant:** No companion is published. The guidance text derives from the policy service's resolved mode at each read, and both the prompt section and the reminder projection register transactionally through ctx.effect.

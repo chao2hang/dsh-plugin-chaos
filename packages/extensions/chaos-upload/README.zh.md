@@ -39,15 +39,17 @@ Host 半边对每次上传做准入：解码规范 base64、校验字节上限�
 
 ## Model Experience
 
-### What the model sees
+### Workspace reference markers
+
+#### What the model sees
 
 无固定提示词段落。一个有效的（用户输入或插入的）`@<dir>/...` 记号在下一个模型步骤贡献一条简短的 `workspace-reference` 标记。原记号保留在用户文本中。
 
-### Token effect
+#### Token effect
 
 可变：声明的用户消息中每个有效的不同上传引用贡献一条简短标记。上传字节只在入站 RPC 中传输一次，从不进入模型请求。
 
-### KV Cache effect
+#### KV Cache effect
 
 无稳定前缀变化。引用标记的变化只改变该步骤用户消息的后缀。
 
@@ -57,3 +59,5 @@ Host 半边对每次上传做准入：解码规范 base64、校验字节上限�
 - 标记在步骤准备时验证存在性，不保证后续工具调用的持续访问，且只扫描配置目录之下的记号。
 - 同时启用 chaos-at-file 时，两个插件会各为同一个 `@<dir>/...` 记号打一条标记；在意重复时请关闭其中一个标记表面。
 - 浏览器半边按渲染解析 `chaosUpload` 服务，插件晚加载时要等输入框下一次重渲染才出现。
+
+**运行时不变式：** 不发布 companion。存储的上传经由 fs 服务落在工作区，并由标记在步骤准备时重新验证；浏览器半边按渲染解析 `chaosUpload` 服务，不持有跨事件状态。

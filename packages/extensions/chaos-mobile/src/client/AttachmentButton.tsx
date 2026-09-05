@@ -35,7 +35,7 @@ const ACTION_LABELS: Readonly<Record<AttachmentAction, string>> = {
  * the `@path` mention to the draft.
  */
 export function AttachmentButton(
-  { conversation, session, inputActions, upload, unsupportedImageNotice, notifyInput }: AttachmentPickerProps,
+  { conversation, sessionId, inputActions, upload, unsupportedImageNotice, notifyInput }: AttachmentPickerProps,
 ): ReactNode {
   const root = useRef<HTMLDivElement | null>(null)
   const camera = useRef<HTMLInputElement>(null)
@@ -92,7 +92,7 @@ export function AttachmentButton(
     try {
       for (const file of documents) {
         try {
-          const { upload: stored, mentioned } = await face.uploadAndMention(session.sessionId, file)
+          const { upload: stored, mentioned } = await face.uploadAndMention(sessionId, file)
           if (!mentioned) {
             notifyInput('info', `已上传 ${stored.relative}，请手动输入 @${stored.relative} 引用。`)
           }

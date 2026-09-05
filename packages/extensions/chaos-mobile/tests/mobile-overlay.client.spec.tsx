@@ -197,7 +197,7 @@ describe('MobileOverlay', () => {
 
 describe('chaos-mobile client composition', () => {
   it('declares layout and passes its actions into the shell overlay', () => {
-    expect(inject).toEqual(['slots', 'conversation', 'layout', 'uiWorkspace'])
+    expect(inject).toEqual(['slots', 'conversation', 'layout', 'uiWorkspace', 'sessions'])
 
     const toggleSidebar = vi.fn()
     const closeDetails = vi.fn()

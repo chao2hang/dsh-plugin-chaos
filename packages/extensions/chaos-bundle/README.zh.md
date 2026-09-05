@@ -2,19 +2,22 @@
 
 [English](README.md) | 中文
 
-Chaos 插件 bundle：web-app 层之上的组合层，把 chaos 插件集声明为包依赖，并插入可选的 `chaos-think-tags` 行。
+Chaos 插件 bundle：web-app 层之上的组合层，把 chaos 插件集声明为包依赖，并插入可选的插件行。
 
 ## 组合
 
-web-app bundle 已经插入了 `chaos-mobile`、`chaos-auth`、`chaos-restart`、`chaos-models`、`chaos-retry` 和 `process-control`。本包的 `cordis.patch.yml` 只添加一行可选项：
+web-app bundle 已经插入了 `chaos-mobile`、`chaos-auth`、`chaos-restart`、`chaos-models`、`chaos-retry` 和 `process-control`。本包的 `cordis.patch.yml` 添加四个可选项：
 
 | 行 | 包 | 用途 |
 |---|---|---|
 | `chaos-think-tags` | `@deepseek-ai/dsh-plugin-chaos-think-tags` | 通过会话推理展开项渲染 assistant think-tag 输出 |
+| `chaos-sandbox-guidance` | `@deepseek-ai/dsh-plugin-chaos-sandbox-guidance` | 运行时指引，避免多余的沙箱提权参数 |
+| `chaos-upload` | `@deepseek-ai/dsh-plugin-chaos-upload` | 移动端附件选择器背后的工作区文档上传；文件存储在 `<workspace>/uploads/` 并标记 `@uploads/...` 引用 |
+| `chaos-janitor` | `@deepseek-ai/dsh-plugin-chaos-janitor` | 保留清扫器：归档会话日志静默超过 `maxArchivedDays` 即删除（默认 0 保留） |
 
 ## 用法
 
-将 bundle 加入 profile 的 bundles 列表，即可把 chaos 插件集安装为其依赖并插入 think-tag 渲染行：
+将 bundle 加入 profile 的 bundles 列表，即可把 chaos 插件集安装为其依赖并插入可选插件行：
 
 ```yaml
 # In the profile's bundles list:

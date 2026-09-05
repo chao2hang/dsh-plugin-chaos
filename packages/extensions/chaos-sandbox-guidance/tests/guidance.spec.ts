@@ -13,6 +13,7 @@ function session(id: string): Session {
     id: SessionId(id),
     createdAt: 0,
     cwd: '/workspace',
+    isSeeded: false,
   })
 }
 

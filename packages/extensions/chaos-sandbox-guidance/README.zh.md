@@ -16,7 +16,15 @@ Chaos bundle 将该包以 `chaos-sandbox-guidance` 挂载。它需要 `sandboxPo
 
 ## 模型体验
 
-插件会向每个模型请求添加简短的 policy 提示。它不添加 tool schema，也不改变工具执行。
+### 沙箱策略提醒
+
+#### 模型所见
+
+每个请求一个 `chaos:sandbox-escalation` 系统提示词段落：一条简短提醒，其文本取决于会话解析出的沙箱模式（`danger-full-access` 指引与受限模式指引不同）。不添加 tool schema，工具执行不变。
+
+#### Token 影响
+
+沙箱模式生效期间，每个请求一条简短提醒句。
 
 #### KV Cache 影响
 
@@ -25,3 +33,5 @@ Chaos bundle 将该包以 `chaos-sandbox-guidance` 挂载。它需要 `sandboxPo
 ## 已知限制与暂缓事项
 
 - 插件只能引导遵循指引的模型，不能修复已经发出的 tool call。sandbox executor 仍是执行限制的拥有方。
+
+**运行时不变式：** 不发布 companion。指引文本在每次读取时从策略服务解析出的模式派生，提示词段落与提醒投影都通过 ctx.effect 事务式注册。

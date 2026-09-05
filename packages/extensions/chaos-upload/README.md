@@ -39,15 +39,17 @@ A deleted upload degrades gracefully: the pre-step marker validation fails and t
 
 ## Model Experience
 
-### What the model sees
+### Workspace reference markers
+
+#### What the model sees
 
 No fixed prompt section. A valid user-typed or inserted `@<dir>/...` token contributes one short `workspace-reference` marker at the next model step. The original token remains in the user's text.
 
-### Token effect
+#### Token effect
 
 Variable: one short marker per valid distinct uploaded reference in the claimed user messages. Uploaded bytes cross the RPC once inbound and never enter a model request.
 
-### KV Cache effect
+#### KV Cache effect
 
 No stable prefix changes. A changed reference marker changes that step's user-message suffix only.
 
@@ -57,3 +59,5 @@ No stable prefix changes. A changed reference marker changes that step's user-me
 - The marker validates existence at step preparation, not continued access by a later tool call, and scans only tokens under the configured directory.
 - With chaos-at-file also enabled, both plugins mark the same `@<dir>/...` token once each; disable one marker surface if the duplication matters.
 - The browser half resolves the `chaosUpload` service per render, so a late-loading plugin appears on the composer's next re-render rather than immediately.
+
+**Runtime invariant:** No companion is published. Stored uploads live in the workspace through the fs service and are re-validated by the marker at step preparation; the browser half resolves the `chaosUpload` service per render and holds no cross-event state.

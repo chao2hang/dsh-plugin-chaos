@@ -27,7 +27,11 @@ Deletion removes the session's own directory under the sessions root (`$DSH_HOME
 
 ## Model Experience
 
-None: the plugin deletes durable session storage outside any model turn and contributes no model-visible input.
+None, as the plugin deletes durable session storage outside any model turn and contributes no model-visible input.
+
+#### KV Cache effect
+
+The plugin changes no model request, so it neither adds tokens nor changes KV Cache reuse.
 
 ## Known Limitations and Deferred Work
 
@@ -35,3 +39,5 @@ None: the plugin deletes durable session storage outside any model turn and cont
 - The sweep only sees sessions the jsonl backend materializes; a different persistence backend leaves every session in place.
 - Deleting a session does not delete image attachments in the attachment store that only that session referenced; those bytes are orphaned until attachment retention exists.
 - The registry's `archivedSessionIds` keeps ids of deleted sessions; they are inert (the registry filters missing sessions from every grouping surface) but accumulate until the registry prunes them.
+
+**Runtime invariant:** No companion is published. Each sweep re-derives its candidates from the session registry and the log files' mtimes through the persistence layout contract; the plugin holds no state between sweeps, and the timer registration is disposed with its fiber.

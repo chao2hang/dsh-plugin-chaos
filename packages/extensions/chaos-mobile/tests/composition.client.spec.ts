@@ -36,6 +36,8 @@ async function bench() {
   ctx.provide('conversation', { createDraftImages: () => [], releaseDraftImages: () => {} } as never)
   // ...and 'uiWorkspace' for the overflow sheet's new-session action.
   ctx.provide('uiWorkspace', { startSession: () => {} } as never)
+  // ...and 'sessions' so attachment notices resolve a session scope.
+  ctx.provide('sessions', { scope: () => undefined } as never)
 
   const fiber = ctx.plugin({ inject, apply })
   await fiber.await()
@@ -44,7 +46,7 @@ async function bench() {
 
 describe('chaos-mobile REAL-composition through Cordis Context', () => {
   it('declares its service dependencies', () => {
-    expect(inject).toEqual(['slots', 'conversation', 'layout', 'uiWorkspace'])
+    expect(inject).toEqual(['slots', 'conversation', 'layout', 'uiWorkspace', 'sessions'])
   })
 
   it('registers into the shell.overlay slot with the correct inject face', async () => {

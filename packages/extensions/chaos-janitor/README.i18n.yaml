@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-janitor/README.md
-README.md: fe41233a04c60723aba3817ece003fa069f35779
-README.zh.md: 114feeb8bfbec741944a18f6240b60cb1b637966
+README.md: b645e012ca8e2532156b6d0b195b86326ea36074
+README.zh.md: 2ed744bf55800c4ab84eeef8be0d31de2d3faec0
