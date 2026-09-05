@@ -50,6 +50,8 @@ async function mount(initialGeneration?: ConnectionGeneration): Promise<Bench> {
   let generation = initialGeneration
   const connection: ConnectionHandle = {
     isLoopback: true,
+    authenticated: false,
+    setAuthenticated: () => {},
     generation: {
       getSnapshot: () => generation,
       subscribe: (listener) => {

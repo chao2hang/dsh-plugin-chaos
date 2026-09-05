@@ -678,7 +678,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     // from a rejected argument, which a fixed empty list has none of.
     provideCmdline(ctx, {
       args: [],
-      exit: (code) => {
+      exit: async (code) => {
         throw new Error(`web e2e scaffold: the web app requested exit ${String(code)} with no arguments to reject`)
       },
     })

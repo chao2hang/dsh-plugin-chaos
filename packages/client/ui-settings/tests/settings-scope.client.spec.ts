@@ -558,4 +558,25 @@ describe('SettingsScopeBinder.bind', () => {
     await fiber.dispose()
     expect(describeCall).not.toHaveBeenCalled()
   })
+
+  it('binds a remote browser to the authenticated host settings surface', async () => {
+    const describeCall = vi.fn().mockResolvedValue(described({ preference: 'dark' }, 1))
+    const mirror = new SettingsDescribeMirror(ctxWith({ describe: describeCall }))
+    const ctx = new Context()
+    let scope!: SettingsScope<UiTestSettings>
+    new TestRemote(ctx, { settings: { describe: describeCall } })
+    await ctx.plugin(SettingsScopeBinder, { mirror, schema: settingsSchema, persistence: 'host' }).await()
+    const fiber = ctx.plugin({
+      inject: ['remote', 'settingsScope'],
+      apply: (plugin: Context) => {
+        scope = plugin.settingsScope.bind<UiTestSettings>({ namespace: 'ui-test' })
+      },
+    })
+    await fiber.await()
+    await vi.waitFor(() => {
+      expect(scope.getSnapshot()).toMatchObject({ status: 'ready', value: { preference: 'dark' } })
+    })
+    await fiber.dispose()
+    expect(describeCall).toHaveBeenCalledTimes(1)
+  })
 })

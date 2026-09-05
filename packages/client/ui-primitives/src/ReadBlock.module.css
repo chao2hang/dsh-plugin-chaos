@@ -1,6 +1,6 @@
 .block {
   --dsl-read-radius: 12px;
-  --dsl-read-line-height: 22px;
+  --dsl-read-line-height: calc(var(--dsh-code-font-size) + 9px);
   /* Fixed-width gutter column for the line numbers, so the content edge stays
      put down the whole window regardless of how wide the numbers grow. */
   --dsl-read-gutter: 48px;
@@ -30,8 +30,8 @@
   white-space: nowrap;
   color: var(--dsw-alias-label-primary);
   font-family: var(--ds-font-family-code);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--dsh-code-font-size-small);
+  line-height: calc(var(--dsh-code-font-size-small) + 6px);
 }
 
 .action {
@@ -49,8 +49,8 @@
 .lang {
   color: var(--dsw-alias-label-tertiary);
   font-family: var(--ds-font-family-code);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--dsh-code-font-size-small);
+  line-height: calc(var(--dsh-code-font-size-small) + 6px);
 }
 
 .copyButton {

@@ -1,0 +1,118 @@
+/* MobileSheet: iOS-style bottom sheet presentation. */
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--dsw-alias-bg-base, #000) 36%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  animation: chaos-sheet-fade-in 0.2s ease;
+}
+
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 90dvh;
+  border: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1, currentColor) 72%, transparent);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2, #1e1e2e) 82%, transparent);
+  /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens
+     (see ui-theme styles/scrollbar.css for the rebinding contract). */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  box-shadow: 0 -12px 36px color-mix(in srgb, var(--dsw-alias-bg-base, #000) 20%, transparent);
+  backdrop-filter: saturate(160%) blur(22px);
+  -webkit-backdrop-filter: saturate(160%) blur(22px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  outline: none;
+  animation: chaos-sheet-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overscroll-behavior: contain;
+}
+
+/* Dragging: disable the transition so the sheet follows the pointer. */
+.sheet[data-dragging] {
+  transition: none;
+}
+
+/* Detents: medium = ~50% viewport, large = ~90%. */
+.sheet[data-detent='medium'] { height: 50dvh; }
+.sheet[data-detent='large'] { height: 90dvh; }
+
+.grabber {
+  flex: none;
+  width: 56px;
+  height: 32px;
+  margin: 2px auto 0;
+  padding: 8px 10px 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.grabber::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 5px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: var(--dsw-alias-label-tertiary, rgba(255, 255, 255, 0.3));
+}
+
+.grabber:active {
+  cursor: grabbing;
+}
+
+.grabber:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary, currentColor);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+/* The body is a definite-height flex COLUMN, matching the desktop Modal
+ * card: headless dialog content (the directory browser's Miller view) owns a
+ * flexible middle that only gets space from a flex parent. A block scroller
+ * would leave that middle auto-height, and since its columns are scroll
+ * containers their content contributes nothing to intrinsic sizing — the
+ * whole view collapses to 0px and the picker lists nothing. */
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@keyframes chaos-sheet-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes chaos-sheet-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop { animation: none; }
+  .sheet {
+    animation: none;
+    transition: none;
+  }
+}

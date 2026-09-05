@@ -13,19 +13,33 @@ import type { ConnectionFetchHandler } from './rpc.ts'
  * each body in memory, so this cap is also the per-request resident bound. */
 export const DEFAULT_MAX_REQUEST_BODY_BYTES = 300 * 1024 * 1024
 
+/** Fetch requests created from an authentication-validated HTTP request. */
+const authenticatedRequests = new WeakSet<Request>()
+
+/**
+ * Whether a request passed the web server authentication guard before bridging.
+ * @param request - internal Fetch request created by {@link bridge}.
+ * @returns true when its source HTTP request was authentication-validated.
+ */
+export function isAuthenticatedApiRequest(request: Request): boolean {
+  return authenticatedRequests.has(request)
+}
+
 /**
  * Bridge one node:http request to the fetch-shaped handler (client close
  * aborts; response bodies stream out chunk by chunk).
  * @param req - incoming node:http request.
  * @param res - node:http response the bridge writes and owns to completion.
  * @param apiHandler - fetch-shaped API carrier the request is dispatched to.
- * @param maxRequestBodyBytes - maximum bytes buffered for a buffered route.
+ * @param maxRequestBodyBytes - maximum body bytes buffered before dispatch.
+ * @param authenticated - whether a preceding server guard validated the source request.
  */
 export async function bridge(
   req: IncomingMessage,
   res: ServerResponse,
   apiHandler: ConnectionFetchHandler,
   maxRequestBodyBytes = DEFAULT_MAX_REQUEST_BODY_BYTES,
+  authenticated = false,
 ): Promise<void> {
   const abort = new AbortController()
   // Client-disconnect detection MUST hang off the response, not the request:
@@ -80,6 +94,7 @@ export async function bridge(
       duplex: 'half',
     } as RequestInit & { duplex: 'half' })
   }
+  if (authenticated) authenticatedRequests.add(request)
   const response = await apiHandler.fetch(request)
   const requestUnread = bodyMode === 'streaming' && !req.readableEnded
   const responseHeaders = Object.fromEntries(response.headers.entries())

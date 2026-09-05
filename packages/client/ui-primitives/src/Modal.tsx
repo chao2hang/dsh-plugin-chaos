@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import { IconCloseOutline16 } from './icons/index.tsx'
+import { useSurfacePresentation } from './SurfacePresentation.tsx'
 import css from './Modal.module.css'
 
 interface ModalBaseProps {
@@ -38,16 +39,48 @@ type ModalProps = ModalBaseProps & (
 export function Modal({
   open, onClose, title, closeLabel, description, children, footer, className, contentClassName, headless = false,
 }: ModalProps) {
+  const presentation = useSurfacePresentation()
+  const sheetMode = presentation.mode === 'sheet' && presentation.presentAsSheet !== undefined
+
   useEffect(() => {
-    if (!open) return
+    if (!open || sheetMode) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => { document.removeEventListener('keydown', onKeyDown) }
-  }, [open, onClose])
+  }, [open, onClose, sheetMode])
 
   if (!open) return null
+
+  // Sheet mode: delegate the dialog content to the injected sheet presenter
+  // (chaos-mobile's MobileSheet). The presenter owns the backdrop, grabber,
+  // detent, and drag-to-dismiss; Modal only assembles the inner chrome.
+  if (presentation.mode === 'sheet' && presentation.presentAsSheet !== undefined) {
+    const sheetContent = headless
+      ? children
+      : (
+        <>
+          <div className={css.header}>
+            <h2 className={css.title}>{title}</h2>
+            <button type="button" className={css.close} aria-label={closeLabel} onClick={onClose}>
+              <IconCloseOutline16 size={14} />
+            </button>
+          </div>
+          {description !== undefined && description !== '' && (
+            <p className={css.description}>{description}</p>
+          )}
+          {children !== undefined && <div className={css.body}>{children}</div>}
+          {footer !== undefined && <div className={css.footer}>{footer}</div>}
+        </>
+      )
+    return createPortal(presentation.presentAsSheet({
+      surface: 'dialog',
+      children: sheetContent,
+      onClose,
+      title,
+    }), document.body)
+  }
 
   return createPortal((
     <div className={css.root} role="presentation">
@@ -57,6 +90,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        data-surface="dialog"
       >
         {headless
           ? children

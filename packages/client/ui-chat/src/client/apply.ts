@@ -24,6 +24,7 @@ import { ApprovalCommand } from './chat/ApprovalCommand.tsx'
 import { ChatView } from './chat/ChatView.tsx'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
 import { StatsLine } from './chat/StatsLine.tsx'
+import { UsageReport, type UsageReportRead, type UsageReportResult } from './chat/UsageReport.tsx'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { DetailsPanel } from './details/DetailsPanel.tsx'
 import { en, NS, zh } from './locale.ts'
@@ -156,6 +157,26 @@ export function apply(ctx: Context): void {
     ctx.slots.register({
       name: 'conversation.composer.dock', id: 'stats', order: 0, locale: NS,
     }, StatsLine))
+
+  // The Statistics tab reads the host's durable all-history usage projection
+  // from the usage-report remote namespace. Assemblies without the
+  // contribution serve undefined and the tab renders its no-endpoint state.
+  ctx.slots.inject('conversation.view', () =>
+    ctx.slots.register({
+      name: 'conversation.view',
+      id: 'statistics',
+      order: 20,
+      label: () => t('view.statistics'),
+      locale: NS,
+      inject: () => ({
+        usageReport: {
+          // The client remote resolves RemoteResult directly; the component reads the old transport envelope.
+          read: (payload: { timeZone: string }, signal?: AbortSignal) =>
+            ctx.remote['usage-report'].read(payload, signal)
+              .then(result => ({ result: result as unknown as UsageReportResult })),
+        } satisfies UsageReportRead,
+      }),
+    }, UsageReport))
 
   ctx.slots.inject('conversation.approval.detail', () =>
     ctx.slots.register({ name: 'conversation.approval.detail' }, ApprovalCommand))

@@ -51,6 +51,9 @@ export class ThemePresenter {
       body.style.setProperty(name, value)
       this.appliedTokens.push(name)
     }
+    body.style.setProperty('--dsh-ui-font-size', `${String(snapshot.uiFontSize)}px`)
+    body.style.setProperty('--dsh-code-font-size', `${String(snapshot.codeFontSize)}px`)
+    body.style.setProperty('--dsh-code-font-size-small', `${String(Math.max(snapshot.codeFontSize - 1, 10))}px`)
     this.themeColorMeta.content = getComputedStyle(body).backgroundColor
     if (!this.themeColorMeta.isConnected) document.head.append(this.themeColorMeta)
   }
@@ -63,6 +66,9 @@ export class ThemePresenter {
     body.style.removeProperty(CONTENT_FONT_SIZE_VARIABLE)
     for (const name of this.appliedTokens) body.style.removeProperty(name)
     this.appliedTokens = []
+    body.style.removeProperty('--dsh-ui-font-size')
+    body.style.removeProperty('--dsh-code-font-size')
+    body.style.removeProperty('--dsh-code-font-size-small')
     this.themeColorMeta.remove()
   }
 }

@@ -1,0 +1,21 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  // The host half serves HTTP routes, so this dual-half package restores the
+  // ambient node types the client base deliberately drops.
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "types": ["node", "client-build-environment"]
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../host/webserver" },
+    { "path": "../../boot/process-control" },
+    { "path": "../../client/locale" },
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../client/ui-primitives" },
+    { "path": "../../client/ui-renderer" },
+    { "path": "../../client/ui-settings" },
+    { "path": "../../client/ui-slots" }
+  ]
+}

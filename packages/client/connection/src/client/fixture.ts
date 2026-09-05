@@ -646,6 +646,59 @@ function sid(id: string): SessionId {
   return id as SessionId
 }
 
+/** One provider/model row of a fixture usage report (day route or model total). */
+type UsageReportRoute = {
+  provider: string
+  model: string
+  requests: number
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+  cacheWriteTokens: number
+}
+
+/**
+ * Deterministic one-day usage report served to the Statistics tab in fixture
+ * mode. The date follows the caller's time zone; the counters are fixed
+ * samples that exercise day routes, model totals, and the unattributed bucket.
+ * @param timeZone - IANA time zone naming the report's calendar day.
+ * @returns the report value the host endpoint returns.
+ */
+function usageReportValue(timeZone: string | undefined): {
+  days: {
+    date: string
+    requests: number
+    inputTokens: number
+    outputTokens: number
+    cacheReadTokens: number
+    cacheWriteTokens: number
+    routes: UsageReportRoute[]
+  }[]
+  models: UsageReportRoute[]
+  unattributed: { requests: number; inputTokens: number; outputTokens: number; cacheReadTokens: number; cacheWriteTokens: number }
+} {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    ...timeZone === undefined ? {} : { timeZone },
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  })
+  const fields = Object.fromEntries(formatter.formatToParts(new Date()).map(part => [part.type, part.value]))
+  const today = `${fields.year}-${fields.month}-${fields.day}`
+  return {
+    days: [{
+      date: today, requests: 3, inputTokens: 48, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0,
+      routes: [
+        { provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 20, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+        { provider: 'openai', model: 'gpt', requests: 1, inputTokens: 25, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+      ],
+    }],
+    models: [
+      { provider: 'openai', model: 'gpt', requests: 2, inputTokens: 35, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+      { provider: 'deepseek', model: 'reasoner', requests: 1, inputTokens: 20, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+    ],
+    unattributed: { requests: 1, inputTokens: 3, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+  }
+}
+
 const FIXTURE_IMAGE_DATA = 'iVBORw0KGgoAAAANSUhEUgAAAKAAAABaCAYAAAA/xl1SAAAAvklEQVR42u3SMQ0AAAjAMIyhELM4AAe8PD1qYFlk9cCXEAEDYkAwIAYEA2JAMCAGBANiQDAgBgQDYkAwIAYEA2JAMCAGBANiQDAgBgQDYkAwIAYEA2JAMCAGxIBCYEAMCAbEgGBADAgGxIBgQAwIBsSAYEAMCAbEgGBADAgGxIBgQAwIBsSAYEAMCAbEgGBADAgGxIAYEAyIAcGAGBAMiAHBgBgQDIgBwYAYEAyIAcGAGBAMiAHBgBgQDIgB4bYWLb6pnOb1xAAAAABJRU5ErkJggg=='
 const FIXTURE_IMAGE_REF: ImageAttachmentRef = {
   attachmentId: 'fixture:image' as AttachmentIdType,
@@ -3674,6 +3727,10 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         case 'settings/update': return Promise.resolve(settingsRemotes.update(args.ns as string))
         case 'settings/replace': return Promise.resolve(settingsRemotes.replace(args.ns as string))
         case 'settings/mutate': return Promise.resolve(settingsRemotes.mutate(args.ns as string))
+        case 'usage-report/read': return Promise.resolve({
+          ok: true,
+          value: usageReportValue((request as { timeZone?: string } | undefined)?.timeZone),
+        })
         case 'session/list': return sessionApi.list(
           args._request as Parameters<FixtureSessionApi['list']>[0],
         )

@@ -6,7 +6,8 @@
 /* Dropdown card (figma MenuDropdown 122:9481 / 419:16920): menu surface,
  * r12, elevation-prominent (hairline stroke in shadow), 4px inset padding. */
 .list,
-.submenu {
+.submenu,
+.sheetMenu {
   /* min-widths below are the design's outer card widths — include the pad. */
   box-sizing: border-box;
   padding: 4px;
@@ -35,6 +36,41 @@
   z-index: 100;
   min-width: 218px;
   max-width: 360px;
+}
+
+/* MobileSheet provides the elevated surface and grabber. Its menu body needs
+   only the rows: full-width, compact padding, and no nested card shadow. */
+.sheetMenu {
+  width: 100%;
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0));
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sheetMenu .item {
+  min-height: 52px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.sheetMenu .item:active:not(:disabled),
+.sheetMenu .selected {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+
+.sheetMenu .itemIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.sheetMenu .check {
+  width: 20px;
+  height: 20px;
+  color: var(--dsw-alias-state-business-primary);
 }
 
 /* Portal mode: fixed in the viewport, coordinates supplied inline from the

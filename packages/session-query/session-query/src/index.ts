@@ -43,7 +43,7 @@ import {
   SessionQueryError,
   type Config,
 } from './config.ts'
-import { SessionCorpus } from './corpus.ts'
+import { SessionCorpus, type LogicalProjectionResult, type LogicalSessionSource } from './corpus.ts'
 import {
   SessionObservationReader,
   type SessionObservation,
@@ -79,6 +79,7 @@ export {
   materializeSessionResultFilters,
 } from './filters.ts'
 export { assertSessionHeadersCompatible } from './sources.ts'
+export type { LogicalProjectionResult, LogicalSessionSource } from './corpus.ts'
 export type { SessionObservation, SessionObservationOptions } from './observation.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -172,6 +173,24 @@ export abstract class SessionQueryEngine extends Service {
    */
   listSessions(signal?: AbortSignal): Promise<SessionRecord[]> {
     return this._corpus.listSessions(signal)
+  }
+
+  /**
+   * Fold selected live-preferred logs without retaining full-log snapshots.
+   *
+   * Persisted logs use the configured inspection concurrency. Each projector runs
+   * synchronously while its source is borrowed and must own every retained value.
+   * @param sessionIds - sessions to resolve in first-occurrence order.
+   * @param project - synchronous fold over one complete logical log.
+   * @param signal - cancellation shared by listing and persisted inspection.
+   * @returns one fulfilled or rejected projected result per unique requested id.
+   */
+  projectSessions<Value>(
+    sessionIds: readonly SessionId[],
+    project: (source: LogicalSessionSource) => Value,
+    signal?: AbortSignal,
+  ): Promise<LogicalProjectionResult<Value>[]> {
+    return this._corpus.projectMany(sessionIds, project, signal)
   }
 
   /**

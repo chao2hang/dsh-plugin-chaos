@@ -53,6 +53,13 @@ import {
 } from './generation.ts'
 
 export type { JsonlCompression } from './format.ts'
+/**
+ * On-disk layout contract of the jsonl backend: the sessions-root project and
+ * session directories and the log-file path inside them. Re-exported so
+ * retention tooling derives paths through the owning package instead of
+ * re-encoding the layout.
+ */
+export { logPath, logSuffix, projectDir, projectKey, sessionDir, generationLogFilename, generationLogPath } from './format.ts'
 
 /**
  * Internal handoff-reuse policy, not deployment configuration: a cold

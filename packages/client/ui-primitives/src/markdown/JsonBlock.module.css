@@ -26,7 +26,7 @@
   border: 0.5px solid var(--dsw-alias-border-l1);
   border-radius: 6px;
   font-family: var(--ds-font-family-code);
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--dsh-code-font-size-small);
+  line-height: calc(var(--dsh-code-font-size-small) + 5px);
   color: var(--dsw-alias-label-primary);
 }

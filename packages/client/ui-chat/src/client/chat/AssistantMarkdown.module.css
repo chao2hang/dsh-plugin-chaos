@@ -1,23 +1,23 @@
-/* Assistant flow body: full-width narration (figma 16/28 scaled 0.875 → 14/24
-   with the markdown token ladder), block gap 16. The Settings font-size
-   preference rides the body-published axis: size follows
-   --dsh-content-font-size and the line height keeps the 10px leading via the
-   shared px delta. IconActions sit below the body with an explicit 16px top
-   margin (figma 43:32997) — separate from the body's internal gap so the
-   footer spacing stays fixed when the body is a single block. */
+/* Assistant flow body: full-width narration. The body text rides the
+   shared application text size one step up (15px at the 14px default) so
+   narration stays the primary reading column; the Settings preference moves
+   it through the body-published --dsh-ui-font-size axis. IconActions sit
+   below the body with an explicit 12px top margin — separate from the body's
+   internal gap so the footer spacing stays fixed when the body is a single
+   block. */
 
 .root {
   display: flex;
   flex-direction: column;
-  font-size: var(--dsh-content-font-size, 14px);
-  line-height: calc(24px + var(--dsh-content-font-delta, 0px));
+  font-size: calc(var(--dsh-ui-font-size) + 1px);
+  line-height: calc(var(--dsh-ui-font-size) + 12px);
   color: var(--dsw-alias-label-primary);
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* Wide markdown tables (the renderer's ≥4-column md-table-wide hook) span
@@ -44,9 +44,9 @@
 
 /* hidden="until-found" keeps a zero-height reasoning box in flex layout.
    Cancel the one gap that box would otherwise leave before the visible reply;
-   visible Assistant blocks retain the ordinary 16px rhythm. */
+   visible Assistant blocks retain the ordinary 14px rhythm. */
 .body > [data-turn-process-inline][hidden] {
-  margin-bottom: -16px;
+  margin-bottom: -14px;
 }
 
 /* Interrupted-turn terminal marker: quiet inline tag, no animation. Fixed
@@ -64,7 +64,7 @@
 
 /* Finalized footer offset (figma 43:32997); chrome lives in MessageIconActions. */
 .actions {
-  margin-top: 16px;
+  margin-top: 12px;
   /* Optical align with 28px icon hit targets that pad 6px past the glyph. */
   margin-left: -6px;
 }

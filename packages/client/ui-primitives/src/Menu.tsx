@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import { IconCheckOutline16 } from './icons/index.tsx'
 import { usePointerGrace } from './pointer-grace.ts'
+import { useSurfacePresentation } from './SurfacePresentation.tsx'
 import css from './Menu.module.css'
 
 /** Selectable row (optionally with a nested submenu). */
@@ -97,9 +98,13 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
 }) {
   const rootRef = useRef<HTMLSpanElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const sheetListRef = useRef<HTMLDivElement>(null)
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null)
+  const [sheetSubmenu, setSheetSubmenu] = useState<MenuItem | null>(null)
   const [fixedPos, setFixedPos] = useState<CSSProperties | null>(null)
   const { arm: armClose, cancel: cancelClose } = usePointerGrace(onClose)
+  const presentation = useSurfacePresentation()
+  const sheetMode = presentation.mode === 'sheet' && presentation.presentAsSheet !== undefined
 
   // Portal mode: fixed-position the list from the anchor rect before paint;
   // track the anchor while open (capture-phase scroll catches nested panes).
@@ -107,7 +112,7 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
   // runs before the parent's, so a wrapper the host positions in its own
   // effect measures stale here — the host callback owns the truth instead.
   useLayoutEffect(() => {
-    if (!open || !portal) { setFixedPos(null); return }
+    if (!open || !portal || sheetMode) { setFixedPos(null); return }
     const place = () => {
       let r: DOMRect | null
       if (getAnchorRect !== undefined) {
@@ -164,18 +169,19 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
       // The portaled list is outside the anchor subtree; check both.
       if (rootRef.current?.contains(e.target) === true) return
       if (listRef.current?.contains(e.target) === true) return
+      if (sheetListRef.current?.contains(e.target) === true) return
       onClose()
     }
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
+    if (!sheetMode) document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
+      if (!sheetMode) document.removeEventListener('keydown', onKeyDown)
     }
-  }, [open, onClose])
+  }, [open, onClose, sheetMode])
 
   // A close from selection/Escape/outside click outruns a pending grace close;
   // left armed it would shut a list reopened inside the grace window. Its own
@@ -197,7 +203,7 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
       return <div key={entry.id} className={css.label} role="presentation">{entry.text}</div>
     }
     const hasSub = entry.submenu !== undefined && entry.submenu.length > 0
-    const subOpen = hasSub && openSubmenuId === entry.id
+    const subOpen = !sheetMode && hasSub && openSubmenuId === entry.id
     const selected = entry.id === selectedId || selectedIds?.includes(entry.id) === true
     return (
       <div
@@ -216,7 +222,8 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
           onFocus={() => { setOpenSubmenuId(hasSub ? entry.id : null) }}
           onClick={() => {
             if (hasSub) {
-              setOpenSubmenuId(entry.id)
+              if (sheetMode) setSheetSubmenu(entry)
+              else setOpenSubmenuId(entry.id)
               return
             }
             onSelect(entry.id)
@@ -252,17 +259,8 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
   // this pre-render in the same commit, so the first painted frame is
   // already at the final position (with getAnchorRect returning null the
   // list simply stays hidden).
-  const list = open && (
-    <div
-      ref={listRef}
-      className={clsx(css.list, dense && css.denseList, compact && css.compactList, scrollable && css.scrollable, portal && css.portal, side === 'top' && !portal && css.sideTop, align === 'end' && !portal && css.alignEnd)}
-      style={portal ? fixedPos ?? MEASURE_STYLE : undefined}
-      role="menu"
-      // React portals bubble synthetic events through the REACT tree: without
-      // this stop, an item click re-fires the anchor row's own onClick
-      // (open/toggle) after onSelect.
-      onClick={(e) => { e.stopPropagation() }}
-    >
+  const listContent = (
+    <>
       <div className={css.viewport} role="presentation">
         {items.map(renderEntry)}
       </div>
@@ -271,22 +269,63 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
           {footer.map(renderEntry)}
         </div>
       )}
+    </>
+  )
+
+  // Sheet mode: delegate the list to the injected sheet presenter instead of
+  // rendering a positioned dropdown. The presenter owns the backdrop, grabber,
+  // and drag-to-dismiss; the positioning effect above is skipped.
+  const sheetList = open && sheetMode && presentation.presentAsSheet !== undefined
+    ? presentation.presentAsSheet({
+      surface: 'menu',
+      children: <div ref={sheetListRef} className={css.sheetMenu} role="menu" onClick={(e) => { e.stopPropagation() }}>
+        {sheetSubmenu === null
+          ? listContent
+          : <>
+            <button type="button" className={css.item} onClick={() => { setSheetSubmenu(null) }}>返回</button>
+            <div className={css.label} role="presentation">{sheetSubmenu.label}</div>
+            {sheetSubmenu.submenu?.map(sub => (
+              <button key={sub.id} type="button" role="menuitem" className={css.item} disabled={sub.disabled} onClick={() => { onSelect(sub.id) }}>
+                {sub.icon !== undefined && <span className={css.itemIcon}>{sub.icon}</span>}
+                <span className={css.itemLabel}>{sub.label}</span>
+              </button>
+            ))}
+          </>}
+      </div>,
+      onClose,
+    })
+    : null
+
+  const list = open && !sheetMode && (
+    <div
+      ref={listRef}
+      className={clsx(css.list, dense && css.denseList, compact && css.compactList, scrollable && css.scrollable, portal && css.portal, side === 'top' && !portal && css.sideTop, align === 'end' && !portal && css.alignEnd)}
+      style={portal ? fixedPos ?? MEASURE_STYLE : undefined}
+      role="menu"
+      data-surface="menu"
+      // React portals bubble synthetic events through the REACT tree: without
+      // this stop, an item click re-fires the anchor row's own onClick
+      // (open/toggle) after onSelect.
+      onClick={(e) => { e.stopPropagation() }}
+    >
+      {listContent}
     </div>
   )
 
   // Pointer-leave dismissal watches the WRAPPER, not the list: React's
   // enter/leave traversal runs over the React tree, so trigger and portaled
   // list are one region here. Aiming back at the trigger, or crossing the 4px
-  // gap between them, therefore never counts as leaving.
+  // gap between them, therefore never counts as leaving. In sheet mode the
+  // presenter owns dismissal, so pointer-grace is not armed.
   return (
     <span
       ref={rootRef}
       className={clsx(css.root, className)}
-      onPointerEnter={closeOnPointerLeave ? cancelClose : undefined}
-      onPointerLeave={closeOnPointerLeave ? () => { if (open) armClose() } : undefined}
+      onPointerEnter={!sheetMode && closeOnPointerLeave ? cancelClose : undefined}
+      onPointerLeave={!sheetMode && closeOnPointerLeave ? () => { if (open) armClose() } : undefined}
     >
       {anchor}
-      {portal ? (list !== false && createPortal(list, document.body)) : list}
+      {sheetList !== null ? sheetList : (portal ? (list !== false && createPortal(list, document.body)) : list)}
     </span>
   )
 }

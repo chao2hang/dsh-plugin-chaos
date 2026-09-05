@@ -1,5 +1,6 @@
 /** Host registry and HTTP adapter for generic Connection RPC channels. */
 
+import type { IncomingMessage } from 'node:http'
 import { Context, Service } from '@deepseek-ai/cordis'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import {
@@ -93,10 +94,25 @@ export class HostConnectionService extends Service implements HostConnectionHand
     }
   }
 
-  /** Apply the configured Host/Origin fence, then browser authentication. */
+  /** Apply the configured Host/Origin fence, then session authentication. */
   requestRejection(request: ConnectionTrustRequest): ConnectionRequestRejection {
     if (!isTrustedApiRequest(request, this.trustedHosts)) return 403
-    return this.browserAuth.isAuthenticated(request) ? undefined : 401
+    return this.browserSessionValid(request) ? undefined : 401
+  }
+
+  /**
+   * Whether the request carries a valid session: the persistent browser cookie
+   * or a request-local mark left by a preceding web-server authentication
+   * guard (an external auth plugin validating the request before dispatch).
+   * The mark is keyed to the node request object that every physical carrier
+   * hands this method, so the narrow headers-only type is consulted through a
+   * cast; any other object simply finds no mark.
+   * @param request - fenced request being authenticated.
+   * @returns true when either session source validated the request.
+   */
+  private browserSessionValid(request: ConnectionTrustRequest): boolean {
+    if (this.browserAuth.isAuthenticated(request)) return true
+    return this.ctx.webServer.isAuthenticated(request as IncomingMessage)
   }
 
   /** Authenticate an index request through the process-token exchange or cookie. */
@@ -172,7 +188,7 @@ export class HostConnectionService extends Service implements HostConnectionHand
           res.end(rejection === 401 ? 'unauthorized' : 'forbidden')
           return
         }
-        await bridge(req, res, fetchHandler)
+        await bridge(req, res, fetchHandler, undefined, this.ctx.webServer.isAuthenticated(req))
       },
     }
     return owner.effect(

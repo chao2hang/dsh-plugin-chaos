@@ -42,7 +42,7 @@ interface EffortChoice {
  * @returns the trigger and, while open, the two-level menu.
  */
 export function ModelSelect(
-  { locked, available, directory, load, select, t }:
+  { locked, sessionId = '', available, directory, load, select, t }:
   ModelSelectInjected & { locked: boolean } & PropsLocale<'model'>,
 ) {
   const state = useSyncExternalStore(
@@ -50,7 +50,12 @@ export function ModelSelect(
     () => directory.getSnapshot(),
   )
   const [open, setOpen] = useState(false)
+  const [compactMenu, setCompactMenu] = useState(() => window.visualViewport?.width !== undefined && window.visualViewport.width <= 600)
   const [pane, setPane] = useState<Pane>('root')
+  const [modelFilter, setModelFilter] = useState('')
+  // Whether the capability dialog is composed; probed on open so a late-
+  // registered extension is seen without effect churn.
+  const [capabilitiesAvailable, setCapabilitiesAvailable] = useState(false)
   // The in-menu error strip serves catalog loads (its Retry re-runs the
   // load); a rejected SELECTION announces through the transient toast
   // instead, so the strip renders only while the latest failure-capable
@@ -79,6 +84,12 @@ export function ModelSelect(
     ? -1
     : choices.findIndex(c => c.selection.provider === state.current?.provider && c.selection.model === state.current.model)
   const currentChoice = choices[selectedIndex]
+  const normalizedModelFilter = modelFilter.trim().toLocaleLowerCase()
+  const filteredGroups = useMemo(() => state.groups.map(group => ({
+    group,
+    models: group.models.filter(model => normalizedModelFilter === '' || [group.name, group.id, model.name, model.id, model.description]
+      .some(value => value?.toLocaleLowerCase().includes(normalizedModelFilter) === true)),
+  })).filter(({ models }) => models.length > 0), [normalizedModelFilter, state.groups])
   const reasoning = currentChoice?.model.reasoning
   const effectiveEffort = state.current?.reasoningEffort ?? reasoning?.defaultEffort
   const effortLabel = reasoning === undefined
@@ -106,6 +117,15 @@ export function ModelSelect(
   }
 
   useEffect(() => {
+    const viewport = window.visualViewport
+    if (viewport === null || viewport === undefined) return
+    const update = (): void => { setCompactMenu(viewport.width <= 600) }
+    update()
+    viewport.addEventListener('resize', update)
+    return () => { viewport.removeEventListener('resize', update) }
+  }, [])
+
+  useEffect(() => {
     if (!open) return
     const closeOutside = (event: MouseEvent): void => {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
@@ -118,6 +138,8 @@ export function ModelSelect(
 
   const show = (): void => {
     setPane('root')
+    setModelFilter('')
+    setCapabilitiesAvailable(document.querySelector('[data-model-capabilities]') !== null)
     setOpen(true)
     reload()
   }
@@ -218,10 +240,11 @@ export function ModelSelect(
         ref={triggerRef}
         type="button"
         className={css.trigger}
+        data-composer-model
         aria-label={triggerAria}
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-expanded={open}
-        aria-controls={open ? `${id}-menu` : undefined}
+        aria-controls={open ? `${id}-dialog` : undefined}
         title={triggerLabel}
         disabled={locked}
         onClick={() => {
@@ -239,24 +262,43 @@ export function ModelSelect(
 
       {open && (
         <div
-          id={`${id}-menu`}
-          className={css.menu}
-          role="menu"
+          id={`${id}-dialog`}
+          className={clsx(css.menu, compactMenu && css.menuCompact)}
+          role="dialog"
+          aria-modal="true"
           aria-label={t('menu.aria')}
           aria-busy={state.status === 'loading' || busy}
         >
           {pane === 'root' && (
             <>
-              <button ref={itemRef()} type="button" role="menuitem" className={css.cell} onClick={() => { setPane('model') }}>
+              <button ref={itemRef()} type="button" className={css.cell} aria-label={t('menu.model')} onClick={() => { setPane('model') }}>
                 <span className={css.cellLabel}>{t('menu.model')}</span>
                 <span className={css.cellValue}>{modelLabel}</span>
                 <IconChevronRightOutline14 className={css.cellChevron} />
               </button>
               {reasoning !== undefined && (
-                <button ref={itemRef()} type="button" role="menuitem" className={css.cell} onClick={() => { setPane('effort') }}>
+                <button ref={itemRef()} type="button" className={css.cell} aria-label={t('menu.effort')} onClick={() => { setPane('effort') }}>
                   <span className={css.cellLabel}>{t('menu.effort')}</span>
                   <span className={css.cellValue}>{effortLabel}</span>
                   <IconChevronRightOutline14 className={css.cellChevron} />
+                </button>
+              )}
+              {/* The capability dialog is extension-owned; this menu supplies
+                  its only visible entry point and forwards the session request. */}
+              {capabilitiesAvailable && (
+                <button
+                  ref={itemRef()}
+                  type="button"
+                  role="button"
+                  className={css.capabilitiesRow}
+                  data-model-capabilities-entry
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('dsh:open-model-capabilities', { detail: sessionId }))
+                    close(true)
+                  }}
+                >
+                  <span className={css.cellLabel}>{t('menu.capabilities')}</span>
+                  <span className={css.capabilitiesHint}>{t('menu.capabilitiesHint')}</span>
                 </button>
               )}
             </>
@@ -264,6 +306,16 @@ export function ModelSelect(
 
           {pane === 'model' && (
             <>
+              <label className={css.search}>
+                <span className={css.searchLabel}>{t('search.label')}</span>
+                <input
+                  type="search"
+                  value={modelFilter}
+                  placeholder={t('search.placeholder')}
+                  aria-label={t('search.label')}
+                  onChange={(event) => { setModelFilter(event.target.value) }}
+                />
+              </label>
               {state.status === 'loading' && (
                 <div className={css.status}>{t('status.loading')}</div>
               )}
@@ -279,19 +331,19 @@ export function ModelSelect(
                   <button type="button" className={css.retry} onClick={reload}>{t('retry')}</button>
                 </div>
               ))}
-              <div className={clsx(css.groups, 'scrollable')}>
-                {state.groups.map((group) => {
+              <div className={clsx(css.groups, 'scrollable')} role="radiogroup" aria-label={t('menu.model')}>
+                {filteredGroups.map(({ group, models }) => {
                   const headingId = `${id}-${group.id}`
                   return (
                     <section role="group" aria-labelledby={headingId} className={css.group} key={group.id}>
                       <div className={css.groupTitle} id={headingId}>{group.name}</div>
-                      {group.models.map((model) => {
+                      {models.map((model) => {
                         const selected = state.current?.provider === group.id && state.current.model === model.id
                         return (
                           <button
                             ref={itemRef()}
                             type="button"
-                            role="menuitemradio"
+                            role="radio"
                             aria-checked={selected}
                             className={clsx(css.option, selected && css.selected)}
                             key={model.id}
@@ -312,8 +364,8 @@ export function ModelSelect(
                   )
                 })}
               </div>
-              {state.status === 'ready' && choices.length === 0 && (
-                <div className={css.empty}>{t('empty.models')}</div>
+              {state.status === 'ready' && filteredGroups.length === 0 && (
+                <div className={css.empty}>{normalizedModelFilter === '' ? t('empty.models') : t('empty.search')}</div>
               )}
             </>
           )}
@@ -332,7 +384,7 @@ export function ModelSelect(
                   <button
                     ref={itemRef()}
                     type="button"
-                    role="menuitemradio"
+                    role="radio"
                     aria-checked={effectiveEffort === level.effort}
                     className={clsx(css.option, effectiveEffort === level.effort && css.selected)}
                     key={level.key}

@@ -1,0 +1,12 @@
+.picker { display: none; }
+.root { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.button { display: none; flex: 0 0 28px; order: -1; width: 28px; min-width: 28px; height: 28px; min-height: 28px; place-items: center; overflow: hidden; padding: 0; border: 0; border-radius: 999px; color: var(--dsw-alias-label-primary, #f5f7fa); background: var(--dsw-specific-selector, #2d3440); cursor: pointer; font-size: 0; line-height: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.button svg { display: block; flex: none; }
+.button:active:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover-solid, #3a4352); }
+.button:disabled { opacity: .5; cursor: default; }
+.menu { position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 30; display: flex; flex-direction: column; min-width: 112px; padding: 4px; border-radius: 12px; background: var(--dsw-specific-selector, #2d3440); box-shadow: 0 8px 24px rgb(0 0 0 / .35); }
+.menuItem { display: flex; align-items: center; justify-content: flex-start; min-height: 40px; padding: 0 14px; border: 0; border-radius: 8px; color: var(--dsw-alias-label-primary, #f5f7fa); background: transparent; cursor: pointer; font-size: 14px; text-align: left; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.menuItem:active:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover-solid, #3a4352); }
+.menuItem:disabled { opacity: .5; cursor: default; }
+.busy { color: var(--dsw-alias-label-secondary, #9aa4b2); font-size: 12px; white-space: nowrap; }
+@media (max-width: 767px) { .button { display: inline-grid; } }

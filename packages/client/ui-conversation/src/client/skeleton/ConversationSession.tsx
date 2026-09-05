@@ -71,12 +71,13 @@ export function ConversationSessionHeader({
   return (
     <header
       className={clsx(css.header, hideChrome && css.headerHidden)}
+      data-conversation-session-header=""
       aria-hidden={hideChrome || undefined}
     >
       {!hideChrome && (
         <>
           <div className={css.titleRow}>
-            <div className={css.titleCluster}>
+            <div className={css.titleCluster} data-conversation-header-identity>
               <nav className={css.crumbs} aria-label={t('session.hierarchy')}>
                 {ancestry.map((summary, index) => {
                   const last = index === ancestry.length - 1
@@ -130,18 +131,19 @@ export function ConversationSessionHeader({
                 {renderSlot('conversation.session.header.actions', {})}
               </div>
             </div>
-            <div className={css.headerUtilities}>
+            <div className={css.headerUtilities} data-header-utilities="">
               {renderSlot('conversation.session.header.utilities', {})}
             </div>
           </div>
           {tabs.length > 1 && (
-            <div className={css.tabs} role="tablist">
+            <div className={css.tabs} role="tablist" data-view-tabs>
               {tabs.map(viewTab => (
                 <button
                   key={viewTab.id}
                   type="button"
                   role="tab"
                   aria-selected={viewTab.id === active?.id}
+                  data-view-tab={viewTab.id}
                   className={clsx(css.tab, viewTab.id === active?.id && css.tabActive)}
                   onClick={() => { selectView(viewTab.id) }}
                 >

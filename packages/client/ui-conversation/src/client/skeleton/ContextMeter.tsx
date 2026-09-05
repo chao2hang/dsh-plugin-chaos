@@ -109,6 +109,7 @@ export function ContextMeter({ useProjection, t }: ContextMeterProps) {
         <button
           type="button"
           className={css.trigger}
+          data-composer-context
           aria-label={t('context.aria', { percent: reading })}
           aria-haspopup="dialog"
           aria-expanded={open}
