@@ -16,7 +16,7 @@
 
 - `build:lib:host` 在 `tsc -b tsconfig.host.json` 之前运行 `node --import tsx/esm scripts/bootstrap-typert.ts`。引导脚本早已存在——它通过 `WorkspaceTypertGenerator` 从源码产出 typert 面工件与 remote-client 文件，无需 tsdown 运行——但没有任何调用方。把它接进第一个构建阶段，后续每个阶段都有了生成契约；tsdown 阶段随后幂等地重新生成同一批工件。
 - `@deepseek-ai/dsh-client-file-upload/types` 获得映射到 `packages/client/file-upload/src/types.ts` 的源码层 paths 条目，与 `dsh-api-remotes/types` 先例一致。通过 `paths` 解析的工作区子路径导入让静态分析在干净树上可用；落穿到 `exports` 与构建产出的做法会在别处重新引入循环。
-- `vendor/cordis` 与 `vendor/cosmokit` 获得包级 `tsdown.config.ts` 覆盖（`schemastery`/`logger-console` 模式），使工作区 tsdown 阶段写出它们的 `lib/index.js` 运行时束。缺了它，exports 映射的 default 目标不存在，web 构建在经 Vite 的 commonjs 解析器解析 `@deepseek-ai/cordis` 时失败——这正是 lib 阶段转绿之后 sandbox 工作流在干净树上报告的同类失败。
+- 根 `tsdown.config.ts` 保留 upstream 的 Host 入口 `['lib/types/{index,invariant,startup}.js']`；重定基曾把它压平为 `''`，静默终止了工作区 tsdown 阶段对每个没有包级配置的包的打包。168 个工作区包（vendored 框架及其插件族在内）因此持有指向无人产出的 `lib/index.js` 的 exports 映射：web 构建解析不了 `@deepseek-ai/cordis`，构建后的 CLI 解析不了 `@deepseek-ai/cordis-plugin-group` 与 `@deepseek-ai/dsh-home-paths`，打包演练也在 publint 失败。恢复该入口使每个此类包从 tsc 在 `lib/types` 下产出的 JavaScript 打包。
 
 ## 考虑过的替代方案
 
