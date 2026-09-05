@@ -12,7 +12,7 @@ const signal = new AbortController().signal
 
 describe('chaos-upload mention grammar', () => {
   it('collects only tokens under the upload directory, deduplicated in first-seen order', () => {
-    const text = '读 @uploads/spec.pdf 和 @uploads/spec.pdf 再看 @docs/other.md 以及 @uploads/'
+    const text = '读 @uploads/spec.pdf 和 @uploads/spec.pdf 再看 @docs/other.txt 以及 @uploads/'
     expect(scanUploadMentions(text, 'uploads')).toEqual(['uploads/spec.pdf'])
   })
 
