@@ -122,13 +122,14 @@ describe('sweepArchivedSessions', () => {
 
   it('sweeps a no-cwd session through the _no-cwd directory', async () => {
     const id = '99999999-9999-4999-8999-999999999999'
+    const { cwd: _cwd, ...noCwd } = header(id)
     const directory = sessionDir(root, undefined, id as never)
     await mkdir(directory, { recursive: true })
     await writeFile(join(directory, 'session.jsonl'), 'x')
     const at = new Date(NOW - 60 * DAY_MS)
     await utimes(join(directory, 'session.jsonl'), at, at)
     const outcome = await sweepArchivedSessions(
-      { archived: new Set([id]), headers: [{ ...header(id), cwd: undefined }], isLive: () => false },
+      { archived: new Set([id]), headers: [noCwd as SessionHeader], isLive: () => false },
       options(),
     )
     expect(outcome.deleted.map(d => d.id)).toEqual([id])
