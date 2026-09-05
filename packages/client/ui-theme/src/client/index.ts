@@ -263,7 +263,10 @@ export class ThemeRuntime {
     this.publish()
   }
 
-  /** Persist a shared application text size. */
+  /**
+   * Persist a shared application text size.
+   * @param size - the application text size to persist.
+   */
   setUiFontSize(size: UiFontSize): void {
     if (this.uiFontSize === size) return
     this.uiFontSize = size
@@ -271,7 +274,10 @@ export class ThemeRuntime {
     this.publish()
   }
 
-  /** Persist a code-surface text size. */
+  /**
+   * Persist a code-surface text size.
+   * @param size - the code-surface text size to persist.
+   */
   setCodeFontSize(size: CodeFontSize): void {
     if (this.codeFontSize === size) return
     this.codeFontSize = size

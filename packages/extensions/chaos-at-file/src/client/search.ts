@@ -7,7 +7,13 @@
  */
 import type { FileEntry } from '../types.ts'
 
-/** Ranked top-N paths matching `query` (ties break by kind, length, then path). */
+/**
+ * Ranked top-N paths matching `query` (ties break by kind, length, then path).
+ * @param files - the complete file listing to filter and rank.
+ * @param query - the raw user query; '' yields the shallow-first browse view.
+ * @param limit - the maximum number of entries to return.
+ * @returns the ranked entries, at most `limit` long.
+ */
 export function rankFiles(
   files: readonly FileEntry[],
   query: string,

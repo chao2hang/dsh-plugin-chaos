@@ -4,13 +4,21 @@
  * paths and adds existence-only reference markers at send time.
  */
 
-/** The directory prefix of a forward-slash relative path ('' for root-level files). */
+/**
+ * The directory prefix of a forward-slash relative path ('' for root-level files).
+ * @param relative - the forward-slash relative path to split.
+ * @returns the path's directory prefix, '' for root-level files.
+ */
 export function dirnameOf(relative: string): string {
   const at = relative.lastIndexOf('/')
   return at < 0 ? '' : relative.slice(0, at)
 }
 
-/** The basename of a forward-slash relative path. */
+/**
+ * The basename of a forward-slash relative path.
+ * @param relative - the forward-slash relative path to split.
+ * @returns the path's final segment, the whole path for root-level files.
+ */
 export function basenameOf(relative: string): string {
   const at = relative.lastIndexOf('/')
   return at < 0 ? relative : relative.slice(at + 1)
