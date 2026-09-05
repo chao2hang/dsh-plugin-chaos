@@ -29,7 +29,7 @@ interface WebRoute {
 ## 配置
 
 ```ts type-equiv
-/** Web server listen and response-compression config. */
+/** Web server listen, response-compression, and optional TLS config. */
 interface Config {
   /** Listen host; the two supported values are loopback and all-interfaces. */
   host: '127.0.0.1' | '0.0.0.0'
@@ -41,10 +41,22 @@ interface Config {
   compressionLevel?: number
   /** Minimum known response length eligible for gzip; unknown-length streams are eligible. @default 1024 */
   compressionThresholdBytes?: number
+  /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+  tls: TlsConfig
 }
 ```
 
-`host` 只接受 `127.0.0.1`（默认姿态）和 `0.0.0.0`（刻意的网络暴露）。载体本身不拥有 TLS、认证或 Origin 策略，因此绑定到非回环地址会暴露服务器，除非组合层提供这些控制。`compression` 默认为 `none`；随附的 Web 组合选择 gzip level 1 和 1024 字节阈值。随附的 `dsh web` 命令选择 loopback 并拒绝 `--host 0.0.0.0`；其 Connection 插件为每个 Host API route 与 stream 提供 Host/Origin 校验和浏览器会话认证。其他组合自行拥有绑定与路由认证策略。dist 位置是认领席位的前端插件的组装事实。
+```ts type-equiv
+/** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+interface TlsConfig {
+  /** PEM certificate file path on the host. */
+  cert: string
+  /** PEM private key file path on the host. */
+  key: string
+}
+```
+
+`host` 只接受 `127.0.0.1`（默认姿态）和 `0.0.0.0`（刻意的网络暴露）。载体默认提供明文 HTTP；`tls` 给出自运行 HTTPS 的证书与私钥路径，空值禁用 TLS。载体不拥有认证或 Origin 策略，因此绑定到非回环地址会暴露服务器，除非组合层提供这些控制。`compression` 默认为 `none`；随附的 Web 组合选择 gzip level 1 和 1024 字节阈值。随附的 `dsh web` 命令选择 loopback 并拒绝 `--host 0.0.0.0`；其 Connection 插件为每个 Host API route 与 stream 提供 Host/Origin 校验和浏览器会话认证。其他组合自行拥有绑定与路由认证策略。dist 位置是认领席位的前端插件的组装事实。
 
 ## 服务
 
@@ -68,6 +80,20 @@ The browser HTTP carrier service. Activation listens immediately. Route registra
 
 ```ts cordis-catalog
 /**
+ * Mark a request that a preceding authentication guard has validated.
+ * The marker is request-local and never derived from a client-controlled header.
+ * @param req - validated HTTP or upgrade request.
+ */
+markAuthenticated(req: IncomingMessage): void
+
+/**
+ * Whether a preceding authentication guard validated this request.
+ * @param req - HTTP or upgrade request being dispatched.
+ * @returns true only for a request marked by this server instance.
+ */
+isAuthenticated(req: IncomingMessage): boolean
+
+/**
  * Register a named route. Duplicate (kind, path) throws — route patterns are
  * a composition-level contract, so a collision is a misconfiguration.
  * @param route - kind, path, and the owning handler.
@@ -82,6 +108,25 @@ register(route: WebRoute): () => void
  * @returns the disposer removing the route.
  */
 registerUpgrade(route: WebUpgradeRoute): () => void
+
+/**
+ * Register a request guard: runs before route matching on every HTTP
+ * request. Guards run in registration order; the first `false` result
+ * stops the chain (the guard owns the response). This is the generic
+ * extension point for request interception — authentication, rate limiting,
+ * logging — anything that must run before route dispatch.
+ * @param guard - the guard function.
+ * @returns the disposer removing the guard.
+ */
+registerGuard(guard: RequestGuard): () => void
+
+/**
+ * Register an upgrade guard: runs before upgrade route matching on every
+ * WebSocket upgrade. Same chain semantics as {@link registerGuard}.
+ * @param guard - the upgrade guard function.
+ * @returns the disposer removing the guard.
+ */
+registerUpgradeGuard(guard: UpgradeGuard): () => void
 
 /**
  * Claim the fallback seat: the handler answering every request no named

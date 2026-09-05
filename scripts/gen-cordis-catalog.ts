@@ -124,8 +124,6 @@ export const SERVICE_PAGE: Record<string, string> = {
   workspaceRegistry: 'workspace.md',
   workspaceController: 'workspace.md',
   directoryPickerController: 'workspace.md',
-  chaosAtFile: 'chaos.md',
-  chaosUpload: 'chaos.md',
   processControl: 'chaos.md',
   usageReportController: 'chaos.md',
 }
@@ -745,9 +743,6 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   UpgradeGuard: 'webserver upgrade guard callback is owned by packages/host/webserver/src/index.ts',
   UsageReport: 'usage report projection is owned by packages/api/session-controller/src/types.ts',
   UsageReportReadRequest: 'usage report request contract is owned by packages/api/session-controller/src/types.ts',
-  FileEntry: 'file listing entry is owned by packages/extensions/chaos-at-file/src/types.ts',
-  UploadRequest: 'upload request contract is owned by packages/extensions/chaos-upload/src/types.ts',
-  UploadResult: 'upload result contract is owned by packages/extensions/chaos-upload/src/types.ts',
   RestartResult: 'restart outcome is owned by packages/boot/process-control/src/index.ts',
   LogicalProjectionResult: 'projection result type is owned by packages/session-query/session-query/src/corpus.ts',
   LogicalSessionSource: 'logical corpus source is owned by packages/session-query/session-query/src/corpus.ts',

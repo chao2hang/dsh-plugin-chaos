@@ -29,7 +29,7 @@ Match order is fixed: exact table first, then longest matching prefix, then the 
 ## Config
 
 ```ts type-equiv
-/** Web server listen and response-compression config. */
+/** Web server listen, response-compression, and optional TLS config. */
 interface Config {
   /** Listen host; the two supported values are loopback and all-interfaces. */
   host: '127.0.0.1' | '0.0.0.0'
@@ -41,10 +41,22 @@ interface Config {
   compressionLevel?: number
   /** Minimum known response length eligible for gzip; unknown-length streams are eligible. @default 1024 */
   compressionThresholdBytes?: number
+  /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+  tls: TlsConfig
 }
 ```
 
-`host` accepts only `127.0.0.1` (default posture) and `0.0.0.0` (deliberate network exposure). The carrier itself owns no TLS, authentication, or Origin policy, so a non-loopback bind exposes the server unless the composition supplies those controls. `compression` defaults to `none`; the shipped Web bundle selects gzip level 1 with a 1024-byte threshold. The shipped `dsh web` command selects loopback and rejects `--host 0.0.0.0`; its Connection plugin supplies Host/Origin checks plus browser-session authentication for every Host API route and stream. Other compositions own their bind and route-authentication policy. The dist location is an assembly fact of the frontend plugin that claims the seat.
+```ts type-equiv
+/** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+interface TlsConfig {
+  /** PEM certificate file path on the host. */
+  cert: string
+  /** PEM private key file path on the host. */
+  key: string
+}
+```
+
+`host` accepts only `127.0.0.1` (default posture) and `0.0.0.0` (deliberate network exposure). The carrier serves plain HTTP by default; `tls` names certificate and key paths for self-run HTTPS, and empty values disable TLS. The carrier owns no authentication or Origin policy, so a non-loopback bind exposes the server unless the composition supplies those controls. `compression` defaults to `none`; the shipped Web bundle selects gzip level 1 with a 1024-byte threshold. The shipped `dsh web` command selects loopback and rejects `--host 0.0.0.0`; its Connection plugin supplies Host/Origin checks plus browser-session authentication for every Host API route and stream. Other compositions own their bind and route-authentication policy. The dist location is an assembly fact of the frontend plugin that claims the seat.
 
 ## The service
 
@@ -68,6 +80,20 @@ The browser HTTP carrier service. Activation listens immediately. Route registra
 
 ```ts cordis-catalog
 /**
+ * Mark a request that a preceding authentication guard has validated.
+ * The marker is request-local and never derived from a client-controlled header.
+ * @param req - validated HTTP or upgrade request.
+ */
+markAuthenticated(req: IncomingMessage): void
+
+/**
+ * Whether a preceding authentication guard validated this request.
+ * @param req - HTTP or upgrade request being dispatched.
+ * @returns true only for a request marked by this server instance.
+ */
+isAuthenticated(req: IncomingMessage): boolean
+
+/**
  * Register a named route. Duplicate (kind, path) throws — route patterns are
  * a composition-level contract, so a collision is a misconfiguration.
  * @param route - kind, path, and the owning handler.
@@ -82,6 +108,25 @@ register(route: WebRoute): () => void
  * @returns the disposer removing the route.
  */
 registerUpgrade(route: WebUpgradeRoute): () => void
+
+/**
+ * Register a request guard: runs before route matching on every HTTP
+ * request. Guards run in registration order; the first `false` result
+ * stops the chain (the guard owns the response). This is the generic
+ * extension point for request interception — authentication, rate limiting,
+ * logging — anything that must run before route dispatch.
+ * @param guard - the guard function.
+ * @returns the disposer removing the guard.
+ */
+registerGuard(guard: RequestGuard): () => void
+
+/**
+ * Register an upgrade guard: runs before upgrade route matching on every
+ * WebSocket upgrade. Same chain semantics as {@link registerGuard}.
+ * @param guard - the upgrade guard function.
+ * @returns the disposer removing the guard.
+ */
+registerUpgradeGuard(guard: UpgradeGuard): () => void
 
 /**
  * Claim the fallback seat: the handler answering every request no named

@@ -121,6 +121,7 @@ flowchart TD
   subgraph group_boot["packages/boot"]
     pkg_app_boot["app-boot"]
     pkg_cmdline["cmdline"]
+    pkg_process_control["process-control"]
   end
   subgraph group_bundle["packages/bundle"]
     pkg_acp_app["acp-app"]
@@ -220,6 +221,14 @@ flowchart TD
     pkg_client_ui_cordis["client-ui-cordis"]
     pkg_cordis_client_runner["cordis-client-runner"]
     pkg_cordis_host_runner["cordis-host-runner"]
+    pkg_plugin_chaos["plugin-chaos"]
+    pkg_plugin_chaos_auth["plugin-chaos-auth"]
+    pkg_plugin_chaos_janitor["plugin-chaos-janitor"]
+    pkg_plugin_chaos_mobile["plugin-chaos-mobile"]
+    pkg_plugin_chaos_models["plugin-chaos-models"]
+    pkg_plugin_chaos_restart["plugin-chaos-restart"]
+    pkg_plugin_chaos_retry["plugin-chaos-retry"]
+    pkg_plugin_chaos_think_tags["plugin-chaos-think-tags"]
     pkg_tool_cordis["tool-cordis"]
   end
   subgraph group_feedback["packages/feedback"]
@@ -365,6 +374,8 @@ flowchart TD
   pkg_scope --> pkg_invariants
   pkg_web --> pkg_llm
   pkg_attachment --> pkg_brand
+  pkg_process_control --> pkg_cmdline
+  pkg_process_control --> pkg_invariants
   pkg_credentials --> pkg_invariants
   pkg_e2b --> pkg_http_proxy
   pkg_experimental_code_runtime_python --> pkg_code_runtime
@@ -419,6 +430,8 @@ flowchart TD
   pkg_subprocess_e2b --> pkg_e2b
   pkg_subprocess_e2b --> pkg_subprocess
   pkg_subprocess_e2b --> pkg_timeout
+  pkg_plugin_chaos_auth --> pkg_credentials
+  pkg_plugin_chaos_auth --> pkg_host_webserver
   pkg_subprocess_local --> pkg_subprocess
   pkg_subprocess_local --> pkg_timeout
   pkg_skill_badge --> pkg_skill
@@ -563,6 +576,11 @@ flowchart TD
   pkg_tmux_context --> pkg_shell
   pkg_fs_e2b --> pkg_e2b
   pkg_fs_e2b --> pkg_fs
+  pkg_plugin_chaos_janitor --> pkg_home_paths
+  pkg_plugin_chaos_janitor --> pkg_session
+  pkg_plugin_chaos_janitor --> pkg_session_persistence
+  pkg_plugin_chaos_janitor --> pkg_session_persistence_jsonl
+  pkg_plugin_chaos_janitor --> pkg_workspace
   pkg_commands --> pkg_agent
   pkg_commands --> pkg_attachment
   pkg_commands --> pkg_brand
@@ -1225,6 +1243,12 @@ flowchart TD
 | [`experimental-webworker-packer`](../packages/experimental/webworker-packer) | `experimental` | — |
 | [`client-ui-cordis`](../packages/extensions/ui-cordis) | `extensions` | — |
 | [`cordis-client-runner`](../packages/extensions/cordis-client-runner) | `extensions` | — |
+| [`plugin-chaos`](../packages/extensions/chaos-bundle) | `extensions` | — |
+| [`plugin-chaos-mobile`](../packages/extensions/chaos-mobile) | `extensions` | — |
+| [`plugin-chaos-models`](../packages/extensions/chaos-models) | `extensions` | — |
+| [`plugin-chaos-restart`](../packages/extensions/chaos-restart) | `extensions` | — |
+| [`plugin-chaos-retry`](../packages/extensions/chaos-retry) | `extensions` | — |
+| [`plugin-chaos-think-tags`](../packages/extensions/chaos-think-tags) | `extensions` | — |
 | [`host-directory-picker`](../packages/host/directory-picker) | `host` | — |
 | [`host-directory-picker-browse`](../packages/host/directory-picker-browse) | `host` | — |
 | [`host-directory-picker-native`](../packages/host/directory-picker-native) | `host` | — |
@@ -1243,6 +1267,7 @@ flowchart TD
 | [`scope`](../packages/core/scope) | `core` | [`invariants`](../packages/runtime-diagnostics/invariants) |
 | [`web`](../packages/web/web) | `web` | [`llm`](../packages/llm/llm) |
 | [`attachment`](../packages/attachment/attachment) | `attachment` | [`brand`](../packages/util/brand) |
+| [`process-control`](../packages/boot/process-control) | `boot` | [`cmdline`](../packages/boot/cmdline), [`invariants`](../packages/runtime-diagnostics/invariants) |
 | [`credentials`](../packages/credentials/credentials) | `credentials` | [`invariants`](../packages/runtime-diagnostics/invariants) |
 | [`e2b`](../packages/e2b/e2b) | `e2b` | [`http-proxy`](../packages/util/http-proxy) |
 | [`experimental-code-runtime-python`](../packages/experimental/code-runtime-python) | `experimental` | [`code-runtime`](../packages/code-runtime/code-runtime), [`timeout`](../packages/util/timeout), [`util-values`](../packages/util/values) |
@@ -1269,6 +1294,7 @@ flowchart TD
 | [`authorization`](../packages/credentials/authorization) | `credentials` | [`credentials`](../packages/credentials/credentials), [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm) |
 | [`credentials-local`](../packages/credentials/credentials-local) | `credentials` | [`atomic-write`](../packages/util/atomic-write), [`credentials`](../packages/credentials/credentials), [`home-paths`](../packages/util/home-paths), [`launch-environment`](../packages/util/launch-environment) |
 | [`subprocess-e2b`](../packages/e2b/subprocess-e2b) | `e2b` | [`e2b`](../packages/e2b/e2b), [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout) |
+| [`plugin-chaos-auth`](../packages/extensions/chaos-auth) | `extensions` | [`credentials`](../packages/credentials/credentials), [`host-webserver`](../packages/host/webserver) |
 | [`subprocess-local`](../packages/subprocess/subprocess-local) | `subprocess` | [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout) |
 | [`skill-badge`](../packages/skill/skill-badge) | `skill` | [`skill`](../packages/skill/skill) |
 | [`spill`](../packages/spill/spill) | `spill` | [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`session`](../packages/core/session) |
@@ -1310,6 +1336,7 @@ flowchart TD
 | [`time-context`](../packages/context/time-context) | `context` | [`agent`](../packages/core/agent), [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection) |
 | [`tmux-context`](../packages/context/tmux-context) | `context` | [`agent`](../packages/core/agent), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`shell`](../packages/shell/shell) |
 | [`fs-e2b`](../packages/e2b/fs-e2b) | `e2b` | [`e2b`](../packages/e2b/e2b), [`fs`](../packages/fs/fs) |
+| [`plugin-chaos-janitor`](../packages/extensions/chaos-janitor) | `extensions` | [`home-paths`](../packages/util/home-paths), [`session`](../packages/core/session), [`session-persistence`](../packages/session/session-persistence), [`session-persistence-jsonl`](../packages/session/session-persistence-jsonl), [`workspace`](../packages/workspace/workspace) |
 | [`commands`](../packages/interaction/commands) | `interaction` | [`agent`](../packages/core/agent), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`typert-protocol`](../packages/typert/protocol) |
 | [`user-approval`](../packages/interaction/user-approval) | `interaction` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`invariants`](../packages/runtime-diagnostics/invariants), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`system-prompt`](../packages/core/system-prompt) |
 | [`user-questions`](../packages/interaction/user-questions) | `interaction` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope) |

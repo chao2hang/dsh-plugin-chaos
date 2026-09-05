@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-retry/README.md
-README.md: b4c8ceddeb352251f27ae7761a6857344b22f817
-README.zh.md: 9f777906311ea071d8b3201116dd62557dcb3111
+README.md: a0b0063043476274ebdc3a8e1415d4cde93c0a10
+README.zh.md: a75b55d2126b3ee58f490abdbb8cd5782d3a082f

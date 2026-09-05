@@ -673,21 +673,6 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Registers host inspect providers, mirrors the client provider manifest, and routes client queries through the dynamic Cordis transport.',
   },
   {
-    key: 'chaosAtFile',
-    pkg: 'chaos-at-file',
-    title: 'Workspace file search for the composer @ surface',
-    mode: 'core',
-    note: 'Indexes the session workspace within configured bounds and serves the ranked picker candidates over the typert remote; the browser half owns query filtering and path composition.',
-  },
-  {
-    key: 'chaosUpload',
-    pkg: 'chaos-upload',
-    title: 'Upload-directory intake into the session workspace',
-    mode: 'core',
-    consumers: ['chaos-mobile'],
-    note: 'Stores canonical base64 uploads under the session workspace with byte and age limits, adds existence-only reference markers, and sweeps expired intake on an interval.',
-  },
-  {
     key: 'processControl',
     pkg: 'process-control',
     title: 'Harness process restart',

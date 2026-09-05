@@ -514,6 +514,12 @@ interface LlmModelInfo {
   description?: string
   /** Accepted request modalities; absent means unknown, while an explicit omission is negative capability. */
   inputModalities?: readonly ModelModality[]
+  /** Maximum combined request and response context in tokens, when the adapter discloses it in the catalog. */
+  contextWindow?: number
+  /** Maximum output tokens, when the adapter discloses it in the catalog. */
+  maxOutput?: number
+  /** Whether the model's capabilities (context window, max output, modalities) are editable by the user. */
+  capabilitiesEditable?: boolean
 }
 ```
 
