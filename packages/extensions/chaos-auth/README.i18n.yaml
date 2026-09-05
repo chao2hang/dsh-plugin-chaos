@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-auth/README.md
-README.md: 455532a836397cc7ad2d7bbea240ed3ef8187a26
-README.zh.md: 8b38ec4b9832f57beee2de1412554e9f53fc7a63
+README.md: 21f687b595e792beb47d4672ddb59a2cee7d3b5d
+README.zh.md: 3eebebdbf664b2d28cd60c53e3329a7680cb1842

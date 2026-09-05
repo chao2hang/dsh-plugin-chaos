@@ -1,6 +1,24 @@
+---
+description: "Target-neutral conversation assembly and browser shell: event and view registries, per-session bindings, input state, slots, and temporary composer takeovers."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-client-ui-conversation
 
 English | [中文](README.zh.md)
+
+## Summary
+
+`ui-conversation` owns target-neutral Conversation assembly and the shared browser shell. It consumes Session Controller `SessionEventLikeEntry` feeds, exposes React-free registries and per-Session bindings through `ctx.uiConversation`, and contributes the `useConversation`, `useInput`, and `inputActions` standard props through `ctx.uiSession`. It also owns the per-session durable image URL cache: `ctx.uiConversation.imageUrl(sessionId, attachment)` resolves one session-authorized browser URL per attachment and revokes it with the Session binding, so every Conversation target shares one `session.attachment` read. Concrete targets such as Chat are separate packages that register their own Definitions, snapshot builders, Views, and renderers.
+
+## Table of Contents
+
+- [Temporary composer entries](#temporary-composer-entries)
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
 
 Conversation domain: skeleton (header/tabs/composer/empty state), chat view (grouped step-summary flow, streaming tail isolation, and turn status), composer dock (session stats sticky with the input), input dock (queue rows plus the todo plan strip), details shell, and scope-addressed ConversationController. Tool presentation belongs to [`ui-tool`](../ui-tool/README.md).
 
@@ -47,6 +65,54 @@ The chat stats line takes its token accounting from the generic token-meter `tok
 `src/client/` is organized by domain. `contract/` is the shared face for slot declarations, composed props, and cross-domain types; `skeleton/`, `chat/`, `input/`, `queue/`, and `settings/` keep their implementations internal, while `apply.ts` is their assembly point. The `/client` exports contain only loader entries, service classes, and contract types; components and store factories reach the page through slot registrations.
 
 A finished turn materializes one ordered `turn-tail` Conversation Node. Its engine-owned `TurnLocation` supplies the closing Assistant and Turn data; the renderer places the `conversation.chat.turnTail` chain before that node's IconActions and dispatches `TurnTailOwnerProps` containing the Turn, closing seq, and `openFile`. This package owns only the hole; `@deepseek-ai/dsh-client-ui-deliverables` accumulates mutation-tool `locations` into Turn data and owns the produced-files row, chip cap, and copy, so composing that plugin out of cordis.yml turns the surface off while the hole renders empty at zero cost. The closing prose participates through the same off switch: the chat view asks the optional `chatFileMentions` service (ctx.get; provided by the same plugin) for a closing message's inline-code vocabulary and threads the result into MarkdownText's `fileMentions` seam — an absent service leaves the prose inert.
+
+<a id="temporary-composer-entries"></a>
+## Temporary composer entries
+
+`conversation.composer` is a generic chain. Its complete owner currency is:
+
+```ts type-equiv
+/** Owner values used to elect a composer takeover. */
+interface ComposerChainProps {
+  /** Current Session identity used by temporary business-owned entries. */
+  sessionId: SessionId | undefined
+  /** Current Session lifecycle state, absent without a selected Session. */
+  session: SessionSnapshot | undefined
+  /** Effective business-owned interaction awaiting the user in this Session. */
+  pendingInteraction: SessionPendingInteraction | undefined
+}
+```
+
+A business package may install one entry only while a Remote waterfall request is pending:
+
+```tsx
+import type { ComposerChainProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type { ChainSelect, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+
+interface Request {
+  readonly sessionId: SessionId
+}
+
+type RequestComposerProps =
+  PropsRuntime<'conversation.composer'> & { matched: Request }
+
+const select: ChainSelect<ComposerChainProps, Request> = owner =>
+  owner.sessionId === request.sessionId ? request : null
+
+const dispose = ctx.slots.register(
+  { name: 'conversation.composer', select },
+  RequestComposer,
+)
+
+try {
+  return await request.result
+} finally {
+  dispose()
+}
+```
+
+The selector must be a pure function of the owner currency. Its non-null return is delivered to the component as `matched`; `PropsRuntime<'conversation.composer'>` supplies the standard Session and global props. Chain order remains ascending `priority`, then registration order, and the first non-null selector wins. The shell keeps the default composer mounted beneath a takeover. Request state, listeners, response encoding, and any request-specific child slots belong to the business package; they are not carried by `SessionSnapshot` or declared by this core package.
 
 ## Model Experience
 

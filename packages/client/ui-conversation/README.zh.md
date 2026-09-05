@@ -1,6 +1,24 @@
+---
+description: "Target-neutral 对话装配与浏览器 shell：事件和视图注册表、逐会话 binding、输入状态、slot 与临时 composer takeover。"
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-client-ui-conversation
 
 [English](README.md) | 中文
+
+## 概述
+
+`ui-conversation` 拥有与 target 无关的 Conversation 组装和共享浏览器 shell。它消费 Session Controller 的 `SessionEventLikeEntry` feed，通过 `ctx.uiConversation` 暴露不依赖 React 的 registry 与逐 Session binding，并通过 `ctx.uiSession` 提供 `useConversation`、`useInput` 和 `inputActions` 标准 props。它还拥有按会话的持久化图片 URL 缓存：`ctx.uiConversation.imageUrl(sessionId, attachment)` 为每个附件解析一个经会话授权的浏览器 URL，并随 Session binding 释放而撤销，因此所有 Conversation target 共享一次 `session.attachment` 读取。Chat 等具体 target 位于独立 package，由各自 package 注册 Definition、snapshot builder、View 和 renderer。
+
+## 目录
+
+- [临时 composer entry](#temporary-composer-entries)
+- [模型体验](#model-experience)
+- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
+
+-----
 
 会话领域：骨架（标题栏／标签页／编辑器／空状态）、聊天视图（分组步骤摘要流、流式尾部隔离与轮次状态）、编辑器 dock（与输入区一同 sticky 的会话统计行）、输入区 dock（队列行加 todo 计划条）、详情壳层，以及按 scope 寻址的 ConversationController。工具展示属于 [`ui-tool`](../ui-tool/README.zh.md)。
 
@@ -48,6 +66,55 @@ Host 带 placement 的 `session/queue` 快照也会携带待处理 steering。Qu
 
 完成的一轮会物化一个有序的 `turn-tail` Conversation Node。它由引擎维护的 `TurnLocation` 提供收尾 Assistant 和 Turn data；renderer 在该 Node 的 IconActions 之前渲染 `conversation.chat.turnTail` chain，并派发包含 Turn、收尾 seq 和 `openFile` 的 `TurnTailOwnerProps`。本包只拥有空位；`@deepseek-ai/dsh-client-ui-deliverables` 把改写工具的 `locations` 累积到 Turn data，并拥有产物行、chip 上限和文案，因此把该插件从 cordis.yml 中组合掉即可关闭该交互面，空位以零成本渲染为空。收尾正文经由同一个开关参与其中：chat 视图向可选的 `chatFileMentions` service（ctx.get；由同一插件提供）索取收尾消息的行内代码词表，并把结果接进 MarkdownText 的 `fileMentions` seam——service 缺席时正文保持死文本。
 
+<a id="temporary-composer-entries"></a>
+## 临时 composer entry
+
+`conversation.composer` 是通用 chain，其完整 owner currency 为：
+
+```ts type-equiv
+/** Owner values used to elect a composer takeover. */
+interface ComposerChainProps {
+  /** Current Session identity used by temporary business-owned entries. */
+  sessionId: SessionId | undefined
+  /** Current Session lifecycle state, absent without a selected Session. */
+  session: SessionSnapshot | undefined
+  /** Effective business-owned interaction awaiting the user in this Session. */
+  pendingInteraction: SessionPendingInteraction | undefined
+}
+```
+
+业务 package 可仅在一个 Remote waterfall request pending 期间安装 entry：
+
+```tsx
+import type { ComposerChainProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type { ChainSelect, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+
+interface Request {
+  readonly sessionId: SessionId
+}
+
+type RequestComposerProps =
+  PropsRuntime<'conversation.composer'> & { matched: Request }
+
+const select: ChainSelect<ComposerChainProps, Request> = owner =>
+  owner.sessionId === request.sessionId ? request : null
+
+const dispose = ctx.slots.register(
+  { name: 'conversation.composer', select },
+  RequestComposer,
+)
+
+try {
+  return await request.result
+} finally {
+  dispose()
+}
+```
+
+selector 必须是 owner currency 的纯函数。非 null 返回值作为 `matched` 传给组件；`PropsRuntime<'conversation.composer'>` 提供标准 Session 与 global props。Chain 顺序仍按 `priority` 升序，再按注册顺序；首个返回非 null 的 selector 获选。Shell 会在 takeover 下保持默认 composer 挂载。Request 状态、listener、response encoding 和任何 request-specific child slot 都属于业务 package，不进入 `SessionSnapshot`，也不由 core package 声明。
+
+<a id="model-experience"></a>
 ## 模型体验
 
 无。会话 UI 在浏览器中渲染会话历史与流；这里没有任何内容进入模型请求。

@@ -1,10 +1,32 @@
+---
+description: "The unified session-history query service for programmatic callers reading, filtering, or tracing live and persisted sessions, and for backend authors implementing its two abstract full-text methods."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-session-query
 
 English | [中文](README.zh.md)
 
-`SessionQueryEngine` is the combined abstract `ctx.sessionQuery` contract. It implements exact session-history retrieval, relationship tracing, and provider-independent filtering over live `ctx.sessions` plus optional dynamically mounted `ctx.sessionPersistence`; concrete backends implement its two full-text methods. Matching ids produce one record: live events win, while `live` and `persisted` report both source availabilities. Conflicting immutable headers fail with `SESSION_QUERY_SOURCE_CONFLICT`.
+## Summary
 
+`dsh-session-query` gives programmatic callers exact reads, relationship traces, and provider-independent filters over live and persisted session history through one `ctx.sessionQuery` service. Read a complete raw log, fold a session's current surface, list events with their classification, trace a session's lineage or an event's replacements, and filter sessions and events by metadata or literal text. Matching ids produce one record — live events win — and optional persistence mounts dynamically: cross-corpus reads fail loudly while a mounted backend is unreadable, while targets known to be live never consult it. The service is the seam's abstract definition: concrete backends inherit the reads, filters, and traces and implement its two full-text methods; the first implementation is [`@deepseek-ai/dsh-session-query-sqlite`](../session-query-sqlite/README.md).
+
+## Table of Contents
+
+- [Reads](#reads)
+- [Filtering and extraction](#filtering-and-extraction)
+- [Full-text methods](#full-text-methods)
+- [Configuration](#configuration)
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
+
+<a id="reads"></a>
 ## Reads
+
+`SessionQueryEngine` is the combined abstract `ctx.sessionQuery` contract over live `ctx.sessions` plus optional dynamically mounted `ctx.sessionPersistence`; conflicting immutable headers fail with `SESSION_QUERY_SOURCE_CONFLICT`.
 
 - `listSessions(signal?)` reads current persistence metadata, merges live records with live precedence, and returns cloned records in deterministic newest-first order.
 - `readSession(sessionId)` returns one complete detached raw log after the same core replay validation used by resume; it never enters the session into the live store.
@@ -20,12 +42,18 @@ English | [中文](README.zh.md)
 
 Persistence is optional and may mount or unmount dynamically. Cross-corpus listing and lineage tracing fail with `SESSION_QUERY_PERSISTENCE_FAILED` while mounted persistence is unreadable; a successfully read durable record that fails Session validation reports `SESSION_QUERY_CORRUPT_SESSION` instead. A title read, event trace, or event read targeting a known live session does not consult persistence, so durable backend health cannot make current in-memory state unreadable. Persisted title and event operations list before loading and reject a metadata mismatch rather than combining inconsistent observations. Lineage-trace cancellation is passed to persisted listing; event-trace and event-read cancellation is passed to persisted listing and inspection. Each waits for the started backend call to settle, then rejects with the signal's exact reason even when the backend ignored that signal. A pre-aborted known-live title read, event trace, or event read rejects before folding or snapshotting without consulting persistence. A batch title observation performs one metadata listing, inspects its unique persisted ids with at most `persistedInspectConcurrency` workers, and preserves each title's own observed header for downstream authorization. Cancellation starts no queued inspections and rejects only after already-started workers settle. `listSessions()` remains lightweight and does not load logs or index titles.
 
+-----
+
+<a id="filtering-and-extraction"></a>
 ## Filtering and extraction
 
 `SessionResultFilter` covers id, nullable cwd, created-at range, nullable parent, and source availability. `SessionEventResultFilter` covers seq/time ranges, event type, surface, and semantic text. Filter arrays are ANDed; values within one list clause are ORed. Empty list values match nothing, ranges are inclusive, and malformed ranges or closed-union values fail with `SESSION_QUERY_INVALID_FILTER`.
 
 The text clause is deliberately independent of FTS providers: caller text is escaped into a Unicode, case-insensitive regular expression, and each whitespace run matches one or more whitespace characters. It is a literal semantic-text scan, not a full-text query. `extractSessionEventText()` and `buildSessionEventSearchDocuments()` define the shared first-party document projection; reasoning blocks, structural boundaries, stream chunks, request headers, and unknown declaration-merged variants produce no document.
 
+-----
+
+<a id="full-text-methods"></a>
 ## Full-text methods
 
 `SessionQueryEngine.searchSessions(request, exec?)` groups the logical corpus by strongest matching event; `searchEvents(request, exec?)` searches one logical session. These are the service's only abstract methods. Both return pages whose continuation is an owned branded `SessionSearchCursor`, accept optional cancellation, and expose snippets without provider-specific numeric scores. An event-search page also carries the cloned target header from the same indexed generation as its hits, allowing authorization consumers to bind policy to the payload observation. Search requests accept only metadata event filters, because literal-text filtering is the scan path described above.
@@ -38,13 +66,31 @@ Body-free records expose only `SessionHeader.isSeeded`. Reads that return event 
 
 `listEvents()`, `readSurface()`, and `traceEvent()` run the same one-pass `dsh-session` surface fold. A loaded log is valid only when event seqs are zero-based and contiguous, surface markers obey event-type eligibility, source-event arrays are nonempty and duplicate-free, references name earlier events, and each positional replacement names and cites every surface node it removes; every violation fails with `SESSION_QUERY_INVALID_SURFACE`.
 
+-----
+
+<a id="configuration"></a>
 ## Configuration
 
-| Key | Default | Contract |
-|---|---:|---|
-| `readWindowMax` | `50` | Maximum `before` or `after` raw-event count. |
-| `persistedInspectConcurrency` | `4` | Maximum concurrent persisted-log inspections in one batch read; must be a positive safe integer. |
+`SessionQueryEngine` accepts a backend-independent config that every concrete implementation inherits. A `cordis.yml` row cannot load this abstract service directly — the concrete backend's mount row carries the inherited fields:
 
+```yaml
+- name: '@deepseek-ai/dsh-session'
+- name: '@deepseek-ai/dsh-session-query-sqlite'
+  config:
+    readWindowMax: 50
+    persistedInspectConcurrency: 4
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `readWindowMax` | `50` | Maximum `before` or `after` raw-event count |
+| `persistedInspectConcurrency` | `4` | Maximum concurrent persisted-log inspections in one batch read; must be a positive safe integer |
+
+The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-session-query-sqlite) documents the shipped backend's full field set.
+
+-----
+
+<a id="model-experience"></a>
 ## Model Experience
 
 None, as this trusted query service returns cloned session records only to its callers and registers no model-facing prompt, schema, tool, or message.
@@ -55,10 +101,13 @@ None; this package neither assembles nor sends a provider request.
 
 ## Known Limitations and Deferred Work
 
+<a id="known-limitations-and-deferred-work"></a>
+
+
+These limits define where the seam's trust boundary stops. They are current package constraints, not a task backlog.
+
 - **No caller authorization** — this is trusted context-wide infrastructure; a future model tool or UI must constrain which sessions its caller may inspect.
 - **No registries or model-facing tool** — extractor and search-provider registries, recursive traversal through cited source events, and a model-facing tool are absent. The [tracing decision](../../../.agents/notes/implemented/feature/2026-07-13-session-query-tracing.md) owns relationship semantics; SQLite ownership and tokenizer decisions live in the [implemented search note](../../../.agents/notes/implemented/feature/2026-07-10-sqlite-session-query-provider.md).
-
-**Runtime invariant:** No companion is published. Query results are immutable per-call projections whose lineage and event relations are validated while they are built; the service retains no observable result state.
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -73,3 +122,5 @@ This Dev Note is working context for maintainers: open design questions and dire
 Recursive traversal through cited source events, extractor and search-provider registries, and additional model-facing surfaces are deferred; the [model-facing tools note](../../../.agents/notes/implemented/feature/2026-07-24-model-facing-session-query-tools.md) records the current consumer surface.
 
 </details>
+
+**Runtime invariant:** No companion is published. Query results are immutable per-call projections whose lineage and event relations are validated while they are built; the service retains no observable result state.
