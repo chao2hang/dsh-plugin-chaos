@@ -30,8 +30,8 @@ async function session(id: string, ageDays: number, logName = 'session.jsonl.zst
   return directory
 }
 
-const header = (id: string): SessionHeader => ({
-  version: 0 as never, isSeeded: false, id: id as never, createdAt: NOW, cwd: CWD,
+const header = (id: string, version = 0): SessionHeader => ({
+  version: version as never, isSeeded: false, id: id as never, createdAt: NOW, cwd: CWD,
 })
 
 /** Sweep inputs resolved per call so `root` is read after beforeAll assigns it. */
@@ -128,10 +128,30 @@ describe('sweepArchivedSessions', () => {
     const at = new Date(NOW - 60 * DAY_MS)
     await utimes(join(directory, 'session.jsonl'), at, at)
     const outcome = await sweepArchivedSessions(
-      { archived: new Set([id]), headers: [{ version: 0 as never, isSeeded: false, id: id as never, createdAt: NOW }], isLive: () => false },
+      { archived: new Set([id]), headers: [{ ...header(id), cwd: undefined }], isLive: () => false },
       options(),
     )
     expect(outcome.deleted.map(d => d.id)).toEqual([id])
     await expect((await import('node:fs/promises')).stat(directory)).rejects.toThrow()
+  })
+
+  it('sweeps version-tagged generation logs in either compression spelling', async () => {
+    const plain = 'aaaaaaaa-0000-4000-8000-000000000001'
+    const zstd = 'aaaaaaaa-0000-4000-8000-000000000002'
+    const plainDirectory = await session(plain, 45, 'session.v2.jsonl')
+    const zstdDirectory = await session(zstd, 45, 'session.v2.jsonl.zstd')
+    const outcome = await sweepArchivedSessions(
+      {
+        archived: new Set([plain, zstd]),
+        headers: [header(plain, 2), header(zstd, 2)],
+        isLive: () => false,
+      },
+      options(),
+    )
+    expect(outcome.deleted).toEqual([
+      { id: plain, path: plainDirectory, ageDays: 45 },
+      { id: zstd, path: zstdDirectory, ageDays: 45 },
+    ])
+    expect(outcome.skipped).toEqual([])
   })
 })
