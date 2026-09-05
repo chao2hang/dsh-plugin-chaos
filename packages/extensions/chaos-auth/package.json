@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-plugin-chaos-auth",
   "description": "Remote access authentication for DeepSeek Harness: token login, session management, request guards",
-  "version": "0.1.0",
+  "version": "0.1.3-alpha.1",
   "publishConfig": {
     "access": "public"
   },

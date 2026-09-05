@@ -1,7 +1,5 @@
 {
   "extends": "../../../tsconfig.base.client.json",
-  // The host half serves HTTP routes, so this dual-half package restores the
-  // ambient node types the client base deliberately drops.
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
