@@ -220,6 +220,15 @@ flowchart LR
   pkg_cordis_host_runner["cordis-host-runner"]
   svc_dynamicCordisRunner["ctx.dynamicCordisRunner<br/>Dynamic Cordis package host runner"]
   svc_cordisInspect["ctx.cordisInspect<br/>Dynamic Cordis inspect registry"]
+  pkg_chaos_at_file["chaos-at-file"]
+  svc_chaosAtFile["ctx.chaosAtFile<br/>Workspace file search for the composer @ surface"]
+  pkg_chaos_upload["chaos-upload"]
+  svc_chaosUpload["ctx.chaosUpload<br/>Upload-directory intake into the session workspace"]
+  pkg_chaos_mobile["chaos-mobile"]
+  pkg_process_control["process-control"]
+  svc_processControl["ctx.processControl<br/>Harness process restart"]
+  pkg_chaos_restart["chaos-restart"]
+  svc_usageReportController["ctx.usageReportController<br/>Session token-usage report reads"]
   pkg_agent --> svc_agents
   pkg_agent_default_model --> svc_agentDefaultModel
   pkg_agent_loop --> svc_agentLoop
@@ -228,6 +237,7 @@ flowchart LR
   pkg_api_session_controller --> svc_sessionController
   pkg_api_session_controller --> svc_sessionFileReferences
   pkg_api_session_controller --> svc_sessionSkillCatalog
+  pkg_api_session_controller --> svc_usageReportController
   pkg_api_settings_controller --> svc_credentialsController
   pkg_api_settings_controller --> svc_settingsController
   pkg_api_workspace_controller --> svc_directoryPickerController
@@ -237,6 +247,8 @@ flowchart LR
   pkg_authorization --> svc_authorization
   pkg_bash_local --> svc_shell
   pkg_bash_sandbox --> svc_shell
+  pkg_chaos_at_file --> svc_chaosAtFile
+  pkg_chaos_upload --> svc_chaosUpload
   pkg_client_modules --> svc_clientModules
   pkg_code_runtime --> svc_codeRuntime
   pkg_code_runtime_worker_thread --> svc_codeRuntime
@@ -277,6 +289,7 @@ flowchart LR
   pkg_permission_presets --> svc_permissionPresets
   pkg_plan_mode --> svc_planMode
   pkg_plugin_package_inventory_deepseek --> svc_deepseekLlmApiExtensions
+  pkg_process_control --> svc_processControl
   pkg_pwsh_local --> svc_shell
   pkg_sandbox --> svc_sandbox
   pkg_sandbox_local --> svc_sandbox
@@ -353,6 +366,7 @@ flowchart LR
   svc_attachments --> pkg_llm_pi_ai
   svc_attachments --> pkg_tool_fs
   svc_authorization --> pkg_llm_pi_ai
+  svc_chaosUpload --> pkg_chaos_mobile
   svc_clientModules --> pkg_client_hmr
   svc_codeRuntime --> pkg_tools
   svc_compaction --> pkg_compaction_basic
@@ -378,6 +392,7 @@ flowchart LR
   svc_llm --> pkg_agent_loop
   svc_llm --> pkg_compaction_basic
   svc_lsp --> pkg_tool_lsp
+  svc_processControl --> pkg_chaos_restart
   svc_sandbox --> pkg_bash_sandbox
   svc_sandbox --> pkg_terminal_bash
   svc_sandboxPolicy --> pkg_bash_sandbox
@@ -536,5 +551,9 @@ flowchart LR
 | `ctx.lsp` | `seam` | [`lsp`](../packages/lsp/lsp) | [`lsp-stdio`](../packages/lsp/lsp-stdio) | [`tool-lsp`](../packages/lsp/tool-lsp) | - | 提供方注册与选择，加上恰好四种操作的标准化查询执行；该 seam 不提供协议逃生口，后端必须转换为标准化请求和结果。 |
 | `ctx.dynamicCordisRunner` | `core` | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | - | [`tool-cordis`](../packages/extensions/tool-cordis) | - | 拥有内存定义注册表、Host 半的 vm 沙箱和 request-run 往返流程；浏览器页面通过其 Remote 命名空间在线访问同一服务。 |
 | `ctx.cordisInspect` | `core` | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | - | [`tool-cordis`](../packages/extensions/tool-cordis) | - | 注册 Host inspect 提供方、镜像 Client 提供方 manifest，并通过动态 Cordis 传输路由 Client 查询。 |
+| `ctx.chaosAtFile` | `core` | `chaos-at-file` | - | - | - | 在配置的上限内索引会话工作区，并通过 typert remote 服务排序后的选择器候选；浏览器半部拥有查询过滤与路径组合。 |
+| `ctx.chaosUpload` | `core` | `chaos-upload` | - | `chaos-mobile` | - | 以字节与时限约束把规范 base64 上传存入会话工作区，追加仅存在性引用标记，并按间隔清扫过期接收。 |
+| `ctx.processControl` | `core` | [`process-control`](../packages/boot/process-control) | - | `chaos-restart` | - | 依据运行中的命令行报告可重启性，等待启动器的应用退出，再以相同 argv 派生分离且 unref 的后续进程。 |
+| `ctx.usageReportController` | `core` | [`api-session-controller`](../packages/api/session-controller) | - | - | - | 通过 Host remote 命名空间为用量视图提供持久的每会话 token 聚合。 |
 
 维护模式：混合模式。服务从 Cordis 声明中发现；接口、实现和消费方角色在 `scripts/gen-doc-graphs.ts` 中分类，并设有完整性守卫。

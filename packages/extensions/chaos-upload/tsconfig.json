@@ -1,43 +1,7 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "lib/types",
-    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
-  },
-  "files": [
-    "src/index.ts",
-    "src/marker.ts",
-    "src/remote.ts",
-    "src/runtime.ts",
-    "src/sweep.ts",
-    "src/types.ts",
-    "src/upload.ts"
-  ],
+  "files": [],
   "references": [
-    {
-      "path": "../../../vendor/cordis"
-    },
-    {
-      "path": "../../../vendor/schemastery"
-    },
-    {
-      "path": "../../../vendor/timer"
-    },
-    {
-      "path": "../../core/agent"
-    },
-    {
-      "path": "../../llm/llm"
-    },
-    {
-      "path": "../../session/session-persistence"
-    },
-    {
-      "path": "../../typert/protocol"
-    },
-    {
-      "path": "../../typert/registry"
-    }
+    { "path": "./tsconfig.host.json" },
+    { "path": "./tsconfig.client.json" }
   ]
 }

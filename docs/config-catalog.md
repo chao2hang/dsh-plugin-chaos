@@ -215,7 +215,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/api/session-controller/src/index.ts:68`](../packages/api/session-controller/src/index.ts)
+Source: [`packages/api/session-controller/src/index.ts:70`](../packages/api/session-controller/src/index.ts)
 
 <a id="deepseek-aidsh-api-settings-controller"></a>
 
@@ -881,7 +881,7 @@ Source: [`packages/host/frontend-static/src/index.ts:30`](../packages/host/front
 ## `@deepseek-ai/dsh-host-webserver`
 
 ```ts config-catalog
-/** Web server listen and response-compression config. */
+/** Web server listen, response-compression, and optional TLS config. */
 export interface Config {
   /** Listen host; the two supported values are loopback and all-interfaces. */
   host: '127.0.0.1' | '0.0.0.0'
@@ -893,10 +893,20 @@ export interface Config {
   compressionLevel?: number
   /** Minimum known response length eligible for gzip; unknown-length streams are eligible. @default 1024 */
   compressionThresholdBytes?: number
+  /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+  tls: TlsConfig
+}
+
+/** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+export interface TlsConfig {
+  /** PEM certificate file path on the host. */
+  cert: string
+  /** PEM private key file path on the host. */
+  key: string
 }
 ```
 
-Source: [`packages/host/webserver/src/index.ts:59`](../packages/host/webserver/src/index.ts)
+Source: [`packages/host/webserver/src/index.ts:69`](../packages/host/webserver/src/index.ts)
 
 <a id="deepseek-aidsh-invariants"></a>
 
@@ -1580,6 +1590,71 @@ export interface PlanModeConfig {
 
 Source: [`packages/plan/plan-mode/src/index.ts:63`](../packages/plan/plan-mode/src/index.ts)
 
+<a id="deepseek-aidsh-plugin-chaos-auth"></a>
+
+## `@deepseek-ai/dsh-plugin-chaos-auth`
+
+Requires: `webServer` · `connection`
+
+```ts config-catalog
+/** Plugin configuration. */
+export interface Config {
+  /** Idle timeout in ms (default: 7 days). */
+  idleTimeoutMs: number
+  /** Absolute timeout in ms (default: 30 days). Must be >= idleTimeoutMs. */
+  absoluteTimeoutMs: number
+  /**
+   * Credential reference for the login token. Resolved through the
+   * credentials system at startup; the token value never appears in config.
+   */
+  tokenRef: string
+  /**
+   * Public URL when behind a reverse proxy that terminates TLS. When set,
+   * the plugin trusts the URL's hostname for the trust fence but does not
+   * trust forwarding headers (the Host fence handles DNS rebinding defense).
+   */
+  publicUrl: string
+}
+```
+
+Source: [`packages/extensions/chaos-auth/src/index.ts:37`](../packages/extensions/chaos-auth/src/index.ts)
+
+<a id="deepseek-aidsh-plugin-chaos-janitor"></a>
+
+## `@deepseek-ai/dsh-plugin-chaos-janitor`
+
+Requires: `workspaceRegistry` · `sessionPersistence` · `sessions` · `timer`
+
+```ts config-catalog
+/** Plugin configuration. */
+export interface Config {
+  /** Age in days beyond which an archived session's log is deleted; 0 (default) disables the sweeper. */
+  maxArchivedDays?: number
+  /** Sweep cadence in minutes. */
+  intervalMinutes?: number
+  /** Rehearsal switch: log the deletions a sweep would perform without deleting. */
+  dryRun?: boolean
+}
+```
+
+Source: [`packages/extensions/chaos-janitor/src/index.ts:33`](../packages/extensions/chaos-janitor/src/index.ts)
+
+<a id="deepseek-aidsh-plugin-chaos-restart"></a>
+
+## `@deepseek-ai/dsh-plugin-chaos-restart`
+
+Requires: `webServer`
+
+```ts config-catalog
+/** Plugin configuration. */
+export interface Config {
+  /** Whether to enable the restart control (default: true when ProcessControl is available). */
+  enabled: boolean
+}
+```
+
+Source: [`packages/extensions/chaos-restart/src/index.ts:27`](../packages/extensions/chaos-restart/src/index.ts)
+
 <a id="deepseek-aidsh-plugin-package-inventory-deepseek"></a>
 
 ## `@deepseek-ai/dsh-plugin-package-inventory-deepseek`
@@ -1858,7 +1933,7 @@ export interface Config {
 export type JsonlCompression = 'zstd' | 'none'
 ```
 
-Source: [`packages/session/session-persistence-jsonl/src/index.ts:70`](../packages/session/session-persistence-jsonl/src/index.ts)
+Source: [`packages/session/session-persistence-jsonl/src/index.ts:77`](../packages/session/session-persistence-jsonl/src/index.ts)
 
 <a id="deepseek-aidsh-session-projection-cache"></a>
 
@@ -3393,6 +3468,13 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-host-plugin-inventory` — requires `loader` ([`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts))
 - `@deepseek-ai/dsh-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
 - `@deepseek-ai/dsh-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos` ([`packages/extensions/chaos-bundle/src/index.ts`](../packages/extensions/chaos-bundle/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-mobile` ([`packages/extensions/chaos-mobile/src/index.ts`](../packages/extensions/chaos-mobile/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-models` ([`packages/extensions/chaos-models/src/index.ts`](../packages/extensions/chaos-models/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-retry` ([`packages/extensions/chaos-retry/src/index.ts`](../packages/extensions/chaos-retry/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-sandbox-guidance` — requires `sandboxPolicy` · `systemPrompt` ([`packages/extensions/chaos-sandbox-guidance/src/index.ts`](../packages/extensions/chaos-sandbox-guidance/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-think-tags` ([`packages/extensions/chaos-think-tags/src/index.ts`](../packages/extensions/chaos-think-tags/src/index.ts))
+- `@deepseek-ai/dsh-process-control` ([`packages/boot/process-control/src/index.ts`](../packages/boot/process-control/src/index.ts))
 - `@deepseek-ai/dsh-schedule` — requires `agents` · `sessions` · `tools` · `sessionPersistence` ([`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts))
 - `@deepseek-ai/dsh-session` ([`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts))
 - `@deepseek-ai/dsh-session-checkpoint-policy` — requires `llm` · `sessionPersistence` · `sessions` · `tools` ([`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts))
@@ -3461,6 +3543,8 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@deepseek-ai/dsh-loader-smoke` ([`packages/test-support/loader-smoke/src/index.ts`](../packages/test-support/loader-smoke/src/index.ts))
 - `@deepseek-ai/dsh-native-command` ([`packages/util/native-command/src/index.ts`](../packages/util/native-command/src/index.ts))
 - `@deepseek-ai/dsh-output-retention` ([`packages/util/output-retention/src/index.ts`](../packages/util/output-retention/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-at-file` ([`packages/extensions/chaos-at-file/src/index.ts`](../packages/extensions/chaos-at-file/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-upload` ([`packages/extensions/chaos-upload/src/index.ts`](../packages/extensions/chaos-upload/src/index.ts))
 - `@deepseek-ai/dsh-sandbox-windows-acl` ([`packages/sandbox/sandbox-windows-acl/src/index.ts`](../packages/sandbox/sandbox-windows-acl/src/index.ts))
 - `@deepseek-ai/dsh-scope` ([`packages/core/scope/src/index.ts`](../packages/core/scope/src/index.ts))
 - `@deepseek-ai/dsh-sdk-client` ([`packages/sdk/client/src/index.ts`](../packages/sdk/client/src/index.ts))

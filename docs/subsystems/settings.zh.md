@@ -286,6 +286,9 @@ Host service backing the generated `ctx.remote.settings` namespace. Every remote
 /**
  * Describe every registered namespace for a configuration page: redacted
  * layered values plus the serialized schema the page renders its form from.
+ * `hasDocument` reports whether a file-backed provider owns a local document
+ * the Host can hand to its text-document opener (provider document plus a
+ * reachable desktop) without exposing its Host path.
  * @returns provider writability, local-document presence, and one view per namespace.
  * @throws RemoteError when no settings provider is mounted.
  */

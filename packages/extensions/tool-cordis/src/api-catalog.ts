@@ -549,6 +549,34 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'chaosAtFile',
+    summary: 'Workspace path search and validated `@path` reference marking.',
+    description: 'Workspace path search and validated `@path` reference marking.',
+    methods: [
+      {
+        signature: '@Remote(\'search\') async remoteExportSearch(agent: Agent, signal: AbortSignal): Promise<readonly FileEntry[]>',
+        description: 'Index the addressed agent\'s workspace within the configured bounds. The browser caches the answer per session and filters it per keystroke.',
+        parameters: [{ name: 'agent', description: 'the live agent resolved from the wire `agentId`; its session header owns the workspace directory.' }, { name: 'signal', description: 'caller lifetime; the walk races every filesystem await against it.' }],
+        returns: 'the workspace entries, each with its relative and absolute path.',
+        throws: ['Error when the surface is disabled or the session has no workspace directory.'],
+      },
+    ],
+  },
+  {
+    key: 'chaosUpload',
+    summary: 'Workspace upload storage, uploaded-path reference marking, and retention.',
+    description: 'Workspace upload storage, uploaded-path reference marking, and retention.',
+    methods: [
+      {
+        signature: '@Remote(\'upload\') async remoteUpload(agent: Agent, request: UploadRequest, signal: AbortSignal): Promise<UploadResult>',
+        description: 'Store one uploaded file inside the addressed agent\'s workspace.',
+        parameters: [{ name: 'agent', description: 'the live agent resolved from the wire `agentId`; its session header owns the workspace directory.' }, { name: 'request', description: 'display name and canonical base64 bytes.' }, { name: 'signal', description: 'caller lifetime; every filesystem await races it.' }],
+        returns: 'the stored file\'s workspace-relative path and byte length.',
+        throws: ['Error when the session has no workspace directory or the upload is refused.'],
+      },
+    ],
+  },
+  {
     key: 'clientModules',
     summary: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows.',
     description: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows. Construction runs the activation scan synchronously — a malformed declaration or missing bundle among the already-loaded entries aggregates into one loud throw (FAILED fiber; the boot activation audit reports it).',
@@ -1288,6 +1316,24 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'processControl',
+    summary: 'The outward process-control face (`ctx.processControl`).',
+    description: 'The outward process-control face (`ctx.processControl`).',
+    methods: [
+      {
+        signature: 'readonly canRestart: boolean',
+        description: 'Whether this process supports a quiescent successor handoff.',
+        parameters: [],
+      },
+      {
+        signature: 'restart(): Promise<RestartResult>',
+        description: 'Dispose the current application tree, then spawn a detached successor with the same command line. The successor inherits the same port and configuration.',
+        parameters: [],
+        returns: '`{ ok: true }` when the successor was spawned after teardown, or `{ ok: false, reason }` when it cannot.',
+      },
+    ],
+  },
+  {
     key: 'sandbox',
     summary: 'Abstract process-sandbox service.',
     description: 'Abstract process-sandbox service. confine must return enforcing argv or fail closed at wrap or runner-execution time; silent unconfined passthrough is forbidden. Functional probes arbitrate multi-runner chains and may be skipped for a sole candidate, whose own refusal remains the fail-closed end.',
@@ -1674,6 +1720,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'deterministic newest-first cloned session records.',
       },
       {
+        signature: 'projectSessions<Value>( sessionIds: readonly SessionId[], project: (source: LogicalSessionSource) => Value, signal?: AbortSignal, ): Promise<LogicalProjectionResult<Value>[]>',
+        description: 'Fold selected live-preferred logs without retaining full-log snapshots.\n\nPersisted logs use the configured inspection concurrency. Each projector runs synchronously while its source is borrowed and must own every retained value.',
+        parameters: [{ name: 'sessionIds', description: 'sessions to resolve in first-occurrence order.' }, { name: 'project', description: 'synchronous fold over one complete logical log.' }, { name: 'signal', description: 'cancellation shared by listing and persisted inspection.' }],
+        returns: 'one fulfilled or rejected projected result per unique requested id.',
+      },
+      {
         signature: 'async readSession(sessionId: SessionId): Promise<SessionLogSnapshot>',
         description: 'Read and replay-validate one complete logical session log without making it live.',
         parameters: [{ name: 'sessionId', description: 'live or persisted session id to read.' }],
@@ -1972,7 +2024,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     methods: [
       {
         signature: '@Remote describe(): SettingsDescribeValue',
-        description: 'Describe every registered namespace for a configuration page: redacted layered values plus the serialized schema the page renders its form from.',
+        description: 'Describe every registered namespace for a configuration page: redacted layered values plus the serialized schema the page renders its form from. `hasDocument` reports whether a file-backed provider owns a local document the Host can hand to its text-document opener (provider document plus a reachable desktop) without exposing its Host path.',
         parameters: [],
         returns: 'provider writability, local-document presence, and one view per namespace.',
         throws: ['RemoteError when no settings provider is mounted.'],
@@ -2647,6 +2699,20 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'usageReportController',
+    summary: 'Host service backing the generated `ctx.remote[\'usage-report\']` namespace.',
+    description: 'Host service backing the generated `ctx.remote[\'usage-report\']` namespace. Every read stays cold: it folds the logical session corpus through the Session query seam and never activates an Agent. Completed response usage observed live, and every stored-log revision, invalidate the per-zone cache without retaining a report that raced either change.',
+    methods: [
+      {
+        signature: '@Remote async read(request: UsageReportReadRequest, signal: AbortSignal): Promise<UsageReport>',
+        description: 'Reconstruct per-request model metrics from the durable session logs.',
+        parameters: [{ name: 'request', description: 'viewer calendar zone for the daily buckets.' }, { name: 'signal', description: 'caller cancellation for corpus listing and durable reads.' }],
+        returns: 'usage totals grouped by viewer calendar day and recorded model route.',
+        throws: ['RemoteError when the zone is unsupported, the read is cancelled, or the corpus cannot be folded.'],
+      },
+    ],
+  },
+  {
     key: 'userQuestions',
     summary: '`ctx.userQuestions`: validation plus the scoped answerer waterfall.',
     description: '`ctx.userQuestions`: validation plus the scoped answerer waterfall.',
@@ -2716,6 +2782,17 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     description: 'The browser HTTP carrier service. Activation listens immediately. Route registration order does not affect requests because configured named routes must be distinct, and the fallback handler answers anything not yet claimed during startup with 404 until its owner registers. A listen failure rejects initialization, and the boot process reports the failed fiber.',
     methods: [
       {
+        signature: 'markAuthenticated(req: IncomingMessage): void',
+        description: 'Mark a request that a preceding authentication guard has validated. The marker is request-local and never derived from a client-controlled header.',
+        parameters: [{ name: 'req', description: 'validated HTTP or upgrade request.' }],
+      },
+      {
+        signature: 'isAuthenticated(req: IncomingMessage): boolean',
+        description: 'Whether a preceding authentication guard validated this request.',
+        parameters: [{ name: 'req', description: 'HTTP or upgrade request being dispatched.' }],
+        returns: 'true only for a request marked by this server instance.',
+      },
+      {
         signature: 'register(route: WebRoute): () => void',
         description: 'Register a named route. Duplicate (kind, path) throws — route patterns are a composition-level contract, so a collision is a misconfiguration.',
         parameters: [{ name: 'route', description: 'kind, path, and the owning handler.' }],
@@ -2726,6 +2803,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Register an exact-path HTTP upgrade route. Duplicate paths throw because one socket can have only one protocol owner.',
         parameters: [{ name: 'route', description: 'pathname and handler owning negotiation plus socket use.' }],
         returns: 'the disposer removing the route.',
+      },
+      {
+        signature: 'registerGuard(guard: RequestGuard): () => void',
+        description: 'Register a request guard: runs before route matching on every HTTP request. Guards run in registration order; the first `false` result stops the chain (the guard owns the response). This is the generic extension point for request interception — authentication, rate limiting, logging — anything that must run before route dispatch.',
+        parameters: [{ name: 'guard', description: 'the guard function.' }],
+        returns: 'the disposer removing the guard.',
+      },
+      {
+        signature: 'registerUpgradeGuard(guard: UpgradeGuard): () => void',
+        description: 'Register an upgrade guard: runs before upgrade route matching on every WebSocket upgrade. Same chain semantics as registerGuard.',
+        parameters: [{ name: 'guard', description: 'the upgrade guard function.' }],
+        returns: 'the disposer removing the guard.',
       },
       {
         signature: 'registerFallback(handler: WebRoute[\'handler\']): () => void',
@@ -4007,6 +4096,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface FileDiff {\n    path: string;\n    oldText: string | null;\n    newText: string;\n}',
   },
   {
+    name: 'FileEntry',
+    declaration: 'export interface FileEntry {\n    readonly path: string;\n    readonly relative: string;\n    readonly kind: \'file\' | \'dir\';\n}',
+  },
+  {
     name: 'FileLocation',
     declaration: 'export interface FileLocation {\n    path: string;\n    line?: number;\n}',
   },
@@ -4312,7 +4405,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'LlmModelInfo',
-    declaration: 'export interface LlmModelInfo {\n    provider: string;\n    id: string;\n    name: string;\n    description?: string;\n    inputModalities?: readonly ModelModality[];\n}',
+    declaration: 'export interface LlmModelInfo {\n    provider: string;\n    id: string;\n    name: string;\n    description?: string;\n    inputModalities?: readonly ModelModality[];\n    contextWindow?: number;\n    maxOutput?: number;\n    capabilitiesEditable?: boolean;\n}',
   },
   {
     name: 'LlmModelReasoningInfo',
@@ -4333,6 +4426,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'LlmRuntime',
     declaration: 'export class LlmRuntime extends TypertRemoteService {\n    constructor(ctx: Context);\n    registerAdapter(providers: string[], adapter: LlmAdapter): AdapterRegistrationHandle;\n    @Remote\n    listProviders(): LlmProviderInfo[];\n    registerConfigurableProviders(entries: readonly LlmConfigurableProvider[]): DirectoryRegistrationHandle;\n    @Remote\n    listConfigurableProviders(): LlmConfigurableProvider[];\n    registerModelDiscovery(settingsNs: string, discover: (request: LlmModelDiscoveryRequest, signal?: AbortSignal) => Promise<readonly LlmDiscoveredModel[]>): () => void;\n    async discoverModels(settingsNs: string, request: LlmModelDiscoveryRequest, signal?: AbortSignal): Promise<LlmDiscoveredModel[]>;\n    @Remote(\'discoverModels\')\n    async remoteDiscoverModels(settingsNs: string, request: LlmModelDiscoveryRequest, signal: AbortSignal): Promise<LlmDiscoveredModel[]>;\n    providerRetryPolicy(provider: string): ResolvedRetryPolicy;\n    imageRequestPricing(provider: string, model: string): LlmImageRequestPricing | undefined;\n    async listModels(provider: string): Promise<LlmModelInfo[]>;\n    async resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<LlmResolvedModelInfo>;\n    async resolveCallConfig(config: LlmCallConfig, signal?: AbortSignal): Promise<LlmCallConfig>;\n    async prepareCall(config: LlmCallConfig, signal?: AbortSignal): Promise<PreparedLlmCall>;\n    stream(options: GenerateOptions): AsyncIterable<StreamChunk>;\n}',
+  },
+  {
+    name: 'LogicalProjectionResult',
+    declaration: 'export type LogicalProjectionResult<Value> = {\n    sessionId: SessionId;\n    status: \'fulfilled\';\n    value: Value;\n} | {\n    sessionId: SessionId;\n    status: \'rejected\';\n    reason: unknown;\n};',
+  },
+  {
+    name: 'LogicalSessionSource',
+    declaration: 'export interface LogicalSessionSource {\n    readonly header: SessionHeader;\n    readonly inheritedEventCount: SessionLogOffset;\n    readonly events: readonly SessionEvent[];\n}',
   },
   {
     name: 'LspHover',
@@ -4675,6 +4776,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type RequestErrorAction = {\n    kind: \'retry\';\n} | undefined;',
   },
   {
+    name: 'RequestGuard',
+    declaration: 'export type RequestGuard = (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>;',
+  },
+  {
     name: 'RequestHeaderReason',
     declaration: 'export type RequestHeaderReason = \'initial\' | \'resume\' | \'change\' | \'series\';',
   },
@@ -4709,6 +4814,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ResolvedSubagentStartRequest',
     declaration: 'export interface ResolvedSubagentStartRequest extends SubagentStartRequest {\n    readonly descriptor: SubagentDescriptorData;\n}',
+  },
+  {
+    name: 'RestartResult',
+    declaration: 'export type RestartResult = {\n    ok: true;\n} | {\n    ok: false;\n    reason: string;\n};',
   },
   {
     name: 'RestoredSessionOptions',
@@ -5949,6 +6058,42 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'UpdateTeamTaskRequest',
     declaration: 'export interface UpdateTeamTaskRequest {\n    readonly taskId: TeamTaskId;\n    readonly expectedRevision: number;\n    readonly action: TeamTaskAction;\n    readonly subject?: string;\n    readonly description?: string;\n    readonly blockedBy?: readonly TeamTaskId[];\n    readonly writeScopes?: readonly string[];\n    readonly owner?: string;\n}',
+  },
+  {
+    name: 'UpgradeGuard',
+    declaration: 'export type UpgradeGuard = (req: IncomingMessage, socket: Duplex, head: Buffer) => boolean | Promise<boolean>;',
+  },
+  {
+    name: 'UploadRequest',
+    declaration: 'export interface UploadRequest {\n    readonly name: string;\n    readonly data: string;\n}',
+  },
+  {
+    name: 'UploadResult',
+    declaration: 'export interface UploadResult {\n    readonly relative: string;\n    readonly bytes: number;\n}',
+  },
+  {
+    name: 'UsageReport',
+    declaration: 'export interface UsageReport {\n    readonly days: readonly UsageReportDay[];\n    readonly models: readonly UsageReportModel[];\n    readonly unattributed: UsageTotals;\n}',
+  },
+  {
+    name: 'UsageReportDay',
+    declaration: 'export interface UsageReportDay extends UsageTotals {\n    readonly date: string;\n    readonly routes: readonly UsageReportDayRoute[];\n}',
+  },
+  {
+    name: 'UsageReportDayRoute',
+    declaration: 'export interface UsageReportDayRoute extends UsageTotals {\n    readonly provider: string;\n    readonly model: string;\n}',
+  },
+  {
+    name: 'UsageReportModel',
+    declaration: 'export interface UsageReportModel extends UsageTotals {\n    readonly provider: string;\n    readonly model: string;\n}',
+  },
+  {
+    name: 'UsageReportReadRequest',
+    declaration: 'export interface UsageReportReadRequest {\n    readonly timeZone: string;\n}',
+  },
+  {
+    name: 'UsageTotals',
+    declaration: 'export interface UsageTotals {\n    readonly requests: number;\n    readonly inputTokens: number;\n    readonly outputTokens: number;\n    readonly cacheReadTokens: number;\n    readonly cacheWriteTokens: number;\n}',
   },
   {
     name: 'UserMessage',
