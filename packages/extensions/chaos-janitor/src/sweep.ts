@@ -15,8 +15,8 @@ import type { JanitorDeletion, JanitorFailure, JanitorOutcome, JanitorSkip } fro
 
 /** Log file basenames the jsonl persistence ever writes into a session dir. */
 const KNOWN_LOG_NAMES: ReadonlySet<string> = new Set(['session.jsonl.zstd', 'session.jsonl'])
-/** Version-tagged generation names (vN + suffix) the backend also commits. */
-const GENERATION_LOG_PATTERN = /^session\.v\d+\.(zstd|jsonl)$/u
+/** Version-tagged generation logs (`session.vN.jsonl`, optionally `.zstd`-suffixed) the backend also commits. */
+const GENERATION_LOG_PATTERN = /^session\.v\d+\.jsonl(?:\.zstd)?$/u
 
 /** Fixed sweep inputs. */
 export interface SweepOptions {

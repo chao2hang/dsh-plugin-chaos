@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-mobile/README.md
-README.md: 46880ae66b3492f8a6ffc11ceee358747263fb91
-README.zh.md: 502769250fc076877683a5977fa1c6859398e6b0
+README.md: 215d73a90a79da026b5895fc1d76b2491d78da39
+README.zh.md: 122fcbdb50c68dfebe11536c7d7fd455f75dd357
