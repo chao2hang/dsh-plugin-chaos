@@ -28,6 +28,9 @@
     },
     {
       "path": "../../client/ui-slots"
+    },
+    {
+      "path": "../../llm/token-meter"
     }
   ]
 }

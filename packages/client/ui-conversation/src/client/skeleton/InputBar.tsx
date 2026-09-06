@@ -459,12 +459,13 @@ export const InputBar = memo(function InputBar({
             <DecoratorPortals editor={workspaceTrigger ? null : editor} />
           </div>
         </div>
-        <div className={css.row}>
-          <div className={css.tools}>
+        <div className={css.row} data-input-actions-row>
+          <div className={css.tools} data-input-tools>
             <Tooltip label={t('input.commands')} side="top" delayMs={500}>
               <button
                 type="button"
                 className={css.add}
+                data-composer-command
                 aria-label={t('input.commands')}
                 aria-haspopup="listbox"
                 aria-expanded={commandMenuOpen}
@@ -479,6 +480,7 @@ export const InputBar = memo(function InputBar({
               <button
                 type="button"
                 className={css.add}
+                data-composer-attach
                 aria-label={t('file.attach')}
                 disabled={subagent !== null || locked || machineBusy || addFiles === undefined}
                 onMouseDown={keepFocus}
@@ -495,7 +497,7 @@ export const InputBar = memo(function InputBar({
               hidden
               onChange={onPickFiles}
             />
-            <div className={css.modes}>
+            <div className={css.modes} data-composer-modes>
               {accessSelect}
               {sessionId === undefined ? null : renderSlot('conversation.input.plan', { locked })}
             </div>
@@ -503,7 +505,7 @@ export const InputBar = memo(function InputBar({
               ? null
               : renderSlot('conversation.input.left', {})}
           </div>
-          <div className={css.trailing}>
+          <div className={css.trailing} data-composer-trailing>
             {input === undefined || sessionId === undefined
               ? null
               : renderSlot('conversation.input.right', {})}
@@ -514,6 +516,7 @@ export const InputBar = memo(function InputBar({
                 <button
                   type="button"
                   className={css.primary}
+                  data-composer-primary
                   aria-label={t('input.stop')}
                   disabled={stop === undefined}
                   onMouseDown={keepFocus}
@@ -529,6 +532,7 @@ export const InputBar = memo(function InputBar({
               <button
                 type="button"
                 className={css.primary}
+                data-composer-primary
                 aria-label={primaryLabel}
                 disabled={primaryStops ? stop === undefined : empty || disabled || machineBusy || uploadsPending}
                 onMouseDown={keepFocus}

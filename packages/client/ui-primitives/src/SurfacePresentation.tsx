@@ -32,6 +32,10 @@ export interface SurfaceSheetProps {
   onClose: () => void
   /** Accessible title for the sheet (Modal passes its title). */
   title?: string
+  /** Action row the presenter keeps outside the scrollable body (a Modal
+   * passes its footer) so primary actions stay reachable at every
+   * scroll position. */
+  footer?: ReactNode
 }
 
 /** The presentation contract a provider fills. */

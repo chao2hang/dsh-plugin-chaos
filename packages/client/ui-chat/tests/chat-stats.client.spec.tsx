@@ -187,6 +187,11 @@ describe('StatsLine', () => {
     // No timing on the fixture: the duration group drops out whole. Tokens come
     // from the projection, so paging the window cannot change them.
     expect(view.container.textContent).toBe('1 turns · 1 steps| Cache hit 90%| Input 100 tok · Output 5 tok')
+    // The mobile overlay reads this anchor to mirror the row in its overflow
+    // sheet, so the full line must live on the emitted element.
+    const row = view.container.querySelector('[data-stats-line]')
+    expect(row).not.toBeNull()
+    expect(row?.textContent).toBe(view.container.textContent)
     const empty = makeSource()
     const emptyView = render(<StatsLine {...props(empty.source, {
       tokenUsage: { uncachedInputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },

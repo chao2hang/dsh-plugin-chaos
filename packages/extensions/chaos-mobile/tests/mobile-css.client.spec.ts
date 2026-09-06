@@ -38,6 +38,24 @@ describe('mobile.css contract', () => {
     expect(css).toContain('flex-direction: column')
   })
 
+  it('keeps the settings section nav a one-line scrollable chip row', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-settings-page-sections] {')
+    expect(css).toContain('overflow-x: auto')
+    expect(css).not.toContain('grid-template-columns: repeat(2, minmax(0, 1fr))')
+  })
+
+  it('reflows the appearance cubes into one compact row on mobile', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-appearance-cubes] {')
+    expect(css).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))')
+  })
+
+  it('targets only anchors the model-capability sheet emits', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-model-capabilities-capacity] button {')
+    expect(css).toContain('min-height: 36px')
+    expect(css).not.toContain('[data-model-capabilities-field]')
+    expect(css).not.toContain('[data-model-capabilities-trigger]')
+  })
+
   it('centers the slash menu at viewport width above the composer', () => {
     expect(css).toContain('width: calc(100vw - 24px)')
     expect(css).toContain('transform: translateX(-50%)')
@@ -122,5 +140,26 @@ describe('mobile.css contract', () => {
     expect(css).toContain('[data-composer-modes] > button[aria-haspopup="listbox"]')
     expect(css).not.toContain('html[data-chaos-mobile] [data-composer-modes] > button[aria-haspopup="listbox"]')
     expect(css).toContain('display: none !important')
+  })
+
+  it('hides the composer built-in paperclip by anchor, not by locale label', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-composer-card] [data-composer-attach]')
+    expect(css).not.toContain('aria-label="添加附件"')
+    expect(css).not.toContain('aria-label="Add attachment"')
+  })
+
+  it('hides the bottom stats line and message clocks on mobile (mirrored in the overflow sheet)', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-stats-line]')
+    expect(css).toContain('html[data-chaos-mobile] [data-message-clock]')
+    expect(css).toContain('display: none !important')
+  })
+
+  it('moves the context ring out of the mobile rail to the top status bar', () => {
+    expect(css).toContain('html[data-chaos-mobile] [data-composer-card] [data-composer-context]')
+    expect(css).toContain('[data-chaos-context-bar] {')
+    expect(css).toContain('top: calc(44px + env(safe-area-inset-top, 0))')
+    expect(css).toContain('[data-chaos-context-bar-fill]')
+    expect(css).toContain("[data-chaos-context-bar='warn']")
+    expect(css).toContain("[data-chaos-context-bar='danger']")
   })
 })

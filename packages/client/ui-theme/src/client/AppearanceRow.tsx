@@ -50,7 +50,7 @@ export function AppearanceRow({ t, setTheme, setUiFontSize, setCodeFontSize, use
   return (
     <div className={css.group}>
       <div className={css.title}>{t('appearance.title')}</div>
-      <div className={css.cubeRow}>
+      <div className={css.cubeRow} data-appearance-cubes>
         {CUBES.map(({ id, labelKey, Icon }) => (
           <button
             key={id}

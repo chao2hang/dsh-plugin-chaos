@@ -16,7 +16,7 @@
  *
  * On desktop it renders nothing and resets the surface presentation to inline.
  */
-import { useEffect, useState, useRef, type ReactNode } from 'react'
+import { useEffect, useState, useRef, useSyncExternalStore, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { PropsRuntime, PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
@@ -25,6 +25,9 @@ import { MobileNavBar } from './MobileNavBar.tsx'
 import { MobileSheet } from './MobileSheet.tsx'
 import { activateViewTab } from './MobileOverflowSheet.tsx'
 import { useEdgeSwipe } from './useEdgeSwipe.ts'
+import {
+  formatContextTokens, getChaosContextMeter, subscribeChaosContextMeter,
+} from './context-meter-store.ts'
 import * as uiPrimitives from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SurfaceSheetProps } from '@deepseek-ai/dsh-client-ui-primitives'
 
@@ -139,6 +142,11 @@ export function MobileOverlay({
   const [statsSummary, setStatsSummary] = useState<string | undefined>(undefined)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Context occupancy published by the composer's ContextStatusBar entry
+  // (this global-scope seat has no projection kit of its own).
+  const contextMeter = useSyncExternalStore(
+    subscribeChaosContextMeter, getChaosContextMeter, getChaosContextMeter,
+  )
 
   // Activate sheet presentation on mobile; reset to inline on desktop.
   useEffect(() => {
@@ -148,7 +156,15 @@ export function MobileOverlay({
     }
     if (setSurfacePresentation === undefined) return
     const presentAsSheet = (props: SurfaceSheetProps): ReactNode => (
-      <MobileSheet onClose={props.onClose} {...(props.title === undefined ? {} : { title: props.title })}>
+      <MobileSheet
+        onClose={props.onClose}
+        {...(props.title === undefined ? {} : { title: props.title })}
+        // Dialogs carry form content whose action row must stay reachable,
+        // so they open at the large detent with the footer pinned; menus
+        // keep the compact medium detent.
+        detent={props.surface === 'dialog' ? 'large' : 'medium'}
+        {...(props.footer === undefined ? {} : { footer: props.footer })}
+      >
         {props.children}
       </MobileSheet>
     )
@@ -314,6 +330,31 @@ export function MobileOverlay({
                 {trajectoryActive ? '对话视图' : '轨迹视图'}
                 <span className="chaos-overflow-hint">{trajectoryActive ? '返回消息流' : '时间线与调用详情'}</span>
               </button>
+            )}
+            {contextMeter !== undefined && (
+              <section className="chaos-overflow-stats" aria-label="上下文占用">
+                <h2>上下文占用</h2>
+                <p className="chaos-context-headline">
+                  {'已用 '}{contextMeter.percent}% · ~{formatContextTokens(contextMeter.usedTokens)}
+                  {' / '}{formatContextTokens(contextMeter.contextWindow)}
+                </p>
+                {contextMeter.breakdown !== undefined && (
+                  <dl className="chaos-context-rows">
+                    <div className="chaos-context-row">
+                      <dt>系统提示词</dt>
+                      <dd>~{formatContextTokens(contextMeter.breakdown.systemTokens)}</dd>
+                    </div>
+                    <div className="chaos-context-row">
+                      <dt>工具定义</dt>
+                      <dd>~{formatContextTokens(contextMeter.breakdown.toolsTokens)}</dd>
+                    </div>
+                    <div className="chaos-context-row">
+                      <dt>对话内容</dt>
+                      <dd>~{formatContextTokens(contextMeter.breakdown.messageTokens)}</dd>
+                    </div>
+                  </dl>
+                )}
+              </section>
             )}
             {statsSummary !== undefined && (
               <section className="chaos-overflow-stats" aria-label="会话统计">

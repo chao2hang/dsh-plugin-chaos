@@ -14,10 +14,11 @@ import {
   setSurfacePresentation,
   resetSurfacePresentation,
   type SurfacePresentation,
+  type SurfaceSheetProps,
 } from '@deepseek-ai/dsh-client-ui-primitives/src/SurfacePresentation.tsx'
 
-const sheetPresenter = vi.fn(({ children }) => (
-  <div data-testid="sheet" role="dialog" aria-label="sheet">{children}</div>
+const sheetPresenter = vi.fn((props: SurfaceSheetProps) => (
+  <div data-testid="sheet" role="dialog" aria-label="sheet">{props.children}</div>
 ))
 
 const sheetPresentation: SurfacePresentation = {
@@ -80,6 +81,25 @@ describe('SurfacePresentation — sheet mode', () => {
     const call = sheetPresenter.mock.calls[0]![0]
     expect(call.surface).toBe('dialog')
     expect(call.title).toBe('Sheet Title')
+  })
+
+  it('hands the Modal footer to the presenter separately from the body', () => {
+    setSurfacePresentation(sheetPresentation)
+    render(
+      <Modal open onClose={vi.fn()} title="Sheet" closeLabel="Close" footer={<button type="button">Save</button>}>
+        <p>sheet body</p>
+      </Modal>,
+    )
+    const call = sheetPresenter.mock.calls[0]![0]
+    expect(call.footer).toBeDefined()
+    cleanup()
+    setSurfacePresentation(sheetPresentation)
+    render(
+      <Modal open onClose={vi.fn()} title="Sheet" closeLabel="Close">
+        <p>sheet body</p>
+      </Modal>,
+    )
+    expect(sheetPresenter.mock.calls[1]![0].footer).toBeUndefined()
   })
 
   it('leaves Escape ownership to the sheet presenter for Modal and Menu', () => {

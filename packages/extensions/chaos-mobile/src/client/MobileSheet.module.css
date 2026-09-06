@@ -99,6 +99,20 @@
   overscroll-behavior: contain;
 }
 
+/* Pinned action row: the body scrolls beneath it, so a dialog's primary
+ * action stays one tap away at every scroll position. With a footer the
+ * sheet's own safe-area bottom padding would double-count, so the footer
+ * reclaims it. */
+.sheet:has(.footer) {
+  padding-bottom: 0;
+}
+
+.footer {
+  flex: none;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+  border-top: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1, currentColor) 72%, transparent);
+}
+
 @keyframes chaos-sheet-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

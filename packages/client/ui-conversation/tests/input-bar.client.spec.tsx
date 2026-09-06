@@ -1513,3 +1513,20 @@ describe('command launcher chrome and control seats', () => {
     expect((live.view.getByLabelText(/^访问模式/) as HTMLButtonElement).disabled).toBe(false)
   })
 })
+
+describe('action-row stable anchors', () => {
+  it('emits the data anchors the mobile rail and its consumers select', () => {
+    const { view } = bench()
+    const container = view.container
+    expect(container.querySelector('[data-input-actions-row]')).toBeTruthy()
+    expect(container.querySelector('[data-input-tools]')).toBeTruthy()
+    expect(container.querySelector('[data-composer-modes]')).toBeTruthy()
+    expect(container.querySelector('[data-composer-trailing]')).toBeTruthy()
+    expect(container.querySelector('[data-composer-command]')).toBeTruthy()
+    expect(container.querySelector('[data-composer-attach]')).toBeTruthy()
+    expect(container.querySelector('[data-composer-primary]')).toBeTruthy()
+    // The tools and trailing groups sit directly in the row.
+    expect(container.querySelector('[data-input-actions-row] > [data-input-tools]')).toBeTruthy()
+    expect(container.querySelector('[data-input-actions-row] > [data-composer-trailing]')).toBeTruthy()
+  })
+})

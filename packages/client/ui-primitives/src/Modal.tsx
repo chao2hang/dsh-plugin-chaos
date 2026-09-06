@@ -55,7 +55,8 @@ export function Modal({
 
   // Sheet mode: delegate the dialog content to the injected sheet presenter
   // (chaos-mobile's MobileSheet). The presenter owns the backdrop, grabber,
-  // detent, and drag-to-dismiss; Modal only assembles the inner chrome.
+  // detent, and drag-to-dismiss; Modal only assembles the inner chrome. The
+  // footer leaves the scrollable content so the presenter can pin it.
   if (presentation.mode === 'sheet' && presentation.presentAsSheet !== undefined) {
     const sheetContent = headless
       ? children
@@ -71,7 +72,6 @@ export function Modal({
             <p className={css.description}>{description}</p>
           )}
           {children !== undefined && <div className={css.body}>{children}</div>}
-          {footer !== undefined && <div className={css.footer}>{footer}</div>}
         </>
       )
     return createPortal(presentation.presentAsSheet({
@@ -79,6 +79,7 @@ export function Modal({
       children: sheetContent,
       onClose,
       title,
+      ...(headless || footer === undefined ? {} : { footer }),
     }), document.body)
   }
 

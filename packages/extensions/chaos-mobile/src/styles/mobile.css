@@ -181,8 +181,9 @@ html[data-chaos-mobile] [data-session-swipe='trailing'] [role='treeitem'] { tran
 
 /* ═══ Dedicated settings page ════════════════════════════════════════════
    The desktop settings modal is a separate mobile page below the persistent
-   nav bar. Section navigation stays vertical and occupies only its content,
-   so labels never collapse into a clipped horizontal chip row. */
+   nav bar. Section navigation is one horizontal chip row (labels size to
+   their text, so nothing clips) so the settings content keeps the page's
+   primary reading area. */
 html[data-chaos-mobile] [data-settings-overlay] {
   position: fixed;
   inset: calc(44px + env(safe-area-inset-top, 0)) 0 0;
@@ -215,23 +216,36 @@ html[data-chaos-mobile] [data-settings-page-nav] {
   box-sizing: border-box;
 }
 
-/* A two-column section grid preserves every destination while leaving the
-   active settings content as the page's primary reading area. */
+/* A single scrollable chip row: every destination stays one tap away without
+   the two-column grid spending three rows of vertical space, and each chip is
+   sized to its label so no text clips (swipe reveals the last ones). */
 html[data-chaos-mobile] [data-settings-page-sections] {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
   gap: 8px;
   width: 100%;
+  overflow-x: auto;
 }
 
 html[data-chaos-mobile] [data-settings-page-section] {
-  min-width: 0;
-  min-height: 44px;
-  height: 44px;
-  padding: 10px 12px;
+  flex: none;
+  height: 40px;
+  padding: 8px 14px;
   border-radius: 10px;
   font-size: 15px;
   line-height: 22px;
+}
+
+/* The desktop cube's 180px flex basis wraps to three stacked full-width
+   cards on a phone; a compact three-column grid keeps all options on one
+   line without losing the tap targets. */
+html[data-chaos-mobile] [data-appearance-cubes] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+html[data-chaos-mobile] [data-appearance-cubes] > button {
+  padding: 12px 8px;
+  border-radius: 14px;
 }
 
 html[data-chaos-mobile] [data-settings-page-content] {
@@ -309,6 +323,43 @@ html[data-chaos-mobile] [data-settings-page-content] > :last-child {
   overflow-wrap: anywhere;
 }
 
+/* Context details section in the … sheet: the headline keeps the occupancy
+   reading, the rows mirror the desktop ring panel's legend (approximate
+   composition, never a total). */
+.chaos-context-headline {
+  margin-bottom: 8px;
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
+
+.chaos-context-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.chaos-context-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chaos-context-row dt {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.chaos-context-row dd {
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ═══ Mobile nav bar: menu vs. back visibility ══════════════════════════ */
 
 /* The nav bar is the mobile home for session identity; hide the duplicated
@@ -362,13 +413,10 @@ html[data-chaos-mobile] [data-message-clock] {
 }
 
 /* ═══ Composer action row: one line ════════════════════════════════════
-   The capabilities trigger moves into the model popup on mobile (its entry
-   row lives there), and the remaining tools + model seat + meter + send
+   The built-in paperclip and the context ring leave the rail (the chooser
+   and the top status bar replace them); the capabilities entry already
+   lives in the model popup, and the remaining tools + model seat + send
    share one nowrap line with tightened gaps. */
-html[data-chaos-mobile] [data-model-capabilities-trigger] {
-  display: none !important;
-}
-
 html[data-chaos-mobile] [data-input-actions-row] {
   flex-wrap: nowrap !important;
   gap: 4px !important;
@@ -386,8 +434,7 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-trailing] {
    action, so the hierarchy stays obvious without mixed circular dimensions. */
 html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker],
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command],
-html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission],
-html[data-chaos-mobile] [data-input-actions-row] [data-composer-context] {
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] {
   box-sizing: border-box;
   display: inline-grid;
   place-items: center;
@@ -433,8 +480,7 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] {
    established hit areas; only glyph scale and contrast are unified. */
 html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker] svg,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command] svg,
-html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] svg,
-html[data-chaos-mobile] [data-input-actions-row] [data-composer-context] svg {
+html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] svg {
   width: 18px;
   height: 18px;
 }
@@ -447,7 +493,6 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] svg {
 html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission]:active,
-html[data-chaos-mobile] [data-input-actions-row] [data-composer-context]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-model]:active {
   background: var(--dsw-alias-interactive-bg-hover-solid);
 }
@@ -527,28 +572,15 @@ html[data-chaos-mobile] [data-input-actions-row] [role='combobox'] {
 
 /* Model-capability sheet: inputs form a compact settings list, the multimodal
    choice reads as one row, and effort choices become tappable chips instead of
-   an unstructured cluster of native checkboxes. */
+   an unstructured cluster of native checkboxes. The stop buttons grow to a
+   comfortable touch height beside the unit-precise sliders. */
 html[data-chaos-mobile] [data-model-capabilities-fields] {
   gap: 12px;
   padding: 0 16px 12px;
 }
 
-html[data-chaos-mobile] [data-model-capabilities-field] {
-  gap: 5px;
-  font-weight: 500;
-}
-
-html[data-chaos-mobile] [data-model-capabilities-field] > span {
-  display: flex;
-  width: 100%;
-  height: 40px;
-  box-sizing: border-box;
-  border-radius: 10px;
-  background: var(--dsw-specific-selector);
-}
-
-html[data-chaos-mobile] [data-model-capabilities-field] > span > input {
-  min-width: 0;
+html[data-chaos-mobile] [data-model-capabilities-capacity] button {
+  min-height: 36px;
 }
 
 html[data-chaos-mobile] [data-model-capabilities-multimodal] {
@@ -747,11 +779,53 @@ html[data-chaos-mobile] h3 {
 
 /* The composer's own paperclip duplicates this plugin's three-action
    chooser on narrow viewports; the chooser is the single mobile entry
-   and the desktop paperclip stays untouched. */
+   and the desktop paperclip stays untouched. The anchor is locale-proof
+   (the old aria-label match missed every non-zh locale). */
 
-html[data-chaos-mobile] [data-composer-card] .tools button[aria-label="添加附件"],
-html[data-chaos-mobile] [data-composer-card] .tools button[aria-label="Add attachment"] {
+html[data-chaos-mobile] [data-composer-card] [data-composer-attach] {
   display: none !important;
+}
+
+/* The context ring leaves the phone rail: its occupancy moves to the fixed
+   top status bar (data-chaos-context-bar, below the nav bar) and its token
+   details to the … sheet. Desktop keeps the ring. */
+html[data-chaos-mobile] [data-composer-card] [data-composer-context] {
+  display: none !important;
+}
+
+/* ═══ Context status bar (top) ══════════════════════════════════════════
+   Thin full-width occupancy bar docked under the persistent nav bar. Pure
+   status: no pointer targets, no layout cost (fixed, 3px). Tints escalate
+   as the route fills so the number lives in the sheet while the bar keeps
+   the glanceable warning. */
+
+html[data-chaos-mobile] [data-chaos-context-bar] {
+  position: fixed;
+  top: calc(44px + env(safe-area-inset-top, 0));
+  left: 0;
+  right: 0;
+  z-index: 59;
+  height: 3px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--dsw-alias-border-l2, #3a4352) 55%, transparent);
+}
+
+html[data-chaos-mobile] [data-chaos-context-bar-fill] {
+  height: 100%;
+  background: var(--dsw-alias-state-business-primary, #2f6feb);
+  transition: width 240ms ease;
+}
+
+html[data-chaos-mobile] [data-chaos-context-bar='warn'] [data-chaos-context-bar-fill] {
+  background: var(--dsw-alias-state-warning, #d4a72c);
+}
+
+html[data-chaos-mobile] [data-chaos-context-bar='danger'] [data-chaos-context-bar-fill] {
+  background: var(--dsw-alias-state-danger, #d1242f);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-chaos-mobile] [data-chaos-context-bar-fill] { transition: none; }
 }
 
 /* ═══ Landscape: shrink input area ═══════════════════════════════════════ */

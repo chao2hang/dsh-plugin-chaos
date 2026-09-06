@@ -24,6 +24,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { MobileOverlay, type MobileOverlayInjected } from './MobileOverlay.tsx'
 import { AttachmentButton } from './AttachmentButton.tsx'
+import { ContextStatusBar } from './ContextStatusBar.tsx'
 import mobileCss from '../styles/mobile.css?inline'
 
 /** Stable Cordis plugin name. */
@@ -90,4 +91,11 @@ export function apply(ctx: ClientContext): void {
       },
     }),
   }, AttachmentButton))
+  // The context status bar needs no inject: the session standard kit already
+  // hands the entry its useProjection seat. It renders beside the picker in
+  // the same list slot and portals its bar below the nav bar.
+  ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
+    name: 'conversation.input.left',
+    id: 'chaos-mobile-context-status-bar',
+  }, ContextStatusBar))
 }

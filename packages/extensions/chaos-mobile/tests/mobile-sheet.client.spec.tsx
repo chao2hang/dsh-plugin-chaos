@@ -43,6 +43,25 @@ describe('MobileSheet — rendering', () => {
     render(<MobileSheet onClose={vi.fn()} title="Settings">content</MobileSheet>)
     expect(screen.getByRole('dialog').getAttribute('aria-label')).toBe('Settings')
   })
+
+  it('pins the footer outside the scrollable body', () => {
+    render(
+      <MobileSheet onClose={vi.fn()} footer={<button type="button">Save</button>}>
+        <p>scrolling body</p>
+      </MobileSheet>,
+    )
+    const dialog = screen.getByRole('dialog')
+    const footer = dialog.querySelector('[data-chaos-sheet-footer]')
+    expect(footer).not.toBeNull()
+    expect(footer?.textContent).toBe('Save')
+    // The body is the scroll container; the footer must not live inside it.
+    const body = [...dialog.children].find(child => (child.textContent ?? '').includes('scrolling body'))
+    expect(body).not.toBeNull()
+    expect(body?.contains(footer)).toBe(false)
+    cleanup()
+    render(<MobileSheet onClose={vi.fn()}>content</MobileSheet>)
+    expect(document.querySelector('[data-chaos-sheet-footer]')).toBeNull()
+  })
 })
 
 describe('MobileSheet — close interactions', () => {

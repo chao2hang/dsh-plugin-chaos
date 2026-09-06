@@ -67,6 +67,13 @@ describe('AppearanceRow', () => {
     expect(pressed(/System/)).toBe('false')
   })
 
+  it('wraps the three cubes in the anchor the mobile stylesheet reflows', () => {
+    mount('dark')
+    const cubes = document.querySelector('[data-appearance-cubes]')
+    expect(cubes).not.toBeNull()
+    expect(cubes?.querySelectorAll('button[aria-pressed]')).toHaveLength(3)
+  })
+
   it('click drives setTheme; selection follows the store mirror, not the click echo', () => {
     const b = mount('dark')
     fireEvent.click(screen.getByRole('button', { name: /Light/ }))

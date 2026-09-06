@@ -1,9 +1,10 @@
 /**
  * Mobile bottom sheet: iOS-style presentation surface with a grabber handle,
  * interactive medium / large detents, drag-to-dismiss, backdrop tap, Escape close,
- * scroll containment, and focus trapping. Serves as the `presentAsSheet`
- * renderer for the `SurfacePresentation` provider when chaos-mobile is active
- * on a mobile viewport.
+ * scroll containment, focus trapping, and an optional action row pinned below
+ * the scrollable body. Serves as the `presentAsSheet` renderer for the
+ * `SurfacePresentation` provider when chaos-mobile is active on a mobile
+ * viewport.
  *
  * Design references: iOS Human Interface Guidelines — Sheets.
  */
@@ -24,6 +25,8 @@ export interface MobileSheetProps {
   title?: string
   /** Initial detent height (default medium). */
   detent?: SheetDetent
+  /** Action row pinned below the scrollable body (a dialog's footer). */
+  footer?: ReactNode
 }
 
 /** Threshold (px) past which a drag releases the sheet closed. */
@@ -40,7 +43,7 @@ const DETENT_THRESHOLD = 72
  * @param props - see {@link MobileSheetProps}.
  * @returns a portaled sheet tree, or null on server.
  */
-export function MobileSheet({ children, onClose, title, detent = 'medium' }: MobileSheetProps): ReactNode {
+export function MobileSheet({ children, onClose, title, detent = 'medium', footer }: MobileSheetProps): ReactNode {
   const sheetRef = useRef<HTMLDivElement | null>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
@@ -138,6 +141,11 @@ export function MobileSheet({ children, onClose, title, detent = 'medium' }: Mob
         <div className={css.body}>
           {children}
         </div>
+        {footer !== undefined && (
+          <div className={css.footer} data-chaos-sheet-footer>
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   ), document.body)

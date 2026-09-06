@@ -1,16 +1,18 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
-import { resetSurfacePresentation } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Menu, Modal, resetSurfacePresentation } from '@deepseek-ai/dsh-client-ui-primitives'
 import { apply, inject } from '../src/client/index.ts'
 import { MobileOverlay, type MobileOverlayInjected } from '../src/client/MobileOverlay.tsx'
 import { MOBILE_BREAKPOINT } from '../src/client/columns.ts'
+import { publishChaosContextMeter } from '../src/client/context-meter-store.ts'
 
 afterEach(() => {
   cleanup()
   resetSurfacePresentation()
+  publishChaosContextMeter(undefined)
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 })
 })
 
@@ -188,10 +190,74 @@ describe('MobileOverlay', () => {
     stats.remove()
   })
 
+  it('shows the context occupancy details in the overflow sheet while a meter is published', () => {
+    setMobileViewport()
+    act(() => {
+      publishChaosContextMeter({
+        percent: 42,
+        usedTokens: 42_000,
+        contextWindow: 100_000,
+        breakdown: { systemTokens: 20_000, toolsTokens: 8_000, messageTokens: 14_000 },
+      })
+    })
+
+    render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={vi.fn()} useSessions={useSessions} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'More' }))
+    const section = screen.getByRole('region', { name: '上下文占用' })
+    expect(screen.getByRole('heading', { name: '上下文占用' })).toBeTruthy()
+    expect(section.textContent).toContain('已用 42%')
+    expect(section.textContent).toContain('~42K / 100K')
+    expect(section.textContent).toContain('系统提示词')
+    expect(section.textContent).toContain('~20K')
+    expect(section.textContent).toContain('工具定义')
+    expect(section.textContent).toContain('对话内容')
+  })
+
+  it('omits the context section while no meter is published', () => {
+    setMobileViewport()
+    render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={vi.fn()} useSessions={useSessions} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'More' }))
+    expect(screen.queryByRole('region', { name: '上下文占用' })).toBeNull()
+  })
+
   it('renders nothing on desktop viewport', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 })
     const { container } = render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={vi.fn()} useSessions={useSessions} />)
     expect(container.firstChild).toBeNull()
+  })
+
+  it('presents dialogs as a large-detent sheet with the footer pinned below the body', () => {
+    setMobileViewport()
+    render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={vi.fn()} useSessions={useSessions} />)
+    render(
+      <Modal open onClose={vi.fn()} title="能力设置" closeLabel="关闭" footer={<button type="button">保存</button>}>
+        <p>capability body</p>
+      </Modal>,
+    )
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.getAttribute('data-detent')).toBe('large')
+    const footer = dialog.querySelector('[data-chaos-sheet-footer]')
+    expect(footer?.textContent).toBe('保存')
+    const body = [...dialog.children].find(child => (child.textContent ?? '').includes('capability body'))
+    expect(body).not.toBeNull()
+    expect(body?.contains(footer)).toBe(false)
+  })
+
+  it('keeps menus at the compact medium detent', () => {
+    setMobileViewport()
+    render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={vi.fn()} useSessions={useSessions} />)
+    render(
+      <Menu
+        open
+        anchor={<button>trigger</button>}
+        items={[{ id: 'a', label: 'Option A' }]}
+        onSelect={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('dialog').getAttribute('data-detent')).toBe('medium')
   })
 })
 
