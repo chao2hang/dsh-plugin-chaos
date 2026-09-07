@@ -18,7 +18,11 @@ export const THINKING_LEVELS: readonly ThinkingLevel[] = [
   'off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max',
 ]
 
-/** Convert selected levels to pi-ai's exact `reasoningEfforts` profile field. */
+/**
+ * Convert selected levels to pi-ai's exact `reasoningEfforts` profile field.
+ * @param levels - the levels selected in the configuration form.
+ * @returns the per-level effort map, or `false` when no level is selected.
+ */
 export function reasoningEffortsOf(levels: readonly ThinkingLevel[]): false | Record<string, string | null> {
   if (levels.length === 0) return false
   const efforts: Record<string, string | null> = {}

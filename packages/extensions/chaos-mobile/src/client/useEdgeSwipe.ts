@@ -21,6 +21,7 @@ const DRAWER_WIDTH = 300
  * left edge, calls `onOpen`. On a leftward swipe while the drawer is open,
  * calls `onClose`. The hook is a no-op when `enabled` is false.
  * @param enabled - whether the gesture is active (mobile only).
+ * @param drawerOpen - whether the drawer is currently open; leftward swipes close only in this state.
  * @param onOpen - called when the open threshold is met.
  * @param onClose - called when the close threshold is met.
  */

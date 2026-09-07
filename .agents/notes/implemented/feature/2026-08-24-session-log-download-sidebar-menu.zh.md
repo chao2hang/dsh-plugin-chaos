@@ -1,8 +1,8 @@
 # Agent Note: Session log download sidebar menu
 
-[English](2026-08-24-session-log-download-sidebar-menu.md) | 中文
-
 Status: implemented
+
+[English](2026-08-24-session-log-download-sidebar-menu.md) | 中文
 
 ## Problem
 

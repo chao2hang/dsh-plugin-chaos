@@ -411,6 +411,18 @@ abstract searchEvents( request: SessionEventSearchRequest, exec?: SessionSearchE
 listSessions(signal?: AbortSignal): Promise<SessionRecord[]>
 
 /**
+ * Fold selected live-preferred logs without retaining full-log snapshots.
+ *
+ * Persisted logs use the configured inspection concurrency. Each projector runs
+ * synchronously while its source is borrowed and must own every retained value.
+ * @param sessionIds - sessions to resolve in first-occurrence order.
+ * @param project - synchronous fold over one complete logical log.
+ * @param signal - cancellation shared by listing and persisted inspection.
+ * @returns one fulfilled or rejected projected result per unique requested id.
+ */
+projectSessions<Value>( sessionIds: readonly SessionId[], project: (source: LogicalSessionSource) => Value, signal?: AbortSignal, ): Promise<LogicalProjectionResult<Value>[]>
+
+/**
  * Read and replay-validate one complete logical session log without making it live.
  * @param sessionId - live or persisted session id to read.
  * @returns cloned header and complete raw event log from one observation.

@@ -672,6 +672,21 @@ const SERVICE_ROLES: ServiceRole[] = [
     consumers: ['tool-cordis'],
     note: 'Registers host inspect providers, mirrors the client provider manifest, and routes client queries through the dynamic Cordis transport.',
   },
+  {
+    key: 'processControl',
+    pkg: 'process-control',
+    title: 'Harness process restart',
+    mode: 'core',
+    consumers: ['chaos-restart'],
+    note: 'Reports restartability from the running command line, awaits the launcher application exit, and spawns a detached unref successor with the same argv.',
+  },
+  {
+    key: 'usageReportController',
+    pkg: 'api-session-controller',
+    title: 'Session token-usage report reads',
+    mode: 'core',
+    note: 'Serves the durable per-session token-usage aggregates over the Host remote namespace for the usage views.',
+  },
 ]
 
 function generatedHeader(title: string): string[] {

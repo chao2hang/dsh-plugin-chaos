@@ -255,7 +255,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: 'setFontSize(px: number): void',
-        description: 'Change the conversation content font size — the only font-size write entry. Accepted values are written through the settings scope and emit `theme/change`.',
+        description: 'Change the conversation content font size — the only content font-size write entry. Accepted values are written through the settings scope and emit `theme/change`.',
         parameters: [{ name: 'px', description: 'integer px within FONT_SIZE_MIN..FONT_SIZE_MAX; out-of-range or fractional values throw.' }],
       },
       {
@@ -474,6 +474,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ClientRemote extends TypertClientRemote {\n    $stream<Item>(options: RemoteStreamOptions<Item>): RemoteStream<Item>;\n    readonly $host: RemoteHostFacts;\n}',
   },
   {
+    name: 'CodeFontSize',
+    declaration: 'export type CodeFontSize = typeof CODE_FONT_SIZES[number];',
+  },
+  {
     name: 'CommonKeyOf',
     declaration: 'export type CommonKeyOf = LocaleNamespaceMap extends {\n    common: infer C;\n} ? C & string : never;',
   },
@@ -499,7 +503,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ConnectionHandle',
-    declaration: 'export interface ConnectionHandle {\n    readonly isLoopback: boolean;\n    readonly generation: ConnectionGenerationState;\n    readonly state: ConnectionStateSource;\n    readonly rpc: ClientConnectionRpc;\n    reconnect(): void;\n    registerGenerationSource(source: ConnectionGenerationSource): () => void;\n    start(sinks: ConnectionSinks, config?: ConnectionConfig): ConnectionLoop;\n}',
+    declaration: 'export interface ConnectionHandle {\n    readonly isLoopback: boolean;\n    readonly authenticated: boolean;\n    readonly generation: ConnectionGenerationState;\n    readonly state: ConnectionStateSource;\n    readonly rpc: ClientConnectionRpc;\n    reconnect(): void;\n    registerGenerationSource(source: ConnectionGenerationSource): () => void;\n    start(sinks: ConnectionSinks, config?: ConnectionConfig): ConnectionLoop;\n    setAuthenticated(value: boolean): void;\n}',
   },
   {
     name: 'ConnectionHostInfo',
@@ -859,7 +863,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ThemeSnapshot',
-    declaration: 'export interface ThemeSnapshot {\n    preference: ThemePreference;\n    fontSize: number;\n    active: ThemeDefinition;\n    themes: readonly ThemeDefinition[];\n    revision: number;\n}',
+    declaration: 'export interface ThemeSnapshot {\n    preference: ThemePreference;\n    fontSize: number;\n    active: ThemeDefinition;\n    themes: readonly ThemeDefinition[];\n    uiFontSize: UiFontSize;\n    codeFontSize: CodeFontSize;\n    revision: number;\n}',
   },
   {
     name: 'ThemeTokenModes',
@@ -880,6 +884,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'TranslateNS',
     declaration: 'export type TranslateNS<N extends keyof LocaleNamespaceMap & string> = Translate<LocaleKeysOf<N>>;',
+  },
+  {
+    name: 'UiFontSize',
+    declaration: 'export type UiFontSize = typeof UI_FONT_SIZES[number];',
   },
   {
     name: 'WorkspaceView',

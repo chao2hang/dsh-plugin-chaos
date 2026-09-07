@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-mobile-hero-composer-docking.md
-2026-08-23-mobile-hero-composer-docking.md: af9709c6633231c1a0ffe09561e085f9d9611ae2
-2026-08-23-mobile-hero-composer-docking.zh.md: 65fd1f7c187b2981ecabbc2ff4639f2d57cba17e
+2026-08-23-mobile-hero-composer-docking.md: 4278af8d1897f0532a1f854ecc4bf1929b590ce1
+2026-08-23-mobile-hero-composer-docking.zh.md: c05920ec3888841307da2fc6b95a3e56c2c4b58e

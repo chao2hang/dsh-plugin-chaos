@@ -124,6 +124,8 @@ export const SERVICE_PAGE: Record<string, string> = {
   workspaceRegistry: 'workspace.md',
   workspaceController: 'workspace.md',
   directoryPickerController: 'workspace.md',
+  processControl: 'chaos.md',
+  usageReportController: 'chaos.md',
 }
 
 /**
@@ -661,6 +663,7 @@ export const FOUNDATION_TYPE_NAMES: ReadonlySet<string> = new Set([
   'EntryTree',
   'Exclude',
   'Extract',
+  'IncomingMessage',
   'Map',
   'NonNullable',
   'Omit',
@@ -736,6 +739,13 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   Translate: 'service-local bound translator is owned by packages/client/i18n/src/index.ts',
   WebUpgradeRoute:
     'upgrade route registration contract is owned by packages/host/webserver/src/index.ts',
+  RequestGuard: 'webserver request guard callback is owned by packages/host/webserver/src/index.ts',
+  UpgradeGuard: 'webserver upgrade guard callback is owned by packages/host/webserver/src/index.ts',
+  UsageReport: 'usage report projection is owned by packages/api/session-controller/src/types.ts',
+  UsageReportReadRequest: 'usage report request contract is owned by packages/api/session-controller/src/types.ts',
+  RestartResult: 'restart outcome is owned by packages/boot/process-control/src/index.ts',
+  LogicalProjectionResult: 'projection result type is owned by packages/session-query/session-query/src/corpus.ts',
+  LogicalSessionSource: 'logical corpus source is owned by packages/session-query/session-query/src/corpus.ts',
   InvariantRegistration: 'service-local lifecycle handle is owned by packages/runtime-diagnostics/invariants/README.md',
   JsonValue: 'JSON value union is owned by packages/core/session/src/json.ts',
   KnobState: 'projection unit state fields are owned by packages/interaction/permission-presets/README.md',

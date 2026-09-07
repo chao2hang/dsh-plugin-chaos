@@ -57,6 +57,14 @@ export interface WebUpgradeRoute {
   handler: (req: IncomingMessage, socket: Duplex, head: Buffer) => void | Promise<void>
 }
 
+/** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
+export interface TlsConfig {
+  /** PEM certificate file path on the host. */
+  cert: string
+  /** PEM private key file path on the host. */
+  key: string
+}
+
 /** Web server listen, response-compression, and optional TLS config. */
 export interface Config {
   /** Listen host; the two supported values are loopback and all-interfaces. */
@@ -70,7 +78,7 @@ export interface Config {
   /** Minimum known response length eligible for gzip; unknown-length streams are eligible. @default 1024 */
   compressionThresholdBytes?: number
   /** TLS certificate and private key for self-run HTTPS (paths on the host); empty values disable TLS. */
-  tls: { cert: string; key: string }
+  tls: TlsConfig
 }
 
 const DEFAULT_COMPRESSION = 'none' as const

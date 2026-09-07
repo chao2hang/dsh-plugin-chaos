@@ -1,10 +1,8 @@
 # TODO — chaos-mobile 移动端重构
 
-> 目标：把 `packages/extensions/chaos-mobile` 从"CSS 劫持桌面布局"重构为一套遵循 iOS 系统交互原则的移动形态。
-> 判定标准：排版一屏一主操作、弹窗统一为可拖拽 sheet、交互不依赖悬停、桌面端逐字节不变。
+> 目标：把 `packages/extensions/chaos-mobile` 从"CSS 劫持桌面布局"重构为一套遵循 iOS 系统交互原则的移动形态。> 判定标准：排版一屏一主操作、弹窗统一为可拖拽 sheet、交互不依赖悬停、桌面端逐字节不变。
 >
-> 相关源码：`packages/extensions/chaos-mobile/`、`packages/client/ui-layout/`、`packages/client/ui-primitives/`、`packages/client/ui-conversation/`
-> 约定：遵循 `AGENTS.md` / `packages/AGENTS.md`；每个 PR 自带 Agent Note、双语 README、对应测试。
+> 相关源码：`packages/extensions/chaos-mobile/`、`packages/client/ui-layout/`、`packages/client/ui-primitives/`、`packages/client/ui-conversation/` > 约定：遵循 `AGENTS.md` / `packages/AGENTS.md`；每个 PR 自带 Agent Note、双语 README、对应测试。
 
 ---
 
@@ -47,9 +45,7 @@ chaos-mobile 只针对 `data-*` 属性写选择器，`[class*=]` 与绝大部分
 - [x] `AppFrame.tsx` 增加 `data-shell-handle`
 - [x] 已有 `data-sidebar-collapsed` / `data-details-collapsed` 写进 README 作为对外契约
 
-> **不选"chaos-mobile 替换 root slot"**：`SlotCore.register` 对已声明子 slot 抛
-> `slot "sidebar" is already declared`，影子注册无法重新声明
-> `sidebar`/`conversation`/`details`/`shell.overlay`，类型与运行时双重封死。
+> **不选"chaos-mobile 替换 root slot"**：`SlotCore.register` 对已声明子 slot 抛> `slot "sidebar" is already declared`，影子注册无法重新声明> `sidebar`/`conversation`/`details`/`shell.overlay`，类型与运行时双重封死。
 
 ### 决策 B — ui-primitives 开"呈现形态"接缝，chaos-mobile 做 Provider
 
@@ -58,8 +54,7 @@ chaos-mobile 只针对 `data-*` 属性写选择器，`[class*=]` 与绝大部分
 - [x] **Provider**（chaos-mobile）：在 `(max-width: 767px) and (pointer: coarse)` 下提供 `MobileSheet` 呈现器
 - [x] 桌面默认呈现器行为与今天逐字节相同
 
-> 保持 chaos-mobile 为纯浏览器侧插件；从 web profile 的 `cordis.patch.yml`
-> 摘掉 `chaos-mobile` 一行即可完全回到桌面形态。
+> 保持 chaos-mobile 为纯浏览器侧插件；从 web profile 的 `cordis.patch.yml` > 摘掉 `chaos-mobile` 一行即可完全回到桌面形态。
 
 ---
 

@@ -5128,6 +5128,9 @@ importers:
       '@deepseek-ai/dsh-client-ui-renderer':
         specifier: workspace:^
         version: link:../../client/ui-renderer
+      '@deepseek-ai/dsh-client-ui-slots':
+        specifier: workspace:^
+        version: link:../../client/ui-slots
       '@deepseek-ai/dsh-token-meter':
         specifier: workspace:^
         version: link:../../llm/token-meter
@@ -5155,6 +5158,9 @@ importers:
       '@deepseek-ai/dsh-api-remotes':
         specifier: workspace:^
         version: link:../../api/remotes
+      '@deepseek-ai/dsh-client-connection':
+        specifier: workspace:^
+        version: link:../../client/connection
       '@deepseek-ai/dsh-client-ui-conversation':
         specifier: workspace:^
         version: link:../../client/ui-conversation
@@ -5184,6 +5190,10 @@ importers:
         version: 18.3.1(react@18.3.1)
 
   packages/extensions/chaos-restart:
+    dependencies:
+      '@deepseek-ai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: workspace:^

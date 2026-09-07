@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-05-bootstrap-typert-before-host-tsc.md
+2026-09-05-bootstrap-typert-before-host-tsc.md: 6affee32149a22537887f08bfba843df5ff93072
+2026-09-05-bootstrap-typert-before-host-tsc.zh.md: e98c8c415fe33440de67fbe1ea14031a94803b5a
