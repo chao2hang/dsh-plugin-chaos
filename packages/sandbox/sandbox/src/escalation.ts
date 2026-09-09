@@ -41,6 +41,36 @@ export const WIDER_MODES: Record<string, readonly SandboxMode[]> = {
 export const ESCALATION_TARGETS: readonly SandboxMode[] = ['workspace-write', 'danger-full-access']
 
 /**
+ * Normalize and filter escalation arguments at the execution boundary according
+ * to the call's standing sandbox policy.
+ *
+ * When the call already operates under the highest privilege (`danger-full-access`),
+ * escalation is neither possible nor required; extraneous escalation parameters
+ * (often emitted speculatively by external models like GPT-5.x/GPT-6) are silently
+ * ignored so execution proceeds unblocked without false escalation rejection.
+ *
+ * When the effective mode is narrower (`read-only`, `workspace-write`), pairing
+ * rules are strictly enforced: `sandbox_permissions` and `justification` must
+ * travel together with a non-empty justification.
+ *
+ * @param sandboxPermissions - the raw `sandbox_permissions` argument, if given.
+ * @param justification - the raw `justification` argument, if given.
+ * @param effectiveMode - the call's standing effective mode, if sandboxed.
+ * @returns the normalized escalation arguments (both defined if escalating, or both undefined).
+ */
+export function normalizeEscalationArgs(
+  sandboxPermissions: string | undefined,
+  justification: string | undefined,
+  effectiveMode: SandboxMode | undefined,
+): { sandboxPermissions: string | undefined; justification: string | undefined } {
+  if (effectiveMode === 'danger-full-access') {
+    return { sandboxPermissions: undefined, justification: undefined }
+  }
+  validateEscalationArgs(sandboxPermissions, justification)
+  return { sandboxPermissions, justification }
+}
+
+/**
  * Validate the escalation argument pairing a tool schema cannot express:
  * `sandbox_permissions` and `justification` travel together — an approval
  * prompt without a reason, or a reason driving nothing, is a malformed ask —

@@ -629,6 +629,11 @@ describe('sandbox escalation through the generic task producer', () => {
     expect(text(result)).toContain('not strictly wider')
     expect(prompted).not.toHaveBeenCalled()
 
+    const fullAccessAgent = sandboxAgent('danger-full-access')
+    const fullResult = await call(ctx, 'bash', { ...escalate, sandbox_permissions: 'workspace-write' }, fullAccessAgent)
+    expect(fullResult.isError).toBe(false)
+    expect(prompted).not.toHaveBeenCalled()
+
     const malformed = sandboxAgent()
     ;(malformed.session.snapshotEvents() as unknown as Array<{ type: string; data: { mode: string }; seq: number }>).push({
       type: 'sandbox/mode',

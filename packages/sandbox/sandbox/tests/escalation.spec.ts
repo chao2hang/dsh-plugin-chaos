@@ -12,6 +12,7 @@ import {
   WIDER_MODES,
   approveEscalation,
   escalationHintMarker,
+  normalizeEscalationArgs,
   sandboxDenialMarker,
   validateEscalationArgs,
 } from '@deepseek-ai/dsh-sandbox'
@@ -39,6 +40,35 @@ describe('validateEscalationArgs', () => {
     expect(() => { validateEscalationArgs('workspace-write', undefined) }).toThrow(/requires a justification/)
     expect(() => { validateEscalationArgs(undefined, 'orphan reason') }).toThrow(/only valid together with sandbox_permissions/)
     expect(() => { validateEscalationArgs('workspace-write', '   ') }).toThrow(/non-empty sentence/)
+  })
+})
+
+describe('normalizeEscalationArgs', () => {
+  it('strips all escalation parameters when effectiveMode is danger-full-access', () => {
+    expect(normalizeEscalationArgs('workspace-write', 'some reason', 'danger-full-access')).toEqual({
+      sandboxPermissions: undefined,
+      justification: undefined,
+    })
+    expect(normalizeEscalationArgs('danger-full-access', undefined, 'danger-full-access')).toEqual({
+      sandboxPermissions: undefined,
+      justification: undefined,
+    })
+    expect(normalizeEscalationArgs(undefined, 'orphan justification', 'danger-full-access')).toEqual({
+      sandboxPermissions: undefined,
+      justification: undefined,
+    })
+  })
+
+  it('validates and preserves parameters under narrower modes or undefined mode', () => {
+    expect(normalizeEscalationArgs('danger-full-access', 'legit justification', 'workspace-write')).toEqual({
+      sandboxPermissions: 'danger-full-access',
+      justification: 'legit justification',
+    })
+    expect(normalizeEscalationArgs(undefined, undefined, 'read-only')).toEqual({
+      sandboxPermissions: undefined,
+      justification: undefined,
+    })
+    expect(() => normalizeEscalationArgs('workspace-write', undefined, 'read-only')).toThrow(/requires a justification/)
   })
 })
 

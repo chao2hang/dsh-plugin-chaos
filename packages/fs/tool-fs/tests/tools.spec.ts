@@ -962,6 +962,23 @@ describe('sandbox escalation API (write/edit)', () => {
     expect(text(result)).toContain('no agent to route it through')
   })
 
+  it('ignores escalation args when already operating under danger-full-access', async () => {
+    const { ctx, fs } = await setupConfining()
+    const fullAgent = escalationAgent([{ type: 'sandbox/mode', data: { mode: 'danger-full-access' } }])
+    const result = await call(ctx, 'write', {
+      file_path: 'a.txt',
+      content: 'x',
+      sandbox_permissions: 'workspace-write',
+      justification: 'why',
+    }, fullAgent)
+    expect(result.isError).toBe(false)
+    expect(fs.stamped).toEqual([{
+      mode: 'danger-full-access',
+      workspaceRoot: resolve('/session-project'),
+      sessionId: SessionId('sess-fs-esc'),
+    }])
+  })
+
   it('rejects the escalation argument pairing (one field without the other)', async () => {
     const { ctx } = await setupConfining()
     const missing = await call(ctx, 'write', { file_path: 'a.txt', content: 'x', sandbox_permissions: 'workspace-write' }, escalationAgent())

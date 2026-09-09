@@ -636,6 +636,11 @@ describe('sandbox escalation through ctx.approval', () => {
     expect(text(result)).toContain('not strictly wider')
     expect(prompted).not.toHaveBeenCalled()
 
+    const fullAccessAgent = sandboxAgent('danger-full-access')
+    const fullResult = await call(ctx, 'pwsh', { ...escalate, sandbox_permissions: 'workspace-write' }, fullAccessAgent)
+    expect(fullResult.isError).toBe(false)
+    expect(prompted).not.toHaveBeenCalled()
+
     const malformed = sandboxAgent()
     ;(malformed.session.append as unknown as (
       type: string,
