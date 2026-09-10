@@ -23,6 +23,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import { isMobileViewport } from './columns.ts'
 import { MobileNavBar } from './MobileNavBar.tsx'
 import { MobileSheet } from './MobileSheet.tsx'
+import { FilePreviewOverlay } from './FilePreviewOverlay.tsx'
 import { activateViewTab } from './MobileOverflowSheet.tsx'
 import { useEdgeSwipe } from './useEdgeSwipe.ts'
 import {
@@ -250,8 +251,6 @@ export function MobileOverlay({
     return () => { observer.disconnect() }
   }, [mobile])
 
-  if (!mobile) return null
-
   // On mobile, the nav bar's back button calls history.back() so the
   // popstate path closes details — one code path for back and system gesture.
   const onBack = (): void => { history.back() }
@@ -260,111 +259,116 @@ export function MobileOverlay({
   // a stacking context below the sidebar/details columns, and the bar must stay
   // above both (drawer toggle reachable, back button over the details sheet).
   return (
-    <div data-chaos-mobile-overlay="">
-      {createPortal(
-        <MobileNavBar
-          toggleSidebar={() => { setDrawerOpen(open => !open); toggleSidebar() }}
-          closeDetails={onBack}
-          closeSettings={() => { document.querySelector<HTMLButtonElement>('[data-settings-page-close]')?.click() }}
-          settingsOpen={settingsOpen}
-          // The alpha.3 host summary no longer projects the per-session agent
-          // preset, so the mode chip has no data source yet; feed title only.
-          // MobileNavBar.mode stays available for a future provider.
-          {...(summary === undefined ? {} : { title: summary.displayTitle })}
-          openOverflow={() => {
-            setHasTrajectory(document.querySelector("[data-view-tab='trajectory']") !== null)
-            setTrajectoryActive(document.querySelector("[data-view-tab='trajectory'][aria-selected='true']") !== null)
-            const stats = document.querySelector<HTMLElement>('[data-stats-line]')?.textContent.trim()
-            setStatsSummary(stats === '' || stats === undefined ? undefined : stats)
-            setOverflowOpen(true)
-          }}
-        />,
-        document.body,
-      )}
-      {/* Backdrop for the sidebar drawer. */}
-      <div
-        className="chaos-backdrop"
-        onClick={() => { setDrawerOpen(false); toggleSidebar() }}
-        aria-hidden="true"
-        data-chaos-drawer-backdrop=""
-      />
-      {/* Overflow sheet: the mobile entry points that have no other chrome. */}
-      {overflowOpen && (
-        <MobileSheet title="更多" onClose={() => { setOverflowOpen(false) }}>
-          <div className="chaos-overflow-menu" role="menu" aria-label="更多操作">
-            <button
-              type="button"
-              role="menuitem"
-              className="chaos-overflow-item"
-              onClick={() => { setOverflowOpen(false); newSession() }}
-            >
-              新建会话
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="chaos-overflow-item"
-              onClick={() => { setOverflowOpen(false); openDetails() }}
-            >
-              打开详情面板
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="chaos-overflow-item"
-              onClick={() => {
-                setOverflowOpen(false)
-                document.dispatchEvent(new Event('dsh-better-sidebar:open-mobile-tools'))
+    <>
+      <FilePreviewOverlay />
+      {mobile && (
+        <div data-chaos-mobile-overlay="">
+          {createPortal(
+            <MobileNavBar
+              toggleSidebar={() => { setDrawerOpen(open => !open); toggleSidebar() }}
+              closeDetails={onBack}
+              closeSettings={() => { document.querySelector<HTMLButtonElement>('[data-settings-page-close]')?.click() }}
+              settingsOpen={settingsOpen}
+              // The alpha.3 host summary no longer projects the per-session agent
+              // preset, so the mode chip has no data source yet; feed title only.
+              // MobileNavBar.mode stays available for a future provider.
+              {...(summary === undefined ? {} : { title: summary.displayTitle })}
+              openOverflow={() => {
+                setHasTrajectory(document.querySelector("[data-view-tab='trajectory']") !== null)
+                setTrajectoryActive(document.querySelector("[data-view-tab='trajectory'][aria-selected='true']") !== null)
+                const stats = document.querySelector<HTMLElement>('[data-stats-line]')?.textContent.trim()
+                setStatsSummary(stats === '' || stats === undefined ? undefined : stats)
+                setOverflowOpen(true)
               }}
-            >
+            />,
+            document.body,
+          )}
+          {/* Backdrop for the sidebar drawer. */}
+          <div
+            className="chaos-backdrop"
+            onClick={() => { setDrawerOpen(false); toggleSidebar() }}
+            aria-hidden="true"
+            data-chaos-drawer-backdrop=""
+          />
+          {/* Overflow sheet: the mobile entry points that have no other chrome. */}
+          {overflowOpen && (
+            <MobileSheet title="更多" onClose={() => { setOverflowOpen(false) }}>
+              <div className="chaos-overflow-menu" role="menu" aria-label="更多操作">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="chaos-overflow-item"
+                  onClick={() => { setOverflowOpen(false); newSession() }}
+                >
+              新建会话
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="chaos-overflow-item"
+                  onClick={() => { setOverflowOpen(false); openDetails() }}
+                >
+              打开详情面板
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="chaos-overflow-item"
+                  onClick={() => {
+                    setOverflowOpen(false)
+                    document.dispatchEvent(new Event('dsh-better-sidebar:open-mobile-tools'))
+                  }}
+                >
               打开工具面板
-              <span className="chaos-overflow-hint">文件、源代码管理、任务、终端和侧边对话</span>
-            </button>
-            {hasTrajectory && (
-              <button
-                type="button"
-                role="menuitem"
-                className="chaos-overflow-item"
-                onClick={() => { setOverflowOpen(false); activateViewTab(trajectoryActive ? 'chat' : 'trajectory') }}
-              >
-                {trajectoryActive ? '对话视图' : '轨迹视图'}
-                <span className="chaos-overflow-hint">{trajectoryActive ? '返回消息流' : '时间线与调用详情'}</span>
-              </button>
-            )}
-            {contextMeter !== undefined && (
-              <section className="chaos-overflow-stats" aria-label="上下文占用">
-                <h2>上下文占用</h2>
-                <p className="chaos-context-headline">
-                  {'已用 '}{contextMeter.percent}% · ~{formatContextTokens(contextMeter.usedTokens)}
-                  {' / '}{formatContextTokens(contextMeter.contextWindow)}
-                </p>
-                {contextMeter.breakdown !== undefined && (
-                  <dl className="chaos-context-rows">
-                    <div className="chaos-context-row">
-                      <dt>系统提示词</dt>
-                      <dd>~{formatContextTokens(contextMeter.breakdown.systemTokens)}</dd>
-                    </div>
-                    <div className="chaos-context-row">
-                      <dt>工具定义</dt>
-                      <dd>~{formatContextTokens(contextMeter.breakdown.toolsTokens)}</dd>
-                    </div>
-                    <div className="chaos-context-row">
-                      <dt>对话内容</dt>
-                      <dd>~{formatContextTokens(contextMeter.breakdown.messageTokens)}</dd>
-                    </div>
-                  </dl>
+                  <span className="chaos-overflow-hint">文件、源代码管理、任务、终端和侧边对话</span>
+                </button>
+                {hasTrajectory && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="chaos-overflow-item"
+                    onClick={() => { setOverflowOpen(false); activateViewTab(trajectoryActive ? 'chat' : 'trajectory') }}
+                  >
+                    {trajectoryActive ? '对话视图' : '轨迹视图'}
+                    <span className="chaos-overflow-hint">{trajectoryActive ? '返回消息流' : '时间线与调用详情'}</span>
+                  </button>
                 )}
-              </section>
-            )}
-            {statsSummary !== undefined && (
-              <section className="chaos-overflow-stats" aria-label="会话统计">
-                <h2>会话统计</h2>
-                <p>{statsSummary}</p>
-              </section>
-            )}
-          </div>
-        </MobileSheet>
+                {contextMeter !== undefined && (
+                  <section className="chaos-overflow-stats" aria-label="上下文占用">
+                    <h2>上下文占用</h2>
+                    <p className="chaos-context-headline">
+                      {'已用 '}{contextMeter.percent}% · ~{formatContextTokens(contextMeter.usedTokens)}
+                      {' / '}{formatContextTokens(contextMeter.contextWindow)}
+                    </p>
+                    {contextMeter.breakdown !== undefined && (
+                      <dl className="chaos-context-rows">
+                        <div className="chaos-context-row">
+                          <dt>系统提示词</dt>
+                          <dd>~{formatContextTokens(contextMeter.breakdown.systemTokens)}</dd>
+                        </div>
+                        <div className="chaos-context-row">
+                          <dt>工具定义</dt>
+                          <dd>~{formatContextTokens(contextMeter.breakdown.toolsTokens)}</dd>
+                        </div>
+                        <div className="chaos-context-row">
+                          <dt>对话内容</dt>
+                          <dd>~{formatContextTokens(contextMeter.breakdown.messageTokens)}</dd>
+                        </div>
+                      </dl>
+                    )}
+                  </section>
+                )}
+                {statsSummary !== undefined && (
+                  <section className="chaos-overflow-stats" aria-label="会话统计">
+                    <h2>会话统计</h2>
+                    <p>{statsSummary}</p>
+                  </section>
+                )}
+              </div>
+            </MobileSheet>
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }

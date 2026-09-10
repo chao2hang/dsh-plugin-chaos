@@ -137,6 +137,17 @@ describe('Chat inject API', () => {
     await b.runtime.dispose()
   })
 
+  it('delegates to filePreview service when available without calling openWorkspacePath', async () => {
+    const b = await bench()
+    const openSpy = vi.fn()
+    b.runtime.ctx.provide('filePreview' as never, { open: openSpy } as never)
+    const { injected } = b.chatViewApi(ROOT)
+    await injected.openFile('src/a.ts')
+    expect(openSpy).toHaveBeenCalledWith('/proj/src/a.ts')
+    expect(b.openWorkspacePath).not.toHaveBeenCalled()
+    await b.runtime.dispose()
+  })
+
   it('fails loud when a Chat View inject resolves no Session', async () => {
     const b = await bench()
     const entry = b.runtime.slots.entries('conversation.view')[0]!

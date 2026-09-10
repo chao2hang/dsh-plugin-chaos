@@ -122,8 +122,14 @@ export function apply(ctx: Context): void {
           fileMentions: (owner: TurnTailOwnerProps) => ctx.get('chatFileMentions')?.forClosing(owner),
           openFile: async (path) => {
             const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
+            const resolved = resolveWorkspacePath(cwd, path)
+            const filePreview = ctx.get('filePreview' as never) as { open(p: string): void } | undefined
+            if (filePreview !== undefined) {
+              filePreview.open(resolved)
+              return
+            }
             const result = await ctx.remote.session.openWorkspacePath({
-              path: resolveWorkspacePath(cwd, path),
+              path: resolved,
             })
             if (!result.ok) throw new Error(`path open failed: ${result.error.message}`)
           },

@@ -25,7 +25,12 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { MobileOverlay, type MobileOverlayInjected } from './MobileOverlay.tsx'
 import { AttachmentButton } from './AttachmentButton.tsx'
 import { ContextStatusBar } from './ContextStatusBar.tsx'
+import { filePreviewStore } from './file-preview-store.ts'
 import mobileCss from '../styles/mobile.css?inline'
+
+export { filePreviewStore } from './file-preview-store.ts'
+export { FilePreviewModal } from './FilePreviewModal.tsx'
+export { FilePreviewOverlay } from './FilePreviewOverlay.tsx'
 
 /** Stable Cordis plugin name. */
 const PLUGIN_ID = '@deepseek-ai/dsh-plugin-chaos-mobile'
@@ -98,4 +103,13 @@ export function apply(ctx: ClientContext): void {
     name: 'conversation.input.left',
     id: 'chaos-mobile-context-status-bar',
   }, ContextStatusBar))
+
+  // In-page workspace file preview service
+  if (typeof (ctx as { provide?: unknown }).provide === 'function') {
+    ctx.provide('filePreview' as never, {
+      open: (filePath: string) => {
+        filePreviewStore.open(filePath)
+      },
+    } as never)
+  }
 }
