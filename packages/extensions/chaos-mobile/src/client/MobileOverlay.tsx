@@ -70,55 +70,57 @@ function useViewport(): { width: number; height: number } {
 
 /**
  * Manage browser history so the system back button closes the details
- * push-page on mobile. When details opens (the frame loses
- * `data-details-collapsed`), a history entry is pushed. The system back
- * button fires popstate, which calls `closeDetails()`. The nav bar's back
+ * push-page on mobile. The push-page open state is chaos-owned (see
+ * {@link MobileOverlay}): the core column solver never renders an open
+ * details column on a narrow viewport (its center floor of 640px cannot fit),
+ * so the AppFrame's data-details-collapsed attribute is a dead signal there.
+ * When the state turns on, one history entry is pushed; the system back
+ * button's popstate removes it and closes the page. The nav bar's back
  * button calls `history.back()` to reuse the same path.
+ * @param detailsOpen - the chaos-owned details push-page state.
+ * @param setDetailsOpen - flip the state (the popstate path closes).
  * @param closeDetails - the layout service's close action.
  * @param mobile - whether the mobile layout is active.
  */
-function useDetailsHistory(closeDetails: () => void, mobile: boolean): void {
+function useDetailsHistory(
+  detailsOpen: boolean,
+  setDetailsOpen: (value: boolean) => void,
+  closeDetails: () => void,
+  mobile: boolean,
+): void {
   const pushedRef = useRef(false)
   const closeRef = useRef(closeDetails)
   closeRef.current = closeDetails
 
+  // Push one history entry while the push-page is open; remove it on an
+  // in-page close (or unmount) so the back history never leaks a phantom.
   useEffect(() => {
-    if (!mobile) return
-    const frame = document.querySelector('[data-shell-frame]')
-    if (frame === null) return
-
-    const observer = new MutationObserver(() => {
-      const detailsOpen = !frame.hasAttribute('data-details-collapsed')
-      if (detailsOpen && !pushedRef.current) {
-        history.pushState({ dshDetailsOpen: true }, '')
-        pushedRef.current = true
-      } else if (!detailsOpen && pushedRef.current) {
-        // Details closed by an ordinary control: remove the entry this overlay owns.
-        history.back()
-      }
-    })
-    observer.observe(frame, { attributes: true, attributeFilter: ['data-details-collapsed'] })
-    // Claim an entry when the details panel is already open at mount. This can
-    // happen after a mobile remount or a resumed Web UI session.
-    if (!frame.hasAttribute('data-details-collapsed')) {
+    if (!mobile || !detailsOpen) return
+    if (!pushedRef.current) {
       history.pushState({ dshDetailsOpen: true }, '')
       pushedRef.current = true
     }
+    return () => {
+      if (pushedRef.current) {
+        history.back()
+        pushedRef.current = false
+      }
+    }
+  }, [mobile, detailsOpen])
 
+  // System back button: the popstate after our history.back() closes the page.
+  useEffect(() => {
+    if (!mobile) return
     const onPopState = (): void => {
       if (pushedRef.current) {
         pushedRef.current = false
+        setDetailsOpen(false)
         closeRef.current()
       }
     }
     window.addEventListener('popstate', onPopState)
-
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('popstate', onPopState)
-      if (pushedRef.current) history.back()
-    }
-  }, [mobile])
+    return () => { window.removeEventListener('popstate', onPopState) }
+  }, [mobile, setDetailsOpen])
 }
 
 /**
@@ -148,6 +150,21 @@ export function MobileOverlay({
   const contextMeter = useSyncExternalStore(
     subscribeChaosContextMeter, getChaosContextMeter, getChaosContextMeter,
   )
+
+  // Chaos-owned details push-page state: the core column solver cannot
+  // express an open details column on a narrow viewport (CENTER_MIN 640px),
+  // so the frame's data-details-collapsed attribute never flips there. The
+  // layout store is still written for the wide-runtime case (re-widening
+  // restores the column); on mobile only this state drives the sheet.
+  const [detailsOpen, setDetailsOpen] = useState(false)
+
+  // Mirror the push-page state onto <html> for the sheet + nav-bar CSS.
+  useEffect(() => {
+    const root = document.documentElement
+    if (mobile && detailsOpen) root.setAttribute('data-chaos-details-open', '')
+    else root.removeAttribute('data-chaos-details-open')
+    return () => { root.removeAttribute('data-chaos-details-open') }
+  }, [mobile, detailsOpen])
 
   // Activate sheet presentation on mobile; reset to inline on desktop.
   useEffect(() => {
@@ -234,7 +251,25 @@ export function MobileOverlay({
   }, [mobile])
 
   // System back-button closes the details push-page.
-  useDetailsHistory(closeDetails, mobile)
+  useDetailsHistory(detailsOpen, setDetailsOpen, closeDetails, mobile)
+
+  // The core details header carries its own close button. Close the chaos
+  // push-page (and the layout store) when it is pressed, since on a narrow
+  // viewport the store write alone never flips the frame's state.
+  const closeDetailsRef = useRef(closeDetails)
+  closeDetailsRef.current = closeDetails
+  useEffect(() => {
+    if (!mobile) return
+    const onClick = (event: MouseEvent): void => {
+      const target = event.target as Element | null
+      if (target !== null && target.closest('[aria-label="Close details"]') !== null) {
+        setDetailsOpen(false)
+        closeDetailsRef.current()
+      }
+    }
+    document.addEventListener('click', onClick)
+    return () => { document.removeEventListener('click', onClick) }
+  }, [mobile])
 
   // Edge-swipe: rightward from the left edge opens the drawer;
   // leftward while the drawer is open closes it.
@@ -300,15 +335,23 @@ export function MobileOverlay({
                   className="chaos-overflow-item"
                   onClick={() => { setOverflowOpen(false); newSession() }}
                 >
-              新建会话
+                  新建会话
                 </button>
                 <button
                   type="button"
                   role="menuitem"
                   className="chaos-overflow-item"
-                  onClick={() => { setOverflowOpen(false); openDetails() }}
+                  onClick={() => {
+                    setOverflowOpen(false)
+                    if (!detailsOpen) {
+                      setDetailsOpen(true)
+                      // Keep the layout store in sync; a wide runtime renders the
+                      // real column from it, a narrow one ignores it.
+                      openDetails()
+                    }
+                  }}
                 >
-              打开详情面板
+                  打开详情面板
                 </button>
                 <button
                   type="button"
@@ -319,7 +362,7 @@ export function MobileOverlay({
                     document.dispatchEvent(new Event('dsh-better-sidebar:open-mobile-tools'))
                   }}
                 >
-              打开工具面板
+                  打开工具面板
                   <span className="chaos-overflow-hint">文件、源代码管理、任务、终端和侧边对话</span>
                 </button>
                 {hasTrajectory && (

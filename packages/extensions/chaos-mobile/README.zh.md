@@ -28,7 +28,7 @@ kind: "package-reference"
 
 - 44px `MobileNavBar` 取代浮空汉堡和关闭按钮：左侧显示菜单开关（详情面板打开时显示返回按钮），中间显示当前会话标题，右侧显示单个溢出按钮。
 - 侧边栏变为带背景遮罩的滑入抽屉，通过导航栏菜单开关或左边缘右滑打开，通过遮罩、开关或左滑关闭。
-- 详情列变为全屏推进页；导航栏返回按钮与系统返回键通过 overlay 持有的同一个历史条目关闭它。
+- 详情列变为导航栏下方的全屏推进页；导航栏返回按钮、系统返回键与 core 详情头部的关闭按钮都通过 overlay 持有的同一个历史条目关闭它。其打开状态由插件自有并镜像为 `<html data-chaos-details-open>`：core 的列求解器保持 640px 的 center 下限，窄视口永远无法把详情列渲染为打开，frame 的 `data-details-collapsed` 在那里是无效信号。布局 store 同时被写入，以便宽视口运行时在重新拉宽时恢复真实列。
 - `MobileSheet` 将 Modal 和 Menu 呈现为 iOS 风格的玻璃面板：可访问的拖拽把手可在中等和大停靠高度之间切换，向下拖拽足够距离才关闭；它还通过 ui-primitives 的 `SurfacePresentation` 接缝提供滚动锁定和焦点陷阱。
 - `Tooltip` 在移动端完全抑制气泡（触屏设备无悬停）。
 - 安全区内边距、动态视口高度和 44px 最小触控目标改善触屏体验。
@@ -36,7 +36,7 @@ kind: "package-reference"
 - 输入栏的回形针按钮打开三选一菜单：拍照、图片、附件。每次选择都进入会话的统一附件接收流程——`createDrafts` 把图片转为带预览、随提示发送的图片草稿，把文档转为立即开始后台上传的文件草稿；`addAttachments` 把它们加入输入栏草稿，被拒绝时释放草稿。附件选择器保持只接受文档的 `accept`（`application/*,text/*`）——不设 accept 的文件输入会让部分手机浏览器弹出相机/相册面板而非文件选择器。
 - 溢出按钮打开一个 sheet，收纳没有其他移动端入口的操作：新建会话、打开详情面板、打开工具面板、在对话与轨迹视图之间切换，以及当前会话统计。
 - 桌面设置弹窗在移动端呈现为专用页面：它持有表面时，导航栏显示 设置 标题，返回按钮关闭该页面。
-- CSS 针对稳定的 `data-shell-column`、`data-shell-frame`、`data-shell-handle` 和 `data-conversation-session-header` 锚点编写选择器——不使用 `[class*=]` 哈希类名选择器。
+- CSS 针对稳定的 `data-shell-column`、`data-shell-frame`、`data-shell-handle` 和 `data-conversation-session-header` 锚点编写选择器，并提供结构化回退——直接位于各列内部的 `data-slot` 渲染点，以及基于折叠状态属性的 html 级 `:has()` 探测——以适配省略 `data-shell-*` 钩子的已发布前端（0.1.2-rc.1 及更早版本）。不使用 `[class*=]` 哈希类名选择器。
 
 桌面宽度保留 ui-layout 未修改的三栏框架、拖动手柄和列求解器；overlay 不渲染任何内容，并把表面呈现重置为 inline。
 
@@ -68,7 +68,7 @@ kind: "package-reference"
 
 这些限制说明移动适配在何处依赖其他包或发生降级。它们是当前包约束，不是任务积压。
 
-- **布局选择器**——抽屉和 sheet 的 CSS 针对 ui-layout 的稳定 data 属性（`data-shell-frame`、`data-shell-column`、`data-sidebar-collapsed`、`data-details-collapsed`）；这些属性的变更需协同更新。
+- **布局选择器**——抽屉和 sheet 的 CSS 针对 ui-layout 的稳定 data 属性（`data-shell-frame`、`data-shell-column`、`data-sidebar-collapsed`、`data-details-collapsed`）；这些属性的变更需协同更新。省略 `data-shell-frame` / `data-shell-column` 的已发布前端由结构化 slot 回退和 html 级折叠状态探测覆盖，后者依赖这两个状态属性在所有前端中保持 frame 独占。详情 sheet 与导航栏返回/菜单状态还依赖插件自有的 `<html data-chaos-details-open>` 属性，因为在求解器的 640px center 下限之下，core 即使推进页已打开也会保持 `data-details-collapsed` 设置。
 - **Sheet 呈现是可选接缝**——`setSurfacePresentation` 以可选形式读取：ui-primitives 缺少该增量 API 的组合会退回 inline 呈现，而不是渲染底部 sheet。
 - **导航栏模式芯片没有数据源**——宿主 summary 不投影逐会话的 agent preset，因此导航栏中间只显示会话标题；在出现数据提供方之前，该芯片保持未用。
 - **移动端界面文案是插件自有的中文**——导航栏与溢出 sheet 的标签以及附件选择器渲染固定字面值，而非 locale 字典。

@@ -5,11 +5,19 @@
    the stylesheet cannot re-derive a different answer than the nav bar at
    the breakpoint. Capability queries (pointer / hover / reduced motion)
    stay media-scoped — they describe hardware, not mode.
-   Targets stable data-* anchors emitted by ui-layout's AppFrame
-   (data-shell-frame, data-shell-column, data-shell-handle) instead of
-   CSS-module hashed class fragments. One [class*=] selector remains for
-   headerUtilities (ui-conversation has no stable anchor yet — known
-   limitation). */
+   Targets the stable anchors emitted by ui-layout's AppFrame, dual-run
+compatible: 0.1.3 frontends mark the frame and columns explicitly
+(data-shell-frame, data-shell-column, data-shell-handle) while released
+frontends (0.1.2-rc.1 and older) omit those semantic hooks, so every
+frame/column rule also matches the structural anchors — the columns are
+the direct parents of the data-slot render sites, the frame is the direct
+parent of the data-shell-overlay layer, and the collapsed state lives on
+the frame as data-sidebar-collapsed / data-details-collapsed in both
+lineages (no other element carries them, so html-level :has() probes the
+same answer). Nested :has() stays out: current Chromium rejects it as an
+invalid selector. One [class*=] selector remains for headerUtilities
+(ui-conversation has no stable anchor yet — known limitation). */
+
 
 /* ═══ Viewport adaptation ══════════════════════════════════════════════ */
 
@@ -33,7 +41,8 @@ html[data-chaos-mobile] #root {
 
 /* The sidebar drawer begins below the persistent mobile navigation bar. Its
    own scroll region therefore never hides the workspace heading under it. */
-html[data-chaos-mobile] [data-shell-column='sidebar'] {
+html[data-chaos-mobile] [data-shell-column='sidebar'],
+html[data-chaos-mobile] :has(> [data-slot='sidebar']) {
   position: fixed !important;
   top: calc(44px + env(safe-area-inset-top, 0)) !important;
   left: 0 !important;
@@ -51,8 +60,12 @@ html[data-chaos-mobile] [data-shell-column='sidebar'] {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Frame without data-sidebar-collapsed: sidebar is open, slide it in. */
-html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) [data-shell-column='sidebar'] {
+/* Frame without data-sidebar-collapsed: sidebar is open, slide it in. The
+   state attribute lives only on the AppFrame in both frontends, so the
+   html-level :has() probe replaces the frame-qualified selector for
+   released frontends that omit data-shell-frame. */
+html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) [data-shell-column='sidebar'],
+html[data-chaos-mobile]:not(:has([data-sidebar-collapsed])) :has(> [data-slot='sidebar']) {
   transform: translateX(0) !important;
   box-shadow: 4px 0 32px rgba(0,0,0,0.35) !important;
 }
@@ -60,16 +73,24 @@ html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) [data-s
 /* Hide drag handles on mobile (no resizing needed). */
 html[data-chaos-mobile] [data-shell-handle] { display: none !important; }
 
-/* The grid frame: single column on mobile (conversation only). */
-html[data-chaos-mobile] [data-shell-frame] {
+/* The grid frame: single column on mobile (conversation only). The rc.1
+   anchor is the overlay layer's unique direct parent — the frame owns the
+   data-shell-overlay layer as a direct child in both frontends. (Nested
+   :has() is not a valid selector in current Chromium, so the frame cannot
+   be probed through its column children.) */
+html[data-chaos-mobile] [data-shell-frame],
+html[data-chaos-mobile] :has(> [data-shell-overlay]) {
   grid-template-columns: minmax(0, 1fr) !important;
   grid-template-rows: 1fr !important;
 }
 
-/* Details column: full-screen sheet when open. */
-html[data-chaos-mobile] [data-shell-column='details'] {
+/* Details column: full-screen sheet when open, below the persistent mobile
+   header so the core details header row (title + close button) stays
+   reachable — the nav bar portals above the frame's stacking context. */
+html[data-chaos-mobile] [data-shell-column='details'],
+html[data-chaos-mobile] :has(> [data-slot='details']) {
   position: fixed !important;
-  top: 0 !important;
+  top: calc(44px + env(safe-area-inset-top, 0)) !important;
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
@@ -81,7 +102,15 @@ html[data-chaos-mobile] [data-shell-column='details'] {
   pointer-events: none;
 }
 
-html[data-chaos-mobile] [data-shell-frame]:not([data-details-collapsed]) [data-shell-column='details'] {
+/* On a narrow viewport the core column solver never renders an open details
+   column (its center floor of 640px cannot fit), so the frame's
+   data-details-collapsed attribute is a dead signal there; the chaos-owned
+   push-page state on <html> carries it instead. Both anchors are kept: the
+   attribute rules serve wide runtimes where the core can open the column. */
+html[data-chaos-mobile] [data-shell-frame]:not([data-details-collapsed]) [data-shell-column='details'],
+html[data-chaos-mobile]:not(:has([data-details-collapsed])) :has(> [data-slot='details']),
+html[data-chaos-mobile][data-chaos-details-open] [data-shell-column='details'],
+html[data-chaos-mobile][data-chaos-details-open] :has(> [data-slot='details']) {
   visibility: visible;
   pointer-events: auto;
 }
@@ -89,7 +118,8 @@ html[data-chaos-mobile] [data-shell-frame]:not([data-details-collapsed]) [data-s
 /* The center column: always full width on mobile. Its rectangle tracks the
    Visual Viewport, including offsetTop, so a browser that pans for the keyboard
    cannot leave the sticky composer detached from the visible bottom edge. */
-html[data-chaos-mobile] [data-shell-column='center'] {
+html[data-chaos-mobile] [data-shell-column='center'],
+html[data-chaos-mobile] :has(> [data-slot='conversation']) {
   /* border-box is load-bearing here: the column is content-box by default, so
      the explicit height plus this top/bottom padding would render taller than
      the viewport and push the composer's model + send row below the fold. */
@@ -125,7 +155,8 @@ html[data-chaos-mobile] .chaos-backdrop {
 }
 
 /* Show the backdrop while the sidebar drawer is open. */
-html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) .chaos-backdrop {
+html[data-chaos-mobile] [data-shell-frame]:not([data-sidebar-collapsed]) .chaos-backdrop,
+html[data-chaos-mobile]:not(:has([data-sidebar-collapsed])) .chaos-backdrop {
   display: block;
 }
 
@@ -378,12 +409,17 @@ html[data-chaos-mobile] [data-conversation-header-identity] {
 [data-chaos-nav-bar] [data-chaos-settings-hidden] { display: none !important; }
 [data-chaos-nav-bar] [data-chaos-settings-back] { display: flex !important; }
 
-/* When details is open (data-details-collapsed absent on the frame):
-   show back, hide menu. The overlay is a descendant of the frame. */
-[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-menu-toggle] {
+/* When details is open: show back, hide menu. "Open" is either the frame
+   attribute going away (wide runtimes) or the chaos-owned push-page state
+   (narrow viewports, where the solver keeps data-details-collapsed). */
+[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-menu-toggle],
+html:not(:has([data-details-collapsed])) [data-chaos-mobile-overlay] [data-chaos-menu-toggle],
+html[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-menu-toggle] {
   display: none;
 }
-[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-back] {
+[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-back],
+html:not(:has([data-details-collapsed])) [data-chaos-mobile-overlay] [data-chaos-back],
+html[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-back] {
   display: flex;
 }
 
@@ -640,11 +676,15 @@ html[data-chaos-mobile] [data-model-capabilities-actions] button {
    rivers read badly), inline chips break long paths instead of stretching
    gaps, and chips shrink one step. */
 html[data-chaos-mobile] [data-shell-column='center'] p,
-html[data-chaos-mobile] [data-shell-column='center'] li {
+html[data-chaos-mobile] :has(> [data-slot='conversation']) p,
+html[data-chaos-mobile] [data-shell-column='center'] li,
+html[data-chaos-mobile] :has(> [data-slot='conversation']) li {
   text-align: left !important;
 }
 html[data-chaos-mobile] [data-shell-column='center'] p code,
-html[data-chaos-mobile] [data-shell-column='center'] li code {
+html[data-chaos-mobile] :has(> [data-slot='conversation']) p code,
+html[data-chaos-mobile] [data-shell-column='center'] li code,
+html[data-chaos-mobile] :has(> [data-slot='conversation']) li code {
   overflow-wrap: anywhere;
   word-break: break-word;
   font-size: 12px;
@@ -745,12 +785,16 @@ html[data-chaos-mobile] h3 {
   }
 
   html[data-chaos-mobile] [data-shell-column='center'] button,
-  html[data-chaos-mobile] [data-shell-column='sidebar'] button {
+  html[data-chaos-mobile] [data-shell-column='sidebar'] button,
+  html[data-chaos-mobile] :has(> [data-slot='conversation']) button,
+  html[data-chaos-mobile] :has(> [data-slot='sidebar']) button {
     position: relative;
   }
 
   html[data-chaos-mobile] [data-shell-column='center'] button::after,
-  html[data-chaos-mobile] [data-shell-column='sidebar'] button::after {
+  html[data-chaos-mobile] [data-shell-column='sidebar'] button::after,
+  html[data-chaos-mobile] :has(> [data-slot='conversation']) button::after,
+  html[data-chaos-mobile] :has(> [data-slot='sidebar']) button::after {
     content: '';
     position: absolute;
     inset: -8px;
@@ -766,7 +810,8 @@ html[data-chaos-mobile] h3 {
 
 @media (prefers-reduced-motion: reduce) {
   .chaos-backdrop { animation: none; }
-  [data-shell-column='sidebar'] {
+  [data-shell-column='sidebar'],
+  :has(> [data-slot='sidebar']) {
     transition: none;
   }
 }

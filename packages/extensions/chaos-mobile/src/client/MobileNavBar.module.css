@@ -87,9 +87,15 @@
 }
 
 /* Context-aware left button: menu shows while details is closed, back while
-   open. The state lives on [data-shell-frame]'s data-details-collapsed; the
-   bar portals outside it, so select through the root with :has(). */
-html[data-chaos-mobile]:has([data-shell-frame][data-details-collapsed]) [data-chaos-back],
-html[data-chaos-mobile]:not(:has([data-shell-frame][data-details-collapsed])) [data-chaos-menu-toggle] {
+   open. "Closed" is the frame's data-details-collapsed present AND the
+   chaos-owned push-page state absent: on a narrow viewport the core column
+   solver keeps the attribute set even while the chaos details sheet is open
+   (its 640px center floor cannot fit), so the state on <html> decides there.
+   The attribute is unique to the frame in every frontend, so the html-level
+   :has() probe needs no frame qualifier; the bar portals outside the frame,
+   so select through the root. */
+html[data-chaos-mobile]:has([data-details-collapsed]):not([data-chaos-details-open]) [data-chaos-back],
+html[data-chaos-mobile]:not(:has([data-details-collapsed])) [data-chaos-menu-toggle],
+html[data-chaos-mobile][data-chaos-details-open] [data-chaos-menu-toggle] {
   display: none;
 }

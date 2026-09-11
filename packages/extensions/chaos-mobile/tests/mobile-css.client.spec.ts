@@ -75,6 +75,29 @@ describe('mobile.css contract', () => {
     expect(css).toContain('data-shell-frame')
   })
 
+  it('falls back to structural slot anchors for frontends without data-shell-frame', () => {
+    // Released frontends (0.1.2-rc.1 and older) mark neither the frame nor
+    // the columns with data-shell-* hooks. The slot render sites are direct
+    // children of the columns in both lineages, so the column anchor is the
+    // element whose direct child carries the slot name, and the frame is the
+    // direct parent of the data-shell-overlay layer.
+    expect(css).toContain(":has(> [data-slot='sidebar'])")
+    expect(css).toContain(":has(> [data-slot='conversation'])")
+    expect(css).toContain(":has(> [data-slot='details'])")
+    expect(css).toContain(':has(> [data-shell-overlay])')
+    // Frame state is probed at the html level: only the frame carries the
+    // collapsed attributes in any frontend.
+    expect(css).toContain(':not(:has([data-sidebar-collapsed]))')
+    expect(css).toContain(':not(:has([data-details-collapsed]))')
+  })
+
+  it('keeps nested :has() out of the stylesheet', () => {
+    // Current Chromium rejects :has(:has(...)) as an invalid selector and
+    // drops the whole rule, silently breaking the layout it guards.
+    expect(css).not.toContain(':has(> :has(')
+    expect(css).not.toContain(':has(:has(')
+  })
+
   it('has at most one [class*= selector (headerUtilities known limitation)', () => {
     const matches = css.match(/\[class\*=/g) ?? []
     // One is the comment, one is the headerUtilities selector.
@@ -94,6 +117,14 @@ describe('mobile.css contract', () => {
   it('details column becomes full-screen overlay on mobile', () => {
     expect(css).toContain("data-shell-column='details'")
     expect(css).toContain('width: 100%')
+  })
+
+  it('shows the details sheet from the chaos-owned push-page state on narrow viewports', () => {
+    // The core column solver never renders an open details column below its
+    // 640px center floor, so the frame attribute is a dead signal there; the
+    // push-page state on <html> must carry the visible/hidden decision.
+    expect(css).toContain('[data-chaos-details-open] [data-shell-column=\'details\']')
+    expect(css).toContain('[data-chaos-details-open] :has(> [data-slot=\'details\'])')
   })
 
   it('drag handles hidden on mobile via data-shell-handle', () => {
@@ -123,9 +154,11 @@ describe('mobile.css contract', () => {
     expect(css).toContain('display: none !important')
   })
 
-  it('nav bar back button visibility driven by data-details-collapsed', () => {
+  it('nav bar back button visibility driven by data-details-collapsed or the push-page state', () => {
     expect(css).toContain('[data-chaos-back]')
     expect(css).toContain(':not([data-details-collapsed])')
+    expect(css).toContain('[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-back]')
+    expect(css).toContain('[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-menu-toggle]')
   })
 
   it('coarse pointer media query for touch target enlargement', () => {

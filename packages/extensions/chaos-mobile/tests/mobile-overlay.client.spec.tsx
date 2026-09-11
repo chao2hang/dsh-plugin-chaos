@@ -119,28 +119,57 @@ describe('MobileOverlay', () => {
     document.removeEventListener('dsh-better-sidebar:open-mobile-tools', openTools)
   })
 
-  it('removes the owned details history entry after an ordinary close', async () => {
+  it('opens the details push page from the overflow and owns its history entry', async () => {
     setMobileViewport()
-    const frame = document.createElement('div')
-    frame.dataset.shellFrame = ''
-    frame.dataset.detailsCollapsed = ''
-    document.body.appendChild(frame)
+    const closeDetails = vi.fn()
+    const openDetails = vi.fn()
+    const pushSpy = vi.spyOn(history, 'pushState')
+    const backSpy = vi.spyOn(history, 'back').mockImplementation(() => {})
+    render(<MobileOverlay toggleSidebar={vi.fn()} openDetails={openDetails} closeDetails={closeDetails} useSessions={useSessions} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'More' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /打开详情面板/ }))
+    await waitFor(() => { expect(pushSpy).toHaveBeenCalledTimes(1) })
+    expect(openDetails).toHaveBeenCalledTimes(1)
+    // The chaos-owned state mirrors onto <html> for the sheet + nav CSS.
+    expect(document.documentElement.hasAttribute('data-chaos-details-open')).toBe(true)
+
+    // The core details header's own close button closes the push page and
+    // removes the history entry the overlay owns.
+    const coreClose = document.createElement('button')
+    coreClose.setAttribute('aria-label', 'Close details')
+    document.body.appendChild(coreClose)
+    fireEvent.click(coreClose)
+    await waitFor(() => { expect(backSpy).toHaveBeenCalledTimes(1) })
+    expect(closeDetails).toHaveBeenCalledTimes(1)
+    expect(document.documentElement.hasAttribute('data-chaos-details-open')).toBe(false)
+    coreClose.remove()
+    pushSpy.mockRestore()
+    backSpy.mockRestore()
+  })
+
+  it('system back button closes the details push page', async () => {
+    setMobileViewport()
     const closeDetails = vi.fn()
     const pushSpy = vi.spyOn(history, 'pushState')
     const backSpy = vi.spyOn(history, 'back').mockImplementation(() => {})
-    const { unmount } = render(<MobileOverlay toggleSidebar={vi.fn()} closeDetails={closeDetails} useSessions={useSessions} />)
+    render(<MobileOverlay toggleSidebar={vi.fn()} openDetails={vi.fn()} closeDetails={closeDetails} useSessions={useSessions} />)
 
-    frame.removeAttribute('data-details-collapsed')
+    fireEvent.click(screen.getByRole('button', { name: 'More' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /打开详情面板/ }))
     await waitFor(() => { expect(pushSpy).toHaveBeenCalledTimes(1) })
-    frame.dataset.detailsCollapsed = ''
-    await waitFor(() => { expect(backSpy).toHaveBeenCalledTimes(1) })
+
+    // The nav back button (or a system gesture) triggers popstate on the
+    // entry we pushed; that closes the page without leaking a phantom entry.
     fireEvent.popState(window)
     expect(closeDetails).toHaveBeenCalledTimes(1)
-    unmount()
-    expect(backSpy).toHaveBeenCalledTimes(1)
+    expect(document.documentElement.hasAttribute('data-chaos-details-open')).toBe(false)
+
+    // A second popstate (leaving the app) must not close again.
+    fireEvent.popState(window)
+    expect(closeDetails).toHaveBeenCalledTimes(1)
     pushSpy.mockRestore()
     backSpy.mockRestore()
-    frame.remove()
   })
 
   it('back button calls history.back() for system back-button support', () => {
