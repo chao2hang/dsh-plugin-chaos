@@ -1,10 +1,18 @@
 /**
  * @deepseek-ai/dsh-plugin-chaos-auth — Remote access authentication plugin.
- * It requires the dsh-host-webserver `registerGuard` and
- * `registerUpgradeGuard` APIs. Unauthenticated requests receive a minimal
- * login page (for page requests) or 401 (for API requests); authenticated
- * requests pass through with refreshed session activity. Login/logout endpoints
- * are public named routes.
+ * It runs in one of two modes, picked from the detected webserver surface:
+ *
+ * - Guard mode (fork `dsh-host-webserver` exposing `registerGuard` /
+ *   `registerUpgradeGuard`): every HTTP request and WebSocket upgrade is
+ *   checked before route matching. Unauthenticated requests receive a minimal
+ *   login page (for page requests) or 401 (for API requests).
+ * - Route mode (published `dsh-host-webserver`, which has no guard seam): an
+ *   exact `/` route gates the application entry — unauthenticated browsers are
+ *   redirected to the login page, authenticated ones to `/index.html` (the
+ *   SPA fallback owner keeps serving the dist). WebSocket upgrades and `/api`
+ *   stay protected by client-connection's own channel authentication.
+ *
+ * Login/logout endpoints are public named routes in both modes.
  *
  * Security model:
  * - Default: loopback HTTP stays anonymous (existing behavior unchanged).
@@ -135,7 +143,10 @@ function isPublicUnauthenticatedPath(pathname: string, search = ''): boolean {
  */
 export function apply(ctx: Context, config: Config): void {
   const webServer = ctx.webServer
-  const connection = ctx.get('connection') as { authenticatedUrl: (baseUrl: string) => string }
+  const connection = ctx.get('connection') as {
+    authenticatedUrl: (baseUrl: string) => string
+    authorizeIndex: (req: IncomingMessage, res: ServerResponse) => boolean
+  }
   const tls = (ctx.get('webServer') as { config?: { tls?: { cert?: unknown; key?: unknown } } } | undefined)?.config?.tls
   const isHttps = config.publicUrl.startsWith('https://') ||
     (typeof tls?.cert === 'string' && tls.cert !== '' && typeof tls.key === 'string' && tls.key !== '')
@@ -149,11 +160,11 @@ export function apply(ctx: Context, config: Config): void {
 
   // Loopback remains anonymous unless a reverse proxy explicitly supplies the public URL.
   if (webServer.host !== '0.0.0.0' && config.publicUrl === '') return
-  // dsh-host-webserver exposes these hooks as the supported cross-cutting
-  // interception seam. Fail at activation when an older host is used.
-  if (typeof webServer.registerGuard !== 'function' || typeof webServer.registerUpgradeGuard !== 'function') {
-    throw new Error('chaos-auth requires dsh-host-webserver registerGuard/registerUpgradeGuard')
-  }
+  // The fork webserver exposes guards as the cross-cutting interception seam.
+  // The published webserver offers only named routes plus a single fallback
+  // seat (owned by the SPA dist server), so route mode gates the entry path.
+  const hasGuards = typeof webServer.registerGuard === 'function' &&
+    typeof webServer.registerUpgradeGuard === 'function'
 
   const storeConfig: SessionStoreConfig = {
     idleTimeoutMs: config.idleTimeoutMs,
@@ -237,47 +248,77 @@ export function apply(ctx: Context, config: Config): void {
   }, 'chaos-auth: login/logout routes')
 
   // Register request guard: checks session before route matching.
+  if (hasGuards) {
+    ctx.effect(() => {
+      const disposeGuard = webServer.registerGuard((req: IncomingMessage, res: ServerResponse) => {
+        // Auth endpoints and the install manifest are public.
+        const requestUrl = new URL(req.url ?? '/', 'http://x')
+        if (isPublicUnauthenticatedPath(requestUrl.pathname, requestUrl.search)) return true
+
+        // Check session.
+        const sessionId = extractSessionId(req)
+        const session = sessions.validate(sessionId)
+        if (session !== undefined) {
+          return true
+        }
+
+        // Unauthenticated: page requests get the login page, API requests get 401.
+        if (isPageRequest(req)) {
+          res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+          res.end(loginPageHtml())
+        } else {
+          res.writeHead(401, { 'content-type': 'application/json' })
+          res.end(JSON.stringify({ error: 'unauthorized' }))
+        }
+        return false
+      })
+      return () =>{  disposeGuard() }
+    }, 'chaos-auth: request guard')
+
+    // Register upgrade guard: checks session before WebSocket upgrade.
+    ctx.effect(() => {
+      const disposeUpgradeGuard = webServer.registerUpgradeGuard((req: IncomingMessage, socket: Duplex) => {
+        const sessionId = extractSessionId(req)
+        const session = sessions.validate(sessionId)
+        if (session !== undefined) {
+          return true
+        }
+        // Unauthenticated upgrade: reject.
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+        socket.destroy()
+        return false
+      })
+      return () =>{  disposeUpgradeGuard() }
+    }, 'chaos-auth: upgrade guard')
+    return
+  }
+
+  // Route mode (published dsh-host-webserver): gate the application entry.
+  // Unauthenticated browsers are sent to the login page; authenticated ones
+  // to /index.html, where the SPA fallback owner serves the dist. Requests
+  // carrying the client-connection launch token are handed to
+  // connection.authorizeIndex at '/', the only pathname where it consumes the
+  // token and issues the browser-session cookie. WebSocket upgrades and /api
+  // remain protected by client-connection's channel authentication.
   ctx.effect(() => {
-    const disposeGuard = webServer.registerGuard((req: IncomingMessage, res: ServerResponse) => {
-      // Auth endpoints and the install manifest are public.
-      const requestUrl = new URL(req.url ?? '/', 'http://x')
-      if (isPublicUnauthenticatedPath(requestUrl.pathname, requestUrl.search)) return true
-
-      // Check session.
-      const sessionId = extractSessionId(req)
-      const session = sessions.validate(sessionId)
-      if (session !== undefined) {
-        return true
-      }
-
-      // Unauthenticated: page requests get the login page, API requests get 401.
-      if (isPageRequest(req)) {
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
-        res.end(loginPageHtml())
-      } else {
-        res.writeHead(401, { 'content-type': 'application/json' })
-        res.end(JSON.stringify({ error: 'unauthorized' }))
-      }
-      return false
+    return webServer.register({
+      kind: 'exact',
+      path: '/',
+      handler: (req: IncomingMessage, res: ServerResponse) => {
+        const requestUrl = new URL(req.url ?? '/', 'http://x')
+        if (requestUrl.searchParams.has('token')) {
+          connection.authorizeIndex(req, res)
+          return
+        }
+        const session = sessions.validate(extractSessionId(req))
+        const location = session === undefined
+          ? '/auth/login'
+          : `/index.html${requestUrl.search}`
+        res.writeHead(302, { location })
+        res.end()
+      },
     })
-    return () =>{  disposeGuard() }
-  }, 'chaos-auth: request guard')
-
-  // Register upgrade guard: checks session before WebSocket upgrade.
-  ctx.effect(() => {
-    const disposeUpgradeGuard = webServer.registerUpgradeGuard((req: IncomingMessage, socket: Duplex) => {
-      const sessionId = extractSessionId(req)
-      const session = sessions.validate(sessionId)
-      if (session !== undefined) {
-        return true
-      }
-      // Unauthenticated upgrade: reject.
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-      socket.destroy()
-      return false
-    })
-    return () =>{  disposeUpgradeGuard() }
-  }, 'chaos-auth: upgrade guard')
+  }, 'chaos-auth: root gate route')
 }
 
 /** Read the request body as a string. */
