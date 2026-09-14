@@ -217,9 +217,11 @@ export function apply(ctx: Context, config: Config): void {
 
         // Create session and set cookie.
         const session = sessions.create()
+        const proto = req.headers['x-forwarded-proto'] === 'https' || isHttps ? 'https' : 'http'
+        const reqIsHttps = proto === 'https'
         res.writeHead(302, {
-          'set-cookie': buildCookie(session, Date.now(), storeConfig, isHttps),
-          location: connection.authenticatedUrl(config.publicUrl || `http://${req.headers.host ?? '127.0.0.1'}`),
+          'set-cookie': buildCookie(session, Date.now(), storeConfig, reqIsHttps),
+          location: connection.authenticatedUrl(config.publicUrl || `${proto}://${req.headers.host ?? '127.0.0.1'}`),
         })
         res.end()
       },
@@ -236,8 +238,9 @@ export function apply(ctx: Context, config: Config): void {
         }
         const sessionId = extractSessionId(req)
         sessions.destroy(sessionId)
+        const proto = req.headers['x-forwarded-proto'] === 'https' || isHttps ? 'https' : 'http'
         res.writeHead(302, {
-          'set-cookie': clearCookie(isHttps),
+          'set-cookie': clearCookie(proto === 'https'),
           location: '/auth/login',
         })
         res.end()
