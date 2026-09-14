@@ -1,11 +1,12 @@
 /**
  * The escalation vocabulary and choreography shared by every sandbox-enforcing
  * tool family (`@deepseek-ai/dsh-tool-bash`, `@deepseek-ai/dsh-tool-fs`): the
- * strictly-wider ladder, the argument-pairing validation, the model-facing
- * denial/hint markers, and {@link approveEscalation} — the ordered fail-closed
- * sequence that resolves a `sandbox_permissions` request through a
- * user-approval channel BEFORE anything executes. One home keeps the two
- * families' approval ordering and verbatim error texts from drifting apart.
+ * strictly-wider ladder, the argument-pairing validation with its full-access
+ * normalization, the model-facing denial/hint markers, and
+ * {@link approveEscalation} — the ordered fail-closed sequence that resolves a
+ * `sandbox_permissions` request through a user-approval channel BEFORE
+ * anything executes. One home keeps the two families' approval ordering and
+ * verbatim error texts from drifting apart.
  *
  * The channel is a minimal STRUCTURAL function shape ({@link EscalationAsk}),
  * not the approval service type: the tool layer — which owns the agent, the
@@ -41,36 +42,6 @@ export const WIDER_MODES: Record<string, readonly SandboxMode[]> = {
 export const ESCALATION_TARGETS: readonly SandboxMode[] = ['workspace-write', 'danger-full-access']
 
 /**
- * Normalize and filter escalation arguments at the execution boundary according
- * to the call's standing sandbox policy.
- *
- * When the call already operates under the highest privilege (`danger-full-access`),
- * escalation is neither possible nor required; extraneous escalation parameters
- * (often emitted speculatively by external models like GPT-5.x/GPT-6) are silently
- * ignored so execution proceeds unblocked without false escalation rejection.
- *
- * When the effective mode is narrower (`read-only`, `workspace-write`), pairing
- * rules are strictly enforced: `sandbox_permissions` and `justification` must
- * travel together with a non-empty justification.
- *
- * @param sandboxPermissions - the raw `sandbox_permissions` argument, if given.
- * @param justification - the raw `justification` argument, if given.
- * @param effectiveMode - the call's standing effective mode, if sandboxed.
- * @returns the normalized escalation arguments (both defined if escalating, or both undefined).
- */
-export function normalizeEscalationArgs(
-  sandboxPermissions: string | undefined,
-  justification: string | undefined,
-  effectiveMode: SandboxMode | undefined,
-): { sandboxPermissions: string | undefined; justification: string | undefined } {
-  if (effectiveMode === 'danger-full-access') {
-    return { sandboxPermissions: undefined, justification: undefined }
-  }
-  validateEscalationArgs(sandboxPermissions, justification)
-  return { sandboxPermissions, justification }
-}
-
-/**
  * Validate the escalation argument pairing a tool schema cannot express:
  * `sandbox_permissions` and `justification` travel together — an approval
  * prompt without a reason, or a reason driving nothing, is a malformed ask —
@@ -88,6 +59,35 @@ export function validateEscalationArgs(sandboxPermissions: string | undefined, j
   if (justification !== undefined && justification.trim().length === 0) {
     throw new Error('invalid justification: expected a non-empty sentence')
   }
+}
+
+/**
+ * Normalize and filter the escalation arguments at the execution boundary
+ * against the call's standing mode, AFTER the tool has resolved it.
+ *
+ * When the call already runs under `danger-full-access`, escalation is
+ * neither possible nor required: there is no wider mode to grant. Extraneous
+ * escalation parameters — external models frequently fill the optional
+ * schema fields speculatively — are then silently dropped so execution
+ * proceeds unblocked instead of failing a strict-widening check that can
+ * never pass (and trapping a model that cannot interpret the failure into a
+ * retry loop). Under a narrower (or unresolved) mode the pairing rules of
+ * {@link validateEscalationArgs} are enforced unchanged.
+ * @param sandboxPermissions - the raw `sandbox_permissions` argument, if given.
+ * @param justification - the raw `justification` argument, if given.
+ * @param effectiveMode - the call's standing mode (session override ?? composition default), if one is resolved.
+ * @returns the arguments to honor; both `undefined` under `danger-full-access`.
+ */
+export function normalizeEscalationArgs(
+  sandboxPermissions: string | undefined,
+  justification: string | undefined,
+  effectiveMode: SandboxMode | undefined,
+): { sandboxPermissions: string | undefined; justification: string | undefined } {
+  if (effectiveMode === 'danger-full-access') {
+    return { sandboxPermissions: undefined, justification: undefined }
+  }
+  validateEscalationArgs(sandboxPermissions, justification)
+  return { sandboxPermissions, justification }
 }
 
 /**

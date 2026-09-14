@@ -1,9 +1,10 @@
 /**
  * Tests for the shared escalation vocabulary and choreography: the strictly-
- * wider ladder, the argument-pairing validation, the model-facing markers, and
- * {@link approveEscalation}'s ordered fail-closed sequence. Both enforcing tool
- * families (`dsh-tool-bash`, `dsh-tool-fs`) delegate here, so the ordering and
- * verbatim texts are pinned once, next to the vocabulary that owns them.
+ * wider ladder, the argument-pairing validation and its full-access
+ * normalization, the model-facing markers, and {@link approveEscalation}'s
+ * ordered fail-closed sequence. Both enforcing tool families (`dsh-tool-bash`,
+ * `dsh-tool-fs`) delegate here, so the ordering and verbatim texts are pinned
+ * once, next to the vocabulary that owns them.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -44,31 +45,37 @@ describe('validateEscalationArgs', () => {
 })
 
 describe('normalizeEscalationArgs', () => {
-  it('strips all escalation parameters when effectiveMode is danger-full-access', () => {
+  it('strips every escalation argument when the call already runs under danger-full-access', () => {
     expect(normalizeEscalationArgs('workspace-write', 'some reason', 'danger-full-access')).toEqual({
       sandboxPermissions: undefined,
       justification: undefined,
     })
+    // Even a malformed pairing is noise a full-access call must not die on.
     expect(normalizeEscalationArgs('danger-full-access', undefined, 'danger-full-access')).toEqual({
-      sandboxPermissions: undefined,
-      justification: undefined,
-    })
-    expect(normalizeEscalationArgs(undefined, 'orphan justification', 'danger-full-access')).toEqual({
       sandboxPermissions: undefined,
       justification: undefined,
     })
   })
 
-  it('validates and preserves parameters under narrower modes or undefined mode', () => {
-    expect(normalizeEscalationArgs('danger-full-access', 'legit justification', 'workspace-write')).toEqual({
+  it('validates and preserves the arguments under narrower or unresolved modes', () => {
+    expect(normalizeEscalationArgs('danger-full-access', 'valid reason', 'workspace-write')).toEqual({
       sandboxPermissions: 'danger-full-access',
-      justification: 'legit justification',
+      justification: 'valid reason',
     })
     expect(normalizeEscalationArgs(undefined, undefined, 'read-only')).toEqual({
       sandboxPermissions: undefined,
       justification: undefined,
     })
-    expect(() => normalizeEscalationArgs('workspace-write', undefined, 'read-only')).toThrow(/requires a justification/)
+    expect(normalizeEscalationArgs(undefined, undefined, undefined)).toEqual({
+      sandboxPermissions: undefined,
+      justification: undefined,
+    })
+  })
+
+  it('enforces the pairing rule under narrower and unresolved modes', () => {
+    expect(() => { normalizeEscalationArgs('workspace-write', undefined, 'read-only') }).toThrow(/requires a justification/)
+    expect(() => { normalizeEscalationArgs(undefined, 'orphan reason', 'workspace-write') }).toThrow(/only valid together with sandbox_permissions/)
+    expect(() => { normalizeEscalationArgs('workspace-write', '   ', undefined) }).toThrow(/non-empty sentence/)
   })
 })
 

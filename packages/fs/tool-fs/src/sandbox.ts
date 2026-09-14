@@ -76,8 +76,11 @@ export class FsSandboxController {
    * The policy to stamp onto this mutation: an approved escalation grant (a
    * strictly wider retry resolved through `ctx.approval` before anything
    * executes), else the session's standing mode. The calling session's cwd is
-   * always carried as the workspace root. Validates the escalation argument
-   * pairing first.
+   * always carried as the workspace root. Escalation arguments are judged
+   * against the standing mode once it is resolved: a `danger-full-access`
+   * session drops them (nothing is wider, so they can only be speculative
+   * noise from a model filling the optional fields); every other mode
+   * enforces the shared pairing rule before approval.
    * @param toolName - the mutating tool's name, for the approval audit trail.
    * @param args - the call's escalation arguments.
    * @param exec - the tool-execution context (agent, callId, signal).

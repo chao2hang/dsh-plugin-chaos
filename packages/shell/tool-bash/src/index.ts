@@ -327,6 +327,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       validateBashArgs(args)
       // Description is display metadata; workdir defaults to the caller's session.
       const standingPolicy = resolveSandboxPolicy(exec)
+      // Escalation arguments are judged against the standing mode the tool just
+      // resolved: a danger-full-access call drops them (nothing is wider and
+      // they can only be speculative noise), every other mode enforces the
+      // shared pairing rule (sandbox_permissions ⇔ justification, non-empty)
+      // before approval.
       const { sandboxPermissions, justification } = normalizeEscalationArgs(
         args.sandbox_permissions,
         args.justification,

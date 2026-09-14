@@ -722,6 +722,16 @@ describe('sandbox escalation through ctx.approval', () => {
     expect(bash.modes).toEqual(['workspace-write', 'danger-full-access'])
   })
 
+  it('executes without escalation when the session already runs under danger-full-access', async () => {
+    // A model that speculatively fills the optional fields must not trap in a
+    // not-strictly-wider retry loop: nothing is wider than full access, so the
+    // arguments are dropped and the call runs under its standing mode.
+    const { ctx, bash } = await setupSandboxed()
+    const result = await call(ctx, 'pwsh', escalate, sandboxAgent('danger-full-access'))
+    expect(result.isError).toBe(false)
+    expect(bash.modes).toEqual(['danger-full-access'])
+  })
+
   it('omits sandbox facts the executor did not acquire from the canonical result', async () => {
     const { ctx } = await setupSandboxed()
     const result = await call(ctx, 'pwsh', {

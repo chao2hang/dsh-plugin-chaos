@@ -63,7 +63,7 @@ Enforcement is reported per call: `full` means the backend governs every promise
 
 ### Denied calls and escalation
 
-When a confined call is denied, the operation reports a denial marker naming the mode — `[sandbox: file access denied under <mode> mode]` — and, when the composition advertises escalation, an escalation hint. The model may retry the exact call once with `sandbox_permissions` (the narrowest wider mode that suffices) plus a `justification`; the user sees one approval prompt and can allow once, reject, or cancel. The escalation must be strictly wider than the call's effective mode, and it applies to that one call only.
+When a confined call is denied, the operation reports a denial marker naming the mode — `[sandbox: file access denied under <mode> mode]` — and, when the composition advertises escalation, an escalation hint. The model may retry the exact call once with `sandbox_permissions` (the narrowest wider mode that suffices) plus a `justification`; the user sees one approval prompt and can allow once, reject, or cancel. The escalation must be strictly wider than the call's effective mode, and it applies to that one call only. A call already running under `danger-full-access` ignores the escalation arguments: nothing is wider, so the fields are dropped rather than rejected.
 
 ### Fail-closed behavior
 
@@ -91,13 +91,13 @@ This section explains the design decisions behind the contract and points at the
 | File | Role |
 |---|---|
 | [`src/index.ts`](src/index.ts) | Plugin entry: `SandboxProvider` service, mode/enforcement/policy types, fail-closed error |
-| [`src/escalation.ts`](src/escalation.ts) | Escalation vocabulary: wider-mode ladder, argument validation, denial and hint markers, approval choreography |
+| [`src/escalation.ts`](src/escalation.ts) | Escalation vocabulary: wider-mode ladder, argument validation and full-access normalization, denial and hint markers, approval choreography |
 | [`src/roots.ts`](src/roots.ts) | Writable-root derivation shared by the Seatbelt profile and the in-process fs fence |
 | — | No runtime invariant companion is published; this package exposes no independent event sequence or mutable data relation beyond contracts enforced at its owning seam. |
 
 ### Escalation choreography
 
-The ladder is a closed table — `read-only` may escalate to `workspace-write` or `danger-full-access`, `workspace-write` only to `danger-full-access` — checked at execution, never baked into a tool schema, whose enum stays the closed target vocabulary. [`approveEscalation`](src/escalation.ts) validates the `sandbox_permissions`/`justification` pairing, rejects non-widening requests without prompting a human, and maps every approval outcome to its own error before anything executes.
+The ladder is a closed table — `read-only` may escalate to `workspace-write` or `danger-full-access`, `workspace-write` only to `danger-full-access` — checked at execution, never baked into a tool schema, whose enum stays the closed target vocabulary. At the tool boundary, [`normalizeEscalationArgs`](src/escalation.ts) judges the raw arguments against the call's resolved standing mode first: a `danger-full-access` call drops them (nothing is wider, so they can only be noise a model filled in speculatively), while any narrower mode enforces the pairing. [`approveEscalation`](src/escalation.ts) validates the `sandbox_permissions`/`justification` pairing, rejects non-widening requests without prompting a human, and maps every approval outcome to its own error before anything executes.
 
 ### Writable roots
 

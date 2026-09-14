@@ -902,6 +902,26 @@ describe('sandbox escalation API (write/edit)', () => {
     }])
   })
 
+  it('ignores escalation arguments when the session already runs under danger-full-access', async () => {
+    // A model that speculatively fills the optional fields must not trap in a
+    // not-strictly-wider retry loop: nothing is wider than full access, so the
+    // arguments are dropped and the mutation runs under its standing mode.
+    const { ctx, fs } = await setupConfining()
+    const agent = escalationAgent([{ type: 'sandbox/mode', data: { mode: 'danger-full-access' } }])
+    const result = await call(ctx, 'write', {
+      file_path: 'a.txt',
+      content: 'x',
+      sandbox_permissions: 'workspace-write',
+      justification: 'speculatively attached by the model',
+    }, agent)
+    expect(result.isError).toBe(false)
+    expect(fs.stamped).toEqual([{
+      mode: 'danger-full-access',
+      workspaceRoot: resolve('/session-project'),
+      sessionId: SessionId('sess-fs-esc'),
+    }])
+  })
+
   it('a denied write maps to the shared marker plus the escalation hint (isError)', async () => {
     const { ctx, fs } = await setupConfining()
     fs.rejectWith = new FsError('denied', 'FS_SANDBOX_DENIED')
