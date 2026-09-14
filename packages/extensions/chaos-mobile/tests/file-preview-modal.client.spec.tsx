@@ -65,7 +65,95 @@ describe('FilePreviewModal component', () => {
 
     expect(screen.getByText('TS')).toBeTruthy()
     expect(screen.getByText('2 行')).toBeTruthy()
-    expect(screen.getByText(/const a = 1/)).toBeTruthy()
+    // Highlighting splits the code across token spans; assert on the code element.
+    const codeEl = document.body.querySelector('pre code')
+    expect(codeEl).toBeTruthy()
+    expect(codeEl!.querySelector('.hljs-keyword')?.textContent).toBe('const')
+    expect(codeEl!.textContent).toContain('const a = 1')
+  })
+
+  it('highlights code tokens for the route language', async () => {
+    const fakeData = {
+      ok: true,
+      kind: 'text',
+      path: '/demo/app.js',
+      name: 'app.js',
+      extension: 'js',
+      language: 'javascript',
+      size: 64,
+      lineCount: 1,
+      content: 'const greeting = "hello"',
+      truncated: false,
+      rawUrl: '/api/chaos/file?path=%2Fdemo%2Fapp.js&raw=1',
+    }
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => fakeData,
+    } as Response)
+
+    render(<FilePreviewModal open path="/demo/app.js" onClose={vi.fn()} />)
+    await waitFor(() => {
+      expect(document.body.querySelector('pre code .hljs-keyword')).toBeTruthy()
+    })
+    expect(document.body.querySelector('pre code .hljs-string')?.textContent).toBe('"hello"')
+  })
+
+  it('escapes untrusted file content inside the highlighted markup', async () => {
+    const fakeData = {
+      ok: true,
+      kind: 'text',
+      path: '/demo/page.html',
+      name: 'page.html',
+      extension: 'html',
+      language: 'html',
+      size: 64,
+      lineCount: 1,
+      content: '<script>alert(1)</script>',
+      truncated: false,
+      rawUrl: '/api/chaos/file?path=%2Fdemo%2Fpage.html&raw=1',
+    }
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => fakeData,
+    } as Response)
+
+    render(<FilePreviewModal open path="/demo/page.html" onClose={vi.fn()} />)
+    const codeEl = await waitFor(() => {
+      const el = document.body.querySelector('pre code')
+      expect(el?.textContent).toContain('<script>alert(1)</script>')
+      return el
+    })
+    // The raw tag is visible text only: no executable element is created.
+    expect(codeEl!.querySelector('script')).toBeNull()
+  })
+
+  it('falls back to escaped plain text for an unknown language', async () => {
+    const fakeData = {
+      ok: true,
+      kind: 'text',
+      path: '/demo/blob.unknownext',
+      name: 'blob.unknownext',
+      extension: 'unknownext',
+      language: 'unknownext',
+      size: 64,
+      lineCount: 1,
+      content: 'plain <content> stays & escaped',
+      truncated: false,
+      rawUrl: '/api/chaos/file?path=%2Fdemo%2Fblob.unknownext&raw=1',
+    }
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => fakeData,
+    } as Response)
+
+    render(<FilePreviewModal open path="/demo/blob.unknownext" onClose={vi.fn()} />)
+    await waitFor(() => {
+      expect(document.body.querySelector('pre code')?.innerHTML).toContain('plain &lt;content&gt; stays &amp; escaped')
+    })
+    expect(document.body.querySelector('pre code')?.querySelector('.hljs-keyword')).toBeNull()
   })
 
   it('renders markdown with toggle between preview and raw', async () => {

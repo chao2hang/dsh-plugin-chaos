@@ -17,6 +17,7 @@ import {
   writeClipboard,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './FilePreviewModal.module.css'
+import { highlightCode } from './highlight.ts'
 
 export interface FilePreviewDataCommon {
   ok: boolean
@@ -182,6 +183,13 @@ export const FilePreviewModal = memo(function FilePreviewModal({
     return data.content.split('\n')
   }, [data])
 
+  // Tokenized markup for the code view; highlight.js escapes the raw content,
+  // so the value is safe to inject as innerHTML for any language.
+  const highlightedCode = useMemo(() => {
+    if (!data || (data.kind !== 'text' && data.kind !== 'markdown')) return ''
+    return highlightCode(data.content, data.language)
+  }, [data])
+
   if (!open) return null
 
   const linkKind = classifyLinkPath(currentPath)
@@ -317,7 +325,7 @@ export const FilePreviewModal = memo(function FilePreviewModal({
                       ))}
                     </div>
                     <pre className={css.codeContent}>
-                      <code>{data.content}</code>
+                      <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
                     </pre>
                   </div>
                   {data.truncated && (

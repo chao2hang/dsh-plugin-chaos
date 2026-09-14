@@ -196,6 +196,10 @@
   flex-direction: column;
   flex-shrink: 0;
   min-width: 44px;
+  /* Pinned while the body scrolls horizontally; scrolls vertically with the content. */
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 
 .lineNum {
@@ -205,7 +209,6 @@
 .codeContent {
   margin: 0;
   padding: 16px 20px;
-  overflow-x: auto;
   flex: 1;
   color: var(--dsw-alias-label-primary, #e6e6f0);
   tab-size: 2;
@@ -215,6 +218,72 @@
 .codeContent code {
   font-family: inherit;
   white-space: pre;
+}
+
+/* highlight.js token palette (One-Dark family, matched to the modal surface). */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal {
+  color: #c678dd;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+  color: #98c379;
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attr,
+.hljs-attribute {
+  color: #d19a66;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #7f848e;
+  font-style: italic;
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.function_,
+.hljs-section,
+.hljs-name {
+  color: #61afef;
+}
+
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-type,
+.hljs-class {
+  color: #56b6c2;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-params {
+  color: #e06c75;
+}
+
+.hljs-meta,
+.hljs-meta .hljs-keyword {
+  color: #e5c07b;
+}
+
+.hljs-deletion {
+  color: #e06c75;
+  background: rgba(224, 108, 117, 0.15);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 600;
 }
 
 .truncatedNotice {
