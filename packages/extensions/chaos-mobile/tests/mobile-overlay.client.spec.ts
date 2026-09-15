@@ -27,8 +27,8 @@ describe('client/index.ts integration', () => {
 
   it('injects layout actions into the overlay entry', () => {
     expect(indexSource).toMatch(/toggleSidebar: \(\) => \{ ctx\.layout\.toggleSidebar\(\) \}/)
-    expect(indexSource).toMatch(/openDetails: \(\) => \{ ctx\.layout\.openDetails\(\) \}/)
-    expect(indexSource).toMatch(/closeDetails: \(\) => \{ ctx\.layout\.closeDetails\(\) \}/)
+    expect(indexSource).toMatch(/openDetails: \(\) => \{ ctx\.layout\.openDetails\?\.\(\) \}/)
+    expect(indexSource).toMatch(/closeDetails: \(\) => \{ ctx\.layout\.closeDetails\?\.\(\) \}/)
   })
 
   it('injects a new-session action backed by the workspaces service', () => {

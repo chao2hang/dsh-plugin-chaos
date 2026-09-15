@@ -78,7 +78,6 @@ External packages installed for runtime use or distributed inside the prebuilt b
 | [`electron-updater`](https://github.com/electron-userland/electron-builder) | MIT |
 | [`eventsource-parser`](https://github.com/rexxars/eventsource-parser) | MIT |
 | [`fflate`](https://github.com/101arrowz/fflate) | MIT |
-| [`fs-ext`](https://github.com/baudehlo/node-fs-ext) | MIT |
 | [`highlight.js`](https://github.com/highlightjs/highlight.js) | BSD-3-Clause |
 | [`immer`](https://github.com/immerjs/immer) | MIT |
 | [`ipaddr.js`](https://github.com/whitequark/ipaddr.js) | MIT |

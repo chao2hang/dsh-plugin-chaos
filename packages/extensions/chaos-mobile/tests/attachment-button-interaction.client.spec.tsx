@@ -24,6 +24,8 @@ function baseProps(overrides: { conversation?: DraftConversation } = {}) {
     useChat: (() => undefined) as never,
     useTrajectory: (() => undefined) as never,
     useSessionPendingInteraction: (() => undefined) as never,
+    usePanelInfo: (() => undefined) as never,
+    useResource: (() => undefined) as never,
     sessionId: 's1' as never,
     input: {} as never,
     conversation: overrides.conversation ?? {

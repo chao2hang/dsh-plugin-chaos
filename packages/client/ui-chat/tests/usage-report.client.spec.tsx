@@ -38,6 +38,8 @@ const props = {
   useSessionPendingInteraction: (() => undefined) as never,
   useWorkspaces: (() => undefined) as never,
   useProjection: (() => undefined) as never,
+  usePanelInfo: (() => undefined) as never,
+  useResource: (() => undefined) as never,
   t,
 }
 

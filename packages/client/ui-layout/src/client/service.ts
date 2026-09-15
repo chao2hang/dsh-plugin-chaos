@@ -49,6 +49,10 @@ export interface ILayout {
   openRightbar(track: boolean, fullscreen: boolean): void
   /** Report the right panel as hidden: no track, no handle. */
   closeRightbar(): void
+  /** Backwards compatibility alias for openRightbar(false, true). */
+  openDetails?(): void
+  /** Backwards compatibility alias for closeRightbar(). */
+  closeDetails?(): void
 }
 
 /** Cross-plugin panel-action face (ctx.layout). */
@@ -63,6 +67,16 @@ export class LayoutController implements ILayout {
     private readonly panels: PanelActions,
     private readonly hasMainPanel: (id: MainPanelId) => boolean,
   ) {}
+
+  /** Backwards compatibility alias for openRightbar(false, true). */
+  openDetails(): void {
+    this.openRightbar(false, true)
+  }
+
+  /** Backwards compatibility alias for closeRightbar(). */
+  closeDetails(): void {
+    this.closeRightbar()
+  }
 
   /** Select a global panel or return to the Conversation. */
   selectPanel(panelId: MainPanelId | null): void {

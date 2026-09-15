@@ -50,7 +50,6 @@ function MainPanel({ usePanelInfo, renderSlot }: Pick<PropsRuntime<'root'>, 'use
 function RightbarColumn(props: { children?: ReactNode }) {
   return <div className={css.rightbarCol} data-rightbar-col data-shell-column="details">{props.children}</div>
 }
-}
 
 /**
  * One drag handle: pointer capture, rAF-throttled dx reports against the drag-start origin.
