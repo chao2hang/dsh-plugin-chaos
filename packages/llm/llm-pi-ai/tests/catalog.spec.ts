@@ -1218,3 +1218,136 @@ describe('configurable-provider directory', () => {
     })
   })
 })
+
+describe('per-model wire protocol override', () => {
+  it('lets a model entry win over the route protocol while its sibling keeps the route', () => {
+    const resolved = resolveProfiles({
+      'acme-gateway': {
+        api: 'openai-completions',
+        baseURL: 'https://acme.test',
+        models: [{ id: 'standard' }, { id: 'repointed', api: 'anthropic-messages' }],
+      },
+    })
+    const models = resolved.get('acme-gateway')?.piProvider.getModels() ?? []
+    expect(models.find(model => model.id === 'standard')?.api).toBe('openai-completions')
+    expect(models.find(model => model.id === 'repointed')?.api).toBe('anthropic-messages')
+  })
+
+  it('serves a hand-declared route whose entries each name their own protocol', () => {
+    // The route names no api at all: every entry carries one, which is the
+    // multi-protocol gateway posture — one fixed endpoint, per-model formats.
+    const resolved = resolveProfiles({
+      'acme-gateway': {
+        baseURL: 'https://acme.test',
+        models: [
+          { id: 'chat', api: 'openai-completions' },
+          { id: 'claude', api: 'anthropic-messages' },
+          { id: 'gemini', api: 'google-generative-ai' },
+        ],
+      },
+    })
+    const models = resolved.get('acme-gateway')?.piProvider.getModels() ?? []
+    expect(models.map(model => model.api)).toEqual([
+      'openai-completions',
+      'anthropic-messages',
+      'google-generative-ai',
+    ])
+  })
+
+  it('repoints one catalog model through modelOverrides and keeps its siblings', () => {
+    const [catalogModel, sibling] = getBuiltinModels('deepseek')
+    if (catalogModel === undefined || sibling === undefined) {
+      throw new Error('the installed catalog ships fewer than two deepseek models')
+    }
+    const resolved = resolveProfiles({
+      deepseek: { modelOverrides: { [catalogModel.id]: { api: 'anthropic-messages' } } },
+    })
+    const models = resolved.get('deepseek')?.piProvider.getModels() ?? []
+    const repointed = models.find(model => model.id === catalogModel.id)
+    const kept = models.find(model => model.id === sibling.id)
+    expect(repointed?.api).toBe('anthropic-messages')
+    expect(kept?.api).toBe(sibling.api)
+    // The catalog entry's compat block matches the entry's own protocol, so a
+    // repointed model starts from pi-ai's detection instead of carrying the
+    // other protocol's switches, and a kept model keeps the catalog's.
+    expect(repointed?.compat).toBeUndefined()
+    expect(kept?.compat).toEqual(sibling.compat)
+  })
+
+  it('delegates a kept catalog protocol to the installed provider beside a repointed sibling', async () => {
+    const [kept] = getBuiltinModels('amazon-bedrock')
+    if (kept === undefined) throw new Error('the installed catalog ships no amazon-bedrock model')
+    const resolved = resolveProfiles({
+      'amazon-bedrock': { modelOverrides: { [kept.id]: { api: 'openai-completions' } } },
+    })
+    const provider = resolved.get('amazon-bedrock')?.piProvider
+    const models = provider?.getModels() ?? []
+    const sibling = models.find(model => model.id !== kept.id)
+    if (provider === undefined || sibling === undefined) {
+      throw new Error('the amazon-bedrock route resolved fewer than two models')
+    }
+    expect(models.find(model => model.id === kept.id)?.api).toBe('openai-completions')
+    expect(sibling.api).toBe('bedrock-converse-stream')
+
+    // The kept model still dispatches through the installed catalog provider —
+    // the only implementation its protocol has. Its failure carries the
+    // Bedrock implementation's own api and provider, proving the delegation;
+    // both stream methods delegate, as the adapter and `stream` consumers
+    // each use one.
+    const context = { messages: [{ role: 'user' as const, content: 'hi', timestamp: 0 }] }
+    const events: { type?: string; error?: { api?: string; provider?: string } }[] = []
+    for await (const event of provider.stream(sibling, context, {})) {
+      events.push(event)
+    }
+    for await (const event of provider.streamSimple(sibling, context, {})) {
+      events.push(event)
+    }
+    const failures = events.filter(event => event.type === 'error')
+    expect(failures).toHaveLength(2)
+    expect(failures[0]?.error).toMatchObject({ api: 'bedrock-converse-stream', provider: 'amazon-bedrock' })
+    expect(failures[1]?.error).toMatchObject({ api: 'bedrock-converse-stream', provider: 'amazon-bedrock' })
+  })
+
+  it('routes each model request through the protocol its entry names', async () => {
+    const server = await mockServer([{ events: textEvents }, { events: textEvents }])
+    const ctx = await harness({
+      providers: {
+        'acme-gateway': {
+          apiKeyEnv: KEY_ENV,
+          baseURL: server.url,
+          models: [
+            { id: 'chat', api: 'openai-completions', contextWindow: 100_000, maxTokens: 4096 },
+            { id: 'claude', api: 'anthropic-messages', contextWindow: 100_000, maxTokens: 4096 },
+          ],
+        },
+      },
+    })
+
+    await assemble(ctx, { provider: 'acme-gateway', model: 'claude', messages: [] })
+    await assemble(ctx, { provider: 'acme-gateway', model: 'chat', messages: [] })
+    // The same route endpoint, two wire formats: Anthropic Messages at its
+    // native path with its key header, Chat Completions at the OpenAI path
+    // with bearer auth.
+    expect(server.paths).toEqual(['/v1/messages', '/chat/completions'])
+    expect(server.headers[0]?.['x-api-key']).toBe('test-key')
+    expect(server.headers[1]?.authorization).toBe('Bearer test-key')
+  })
+
+  it('refuses a table-external protocol on a hand-declared route with no catalog to delegate to', () => {
+    // Only a kept catalog protocol may skip the table, and that delegation
+    // needs the catalog provider. A hand-declared route naming one anyway —
+    // reachable only if the settings boundary's union and this table ever
+    // drift apart — fails construction naming the protocol.
+    const [bedrock] = getBuiltinModels('amazon-bedrock')
+    if (bedrock === undefined) throw new Error('the installed catalog ships no amazon-bedrock model')
+    expect(() => buildProvider({
+      provider: 'acme-gateway',
+      displayName: 'Acme Gateway',
+      models: [
+        { ...bedrock, id: 'kept', provider: 'acme-gateway' },
+        { ...bedrock, id: 'repointed', provider: 'acme-gateway', api: 'openai-completions' },
+      ],
+      namesCredential: true,
+    })).toThrow(/cannot serve; supported protocols are/)
+  })
+})

@@ -551,6 +551,17 @@ export interface PiAiModelProfile {
   id: string
   /** Display name for selectors; defaults to the catalog name, then the id. */
   name?: string
+  /**
+   * Wire protocol this one model speaks. Absent keeps the layering below —
+   * the route's `api`, then the installed catalog entry's own, then the
+   * shipped models' shared protocol — which is why a model whose gateway
+   * serves one sibling through Chat Completions and another through Anthropic
+   * Messages declares the difference here instead of splitting the route.
+   * Winning over the route's `api` is the point: a multi-protocol gateway is
+   * configured with one fixed endpoint, and the per-model entry is where the
+   * exceptions live.
+   */
+  api?: string
   /** Maximum combined request and response context in tokens. */
   contextWindow?: number
   /**
@@ -729,12 +740,18 @@ type ModelCompat = OpenAICompletionsCompat | OpenAIResponsesCompat | AnthropicMe
  * stay settable on a route whose models do not all speak one protocol. Every
  * field reaching here is offered by some protocol; {@link
  * assertOfferedCompatFields} has already refused the rest.
+ *
+ * The returned block replaces the installed entry's outright rather than
+ * spreading beside it: the entry's `compat` matches the entry's OWN api, so a
+ * repointed model — route-level or per-model — starts from pi-ai's
+ * baseURL-derived detection instead of carrying the other protocol's block.
  * @param provider - provider route key, for diagnostics.
  * @param entry - the configured model entry.
  * @param route - the route-level switches, when any.
  * @param base - the installed catalog entry of the same id, when one exists.
  * @param api - the model's resolved wire protocol.
- * @returns a `compat` field to spread into the model, or nothing.
+ * @returns the `compat` block the model carries, or `undefined` to leave the
+ * field unset.
  */
 function resolveModelCompat(
   provider: string,
@@ -742,7 +759,7 @@ function resolveModelCompat(
   route: PiAiCompatProfile | undefined,
   base: Model<Api> | undefined,
   api: string,
-): { compat: ModelCompat } | Record<string, never> {
+): ModelCompat | undefined {
   const gate = compatGate(api)
   const configured: Record<string, unknown> = {}
   for (const [field, value] of configuredCompatEntries(route)) {
@@ -758,15 +775,9 @@ function resolveModelCompat(
     }
     configured[field] = value
   }
-  if (Object.keys(configured).length === 0) return {}
-  // The installed entry's compat matches the entry's OWN api — a route-level
-  // `api` repoint (an anthropic catalog served through an OpenAI-compatible
-  // gateway) leaves `base.compat` in the other protocol's shape, so it is
-  // inherited only while the resolved api still is the entry's. A repointed
-  // model starts from pi-ai's baseURL-derived detection instead, which is
-  // what a protocol change means for every other compat field too.
+  if (Object.keys(configured).length === 0) return base?.api === api ? base.compat : undefined
   const inherited = base?.api === api ? base.compat : undefined
-  return { compat: { ...inherited, ...configured } as ModelCompat }
+  return { ...inherited, ...configured }
 }
 
 /** One route's materialized catalog, plus the request caps its profile chose. */
@@ -850,10 +861,12 @@ export function resolveRouteModels(request: RouteCatalogRequest): RouteCatalog {
     if (seen.has(entry.id)) invalid(provider, `lists model "${entry.id}" more than once`)
     seen.add(entry.id)
     const base = defaults.get(entry.id)
-    const api = request.api ?? base?.api ?? routeApi
+    // The entry's own declaration wins over the route's, so one multi-protocol
+    // gateway keeps a single fixed endpoint while individual models repoint.
+    const api = entry.api ?? request.api ?? base?.api ?? routeApi
     if (api === undefined) {
       invalid(provider, `model "${entry.id}" needs an api; the installed catalog does not describe it, so set the`
-        + ' route\'s api to the wire protocol its endpoint speaks')
+        + ' model entry\'s api or the route\'s api to the wire protocol its endpoint speaks')
     }
     const baseUrl = request.baseURL ?? base?.baseUrl ?? providerBaseUrl
     if (baseUrl === undefined) {
@@ -874,13 +887,17 @@ export function resolveRouteModels(request: RouteCatalogRequest): RouteCatalog {
     // Only a value the profile named is a deployment choice; the catalog's is
     // the model's capability and stays out of request defaults.
     if (entry.maxTokens !== undefined) configuredMaxTokens.set(entry.id, entry.maxTokens)
+    // The installed entry lays the floor, and the fields below override it.
+    // Enumerating instead would silently drop every `Model` field this
+    // package does not model — reasoning-level spellings, compatibility
+    // quirks, model headers, and whatever a pi-ai upgrade adds next. Spread,
+    // never enumerate — except `compat`, which {@link resolveModelCompat}
+    // owns outright: the entry's block matches the entry's own api, so a
+    // repointed model must not carry it forward.
+    const { compat: _baseCompat, ...baseRest } = base ?? {}
+    const modelCompat = resolveModelCompat(provider, entry, request.compat, base, api)
     return {
-      // The installed entry lays the floor, and the fields below override it.
-      // Enumerating instead would silently drop every `Model` field this
-      // package does not model — reasoning-level spellings, compatibility
-      // quirks, model headers, and whatever a pi-ai upgrade adds next. Spread,
-      // never enumerate.
-      ...base,
+      ...baseRest,
       id: entry.id,
       name: entry.name ?? base?.name ?? entry.id,
       api,
@@ -891,7 +908,7 @@ export function resolveRouteModels(request: RouteCatalogRequest): RouteCatalog {
       contextWindow,
       maxTokens,
       ...resolveModelReasoning(provider, entry, base),
-      ...resolveModelCompat(provider, entry, request.compat, base, api),
+      ...(modelCompat === undefined ? {} : { compat: modelCompat }),
     }
   })
   // Per field, not per block: a route may default a switch its completions

@@ -18,6 +18,21 @@ export const THINKING_LEVELS: readonly ThinkingLevel[] = [
   'off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max',
 ]
 
+/** One wire protocol the API-override select can repoint a model to. */
+export type ApiProtocol = 'openai-completions' | 'openai-responses' | 'anthropic-messages' | 'google-generative-ai'
+
+/**
+ * Ordered wire protocols the API-override select offers, mirroring the serveable
+ * protocol table in `llm-pi-ai`'s provider construction. A stale entry here is
+ * rejected loudly at the settings write, which is what keeps this copy honest.
+ */
+export const API_PROTOCOLS: readonly ApiProtocol[] = [
+  'openai-completions',
+  'openai-responses',
+  'anthropic-messages',
+  'google-generative-ai',
+]
+
 /**
  * Convert selected levels to pi-ai's exact `reasoningEfforts` profile field.
  * @param levels - the levels selected in the configuration form.

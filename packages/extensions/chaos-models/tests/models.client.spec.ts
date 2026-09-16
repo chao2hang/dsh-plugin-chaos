@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { reasoningEffortsOf } from '../src/index.ts'
+import { API_PROTOCOLS, reasoningEffortsOf } from '../src/index.ts'
 import { CONTEXT_STOPS, OUTPUT_STOPS, capacitySliderBounds, formatCapacity, parseCapacity, saveModelCapabilities, snapCapacity } from '../src/client/ModelCapabilities.tsx'
 
 describe('model capability settings', () => {
@@ -10,6 +10,10 @@ describe('model capability settings', () => {
 
   it('uses pi-ai wire values and keeps off parameterless', () => {
     expect(reasoningEffortsOf(['off', 'high', 'max'])).toEqual({ off: null, high: 'high', max: 'max' })
+  })
+
+  it('offers the protocols llm-pi-ai serves, in table order', () => {
+    expect(API_PROTOCOLS).toEqual(['openai-completions', 'openai-responses', 'anthropic-messages', 'google-generative-ai'])
   })
 
   it('parses token capacities with optional K and M suffixes', () => {
@@ -29,8 +33,8 @@ describe('model capability settings', () => {
         value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
-      { contextWindow: '128K', maxTokens: '8K', multimodal: true, efforts: ['off', 'high'] },
-      { contextWindow: '0', maxTokens: '0', multimodal: false, efforts: [] },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: true, efforts: ['off', 'high'], api: '' },
+      { contextWindow: '0', maxTokens: '0', multimodal: false, efforts: [], api: '' },
     )).resolves.toBeNull()
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
       ops: [{
@@ -49,13 +53,75 @@ describe('model capability settings', () => {
         value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
-      { contextWindow: '256K', maxTokens: '8K', multimodal: true, efforts: ['high'] },
-      { contextWindow: '128K', maxTokens: '8K', multimodal: true, efforts: ['high'] },
+      { contextWindow: '256K', maxTokens: '8K', multimodal: true, efforts: ['high'], api: '' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: true, efforts: ['high'], api: '' },
     )
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
       ops: [{
         op: 'set', path: ['providers', 'openai', 'modelOverrides', 'gpt-x'],
         value: { contextWindow: 256_000 },
+      }],
+    }))
+  })
+
+  it('writes a selected protocol as part of a model override', async () => {
+    const mutate = vi.fn(() => Promise.resolve({ result: { ok: true } }))
+    await saveModelCapabilities(
+      { settings: { mutate } } as never,
+      {
+        ns: 'llm-pi-ai', revision: 3,
+        value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
+      },
+      { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: 'anthropic-messages' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' },
+    )
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      ops: [{
+        op: 'set', path: ['providers', 'openai', 'modelOverrides', 'gpt-x'],
+        value: { api: 'anthropic-messages' },
+      }],
+    }))
+  })
+
+  it('removes the api field when the override is cleared back to the provider default', async () => {
+    const mutate = vi.fn(() => Promise.resolve({ result: { ok: true } }))
+    await saveModelCapabilities(
+      { settings: { mutate } } as never,
+      {
+        ns: 'llm-pi-ai', revision: 3,
+        value: { providers: { openai: { modelOverrides: { 'gpt-x': { api: 'openai-completions', contextWindow: 4096 } } } } },
+        schema: {}, applies: 'live', secrets: [],
+      },
+      { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: 'openai-completions' },
+    )
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      ops: [{
+        op: 'set', path: ['providers', 'openai', 'modelOverrides', 'gpt-x'],
+        value: { contextWindow: 4096 },
+      }],
+    }))
+  })
+
+  it('leaves an untouched api override out of the write', async () => {
+    const mutate = vi.fn(() => Promise.resolve({ result: { ok: true } }))
+    await saveModelCapabilities(
+      { settings: { mutate } } as never,
+      {
+        ns: 'llm-pi-ai', revision: 3,
+        value: { providers: { openai: { modelOverrides: { 'gpt-x': { api: 'openai-responses' } } } } },
+        schema: {}, applies: 'live', secrets: [],
+      },
+      { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
+      { contextWindow: '256K', maxTokens: '8K', multimodal: false, efforts: [], api: 'openai-responses' },
+      { contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: 'openai-responses' },
+    )
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      ops: [{
+        op: 'set', path: ['providers', 'openai', 'modelOverrides', 'gpt-x'],
+        value: { contextWindow: 256_000, api: 'openai-responses' },
       }],
     }))
   })
@@ -69,8 +135,8 @@ describe('model capability settings', () => {
         value: { providers: { local: { models: [{ id: 'served', name: 'Served' }, { id: 'unchanged' }] } } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
-      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [] },
-      { contextWindow: '0', maxTokens: '0', multimodal: true, efforts: ['high'] },
+      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [], api: '' },
+      { contextWindow: '0', maxTokens: '0', multimodal: true, efforts: ['high'], api: '' },
     )
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
       ops: [{
@@ -79,6 +145,44 @@ describe('model capability settings', () => {
           { id: 'served', name: 'Served', contextWindow: 64_000, maxTokens: 4_000, input: ['text'], reasoningEfforts: false },
           { id: 'unchanged' },
         ],
+      }],
+    }))
+  })
+
+  it('sets and clears the api field on a models-array row', async () => {
+    const mutate = vi.fn(() => Promise.resolve({ result: { ok: true } }))
+    await saveModelCapabilities(
+      { settings: { mutate } } as never,
+      {
+        ns: 'llm-pi-ai', revision: 3,
+        value: { providers: { local: { models: [{ id: 'served', name: 'Served', api: 'openai-completions' }] } } }, schema: {}, applies: 'live', secrets: [],
+      },
+      { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
+      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [], api: 'anthropic-messages' },
+      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [], api: 'openai-completions' },
+    )
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      ops: [{
+        op: 'set', path: ['providers', 'local', 'models'],
+        value: [{ id: 'served', name: 'Served', api: 'anthropic-messages' }],
+      }],
+    }))
+
+    const clearing = vi.fn(() => Promise.resolve({ result: { ok: true } }))
+    await saveModelCapabilities(
+      { settings: { mutate: clearing } } as never,
+      {
+        ns: 'llm-pi-ai', revision: 3,
+        value: { providers: { local: { models: [{ id: 'served', name: 'Served', api: 'openai-completions', contextWindow: 8192 }] } } }, schema: {}, applies: 'live', secrets: [],
+      },
+      { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
+      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [], api: '' },
+      { contextWindow: '64K', maxTokens: '4K', multimodal: false, efforts: [], api: 'openai-completions' },
+    )
+    expect(clearing).toHaveBeenCalledWith(expect.objectContaining({
+      ops: [{
+        op: 'set', path: ['providers', 'local', 'models'],
+        value: [{ id: 'served', name: 'Served', contextWindow: 8192 }],
       }],
     }))
   })

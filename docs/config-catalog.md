@@ -1048,7 +1048,9 @@ export interface PiAiProviderProfile {
   /**
    * Wire protocol every model on this route speaks. Omission keeps each
    * installed catalog model's own protocol, which is why a catalog route needs
-   * no protocol at all; a route the catalog does not ship must name one.
+   * no protocol at all; a route the catalog does not ship must name one. A
+   * model entry's own `api` wins over this field, so one multi-protocol
+   * gateway keeps a single fixed endpoint while individual models repoint.
    */
   api?: string
   /** Endpoint for this route's models; defaults to the installed catalog's endpoint. */
@@ -1139,6 +1141,17 @@ export interface PiAiModelProfile {
   id: string
   /** Display name for selectors; defaults to the catalog name, then the id. */
   name?: string
+  /**
+   * Wire protocol this one model speaks. Absent keeps the layering below —
+   * the route's `api`, then the installed catalog entry's own, then the
+   * shipped models' shared protocol — which is why a model whose gateway
+   * serves one sibling through Chat Completions and another through Anthropic
+   * Messages declares the difference here instead of splitting the route.
+   * Winning over the route's `api` is the point: a multi-protocol gateway is
+   * configured with one fixed endpoint, and the per-model entry is where the
+   * exceptions live.
+   */
+  api?: string
   /** Maximum combined request and response context in tokens. */
   contextWindow?: number
   /**
@@ -1286,7 +1299,7 @@ export type PiAiThinkingFormat = NonNullable<OpenAICompletionsCompat['thinkingFo
 
 Depends on: `Api` (`@earendil-works/pi-ai`) · `CacheRetention` (`@earendil-works/pi-ai`) · `Model` (`@earendil-works/pi-ai`) · `ModelThinkingLevel` (`@earendil-works/pi-ai`) · `OpenAICompletionsCompat` (`@earendil-works/pi-ai`) · [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts) · `ThinkingBudgets` (`@earendil-works/pi-ai`) · `Transport` (`@earendil-works/pi-ai`)
 
-Source: [`packages/llm/llm-pi-ai/src/config.ts:216`](../packages/llm/llm-pi-ai/src/config.ts)
+Source: [`packages/llm/llm-pi-ai/src/config.ts:218`](../packages/llm/llm-pi-ai/src/config.ts)
 
 <a id="deepseek-aidsh-llm-replay"></a>
 
@@ -1615,7 +1628,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/extensions/chaos-auth/src/index.ts:37`](../packages/extensions/chaos-auth/src/index.ts)
+Source: [`packages/extensions/chaos-auth/src/index.ts:45`](../packages/extensions/chaos-auth/src/index.ts)
 
 <a id="deepseek-aidsh-plugin-chaos-janitor"></a>
 
@@ -3456,7 +3469,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
 - `@deepseek-ai/dsh-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
 - `@deepseek-ai/dsh-plugin-chaos` ([`packages/extensions/chaos-bundle/src/index.ts`](../packages/extensions/chaos-bundle/src/index.ts))
-- `@deepseek-ai/dsh-plugin-chaos-mobile` ([`packages/extensions/chaos-mobile/src/index.ts`](../packages/extensions/chaos-mobile/src/index.ts))
+- `@deepseek-ai/dsh-plugin-chaos-mobile` — requires `webServer` ([`packages/extensions/chaos-mobile/src/index.ts`](../packages/extensions/chaos-mobile/src/index.ts))
 - `@deepseek-ai/dsh-plugin-chaos-models` ([`packages/extensions/chaos-models/src/index.ts`](../packages/extensions/chaos-models/src/index.ts))
 - `@deepseek-ai/dsh-plugin-chaos-retry` ([`packages/extensions/chaos-retry/src/index.ts`](../packages/extensions/chaos-retry/src/index.ts))
 - `@deepseek-ai/dsh-plugin-chaos-think-tags` ([`packages/extensions/chaos-think-tags/src/index.ts`](../packages/extensions/chaos-think-tags/src/index.ts))

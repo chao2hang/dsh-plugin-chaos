@@ -93,7 +93,9 @@ export interface PiAiProviderProfile {
   /**
    * Wire protocol every model on this route speaks. Omission keeps each
    * installed catalog model's own protocol, which is why a catalog route needs
-   * no protocol at all; a route the catalog does not ship must name one.
+   * no protocol at all; a route the catalog does not ship must name one. A
+   * model entry's own `api` wins over this field, so one multi-protocol
+   * gateway keeps a single fixed endpoint while individual models repoint.
    */
   api?: string
   /** Endpoint for this route's models; defaults to the installed catalog's endpoint. */
@@ -290,6 +292,9 @@ const reasoningEfforts = z.dict(
 /** The fields a `models` entry and a `modelOverrides` value share; only the id's home differs. */
 const modelFields = {
   name: z.string(),
+  // Same union as the route's `api`: a model entry may repoint itself to any
+  // protocol the table serves, winning over the route-level field.
+  api: z.union(supportedProtocols()),
   contextWindow: z.number().step(1).min(1),
   maxTokens: z.number().step(1).min(1),
   // No explicit default, unlike the route's `defaultInput`: schemastery

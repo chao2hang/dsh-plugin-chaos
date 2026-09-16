@@ -1,5 +1,5 @@
 ---
-description: "浏览器对话框：为 llm-pi-ai 提供的非官方模型设置上下文窗口、输出 token、图片输入与思考等级能力，供用户选择或排查逐模型覆盖。"
+description: "浏览器对话框：为 llm-pi-ai 提供的非官方模型设置上下文窗口、输出 token、图片输入、思考等级与线协议能力，供用户选择或排查逐模型覆盖。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-plugin-chaos-models` 在模型选择器菜单背后添加「模型能力设置」对话框：它读取当前会话的模型，并向该模型的 `llm-pi-ai` 设置条目写入最小能力补丁。你可以设置上下文窗口、默认最大输出 token、图片输入支持，以及可选择的思考等级；`llm-pi-ai` 校验该写入并在下一次模型解析时应用，无需重启。只有被修改的字段会写入。官方适配器及不属于 `llm-pi-ai` 的提供方会被拒绝并给出提示，而不是接受不支持的覆盖。该对话框只存在于浏览器；宿主入口只携带思考等级词表，没有运行时行为。
+`dsh-plugin-chaos-models` 在模型选择器菜单背后添加「模型能力设置」对话框：它读取当前会话的模型，并向该模型的 `llm-pi-ai` 设置条目写入最小能力补丁。你可以设置上下文窗口、默认最大输出 token、图片输入支持、可选择的思考等级，以及该模型使用的线协议；`llm-pi-ai` 校验该写入并在下一次模型解析时应用，无需重启。只有被修改的字段会写入。官方适配器及不属于 `llm-pi-ai` 的提供方会被拒绝并给出提示，而不是接受不支持的覆盖。该对话框只存在于浏览器；宿主入口只携带思考等级与协议词表，没有运行时行为。
 
 ## 目录
 
@@ -36,6 +36,7 @@ kind: "package-reference"
 - **上下文窗口**——带单位精度的滑块，附 16K 到 2M 的常用档位；输入框接受 `128K` 或 `1M` 这类后缀。
 - **最大输出 token**——带单位精度的滑块，附 1K 到 128K 的常用档位。
 - **图片输入**——复选框，开启时写入 `input: ['text', 'image']`，关闭时写入 `input: ['text']`。
+- **API 覆盖**——选择该模型使用的线协议（`openai-completions`、`openai-responses`、`anthropic-messages`、`google-generative-ai`）；默认保留提供方的协议。固定 `baseURL` 之所以能服务线格式不一致的模型，靠的就是它。
 - **思考等级**——有序的 pi-ai 等级（`off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`）；未选择任何等级——或只选 `off`——时写入 `reasoningEfforts: false`，`off` 与其他等级同选时使用 pi-ai 的无参数 `off` 值，其他被选等级保留其现有线值。
 
 ### 保存如何应用
@@ -50,7 +51,7 @@ kind: "package-reference"
 <details>
 <summary>实现细节——点击展开</summary>
 
-本包是围绕一个设置 seam 的两个半边：一个导出思考等级词表的空宿主入口，和一个渲染对话框并经设置 remote 写入的浏览器半边。
+本包是围绕一个设置 seam 的两个半边：一个导出思考等级与线协议词表的空宿主入口，和一个渲染对话框并经设置 remote 写入的浏览器半边。
 
 ### 客户端接线
 
@@ -60,10 +61,10 @@ kind: "package-reference"
 
 | 文件 | 职责 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 宿主入口：思考等级词表与 `reasoningEffortsOf` 转换 |
+| [`src/index.ts`](src/index.ts) | 宿主入口：思考等级与线协议词表，以及 `reasoningEffortsOf` 转换 |
 | [`src/client/index.ts`](src/client/index.ts) | 浏览器入口：槽位注册、设置缓存、remote 适配器 |
 | [`src/client/ModelCapabilities.tsx`](src/client/ModelCapabilities.tsx) | 对话框组件、容量解析与吸附、设置写入 |
-| [`tests/models.client.spec.ts`](tests/models.client.spec.ts) | 等级转换、容量解析与三种保存操作形态 |
+| [`tests/models.client.spec.ts`](tests/models.client.spec.ts) | 等级转换、容量解析与各保存操作形态 |
 | — | 不发布运行时不变式伴生入口；浏览器半边拥有一个带键槽位注册，其对话框状态在每次打开时从缓存的设置快照与模型目录派生。 |
 
 </details>

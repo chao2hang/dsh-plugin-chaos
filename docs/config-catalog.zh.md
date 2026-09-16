@@ -1050,7 +1050,9 @@ export interface PiAiProviderProfile {
   /**
    * Wire protocol every model on this route speaks. Omission keeps each
    * installed catalog model's own protocol, which is why a catalog route needs
-   * no protocol at all; a route the catalog does not ship must name one.
+   * no protocol at all; a route the catalog does not ship must name one. A
+   * model entry's own `api` wins over this field, so one multi-protocol
+   * gateway keeps a single fixed endpoint while individual models repoint.
    */
   api?: string
   /** Endpoint for this route's models; defaults to the installed catalog's endpoint. */
@@ -1141,6 +1143,17 @@ export interface PiAiModelProfile {
   id: string
   /** Display name for selectors; defaults to the catalog name, then the id. */
   name?: string
+  /**
+   * Wire protocol this one model speaks. Absent keeps the layering below —
+   * the route's `api`, then the installed catalog entry's own, then the
+   * shipped models' shared protocol — which is why a model whose gateway
+   * serves one sibling through Chat Completions and another through Anthropic
+   * Messages declares the difference here instead of splitting the route.
+   * Winning over the route's `api` is the point: a multi-protocol gateway is
+   * configured with one fixed endpoint, and the per-model entry is where the
+   * exceptions live.
+   */
+  api?: string
   /** Maximum combined request and response context in tokens. */
   contextWindow?: number
   /**

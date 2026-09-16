@@ -3,13 +3,14 @@ import type { ChangeEvent, ReactNode } from 'react'
 import type { SettingsNamespaceView, SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { THINKING_LEVELS, type ThinkingLevel } from '../index.ts'
+import { API_PROTOCOLS, THINKING_LEVELS, type ThinkingLevel } from '../index.ts'
 import css from './ModelCapabilities.module.css'
 
 /** One pi-ai model row as represented by the existing settings document. */
 type ModelProfile = {
   id: string
   name?: string
+  api?: string
   contextWindow?: number
   maxTokens?: number
   input?: string[]
@@ -64,7 +65,8 @@ export interface ModelSettingsApi {
   }
 }
 
-type CapabilityDraft = { contextWindow: string; maxTokens: string; multimodal: boolean; efforts: readonly ThinkingLevel[] }
+/** One dialog draft: the capacities, modalities, efforts, and wire protocol override. An empty `api` means "follow the provider". */
+type CapabilityDraft = { contextWindow: string; maxTokens: string; multimodal: boolean; efforts: readonly ThinkingLevel[]; api: string }
 
 /** Parse capacities accepted by the existing models page. */
 export function parseCapacity(value: string): number | undefined {
@@ -112,6 +114,12 @@ function reasoningEffortsFor(
   return Object.fromEntries(levels.map(level => [level, level === 'off' ? null : previous[level] ?? level]))
 }
 
+/** Drop the model's `api` field so clearing the override removes the key instead of storing an undefined value. */
+function withoutApi<T extends { api?: string }>(value: T): Omit<T, 'api'> {
+  const { api: _cleared, ...rest } = value
+  return rest
+}
+
 /** Persist the model capability patch through pi-ai's own settings schema. */
 export async function saveModelCapabilities(
   api: ModelSettingsApi,
@@ -126,6 +134,8 @@ export async function saveModelCapabilities(
   if (maxTokens === undefined) return '最大输出 token 必须是正整数，例如 8K 或 64K。'
   const current = namespace.value as PiAiSettings
   const route = current.providers?.[choice.provider] ?? {}
+  const apiOverride = draft.api === '' ? undefined : draft.api
+  const clearsApi = draft.api !== initial.api && apiOverride === undefined
   const next = {
     ...(draft.contextWindow === initial.contextWindow ? {} : { contextWindow }),
     ...(draft.maxTokens === initial.maxTokens ? {} : { maxTokens }),
@@ -139,6 +149,7 @@ export async function saveModelCapabilities(
             ?? route.modelOverrides?.[choice.model]?.reasoningEfforts,
         ),
       }),
+    ...(draft.api === initial.api || apiOverride === undefined ? {} : { api: apiOverride }),
   }
   const models = route.models
   const modelIndex = models?.findIndex(model => model.id === choice.model) ?? -1
@@ -149,14 +160,20 @@ export async function saveModelCapabilities(
     ? {
       op: 'set' as const,
       path: ['providers', choice.provider, 'models'],
-      value: models.map((model, index) => index === modelIndex
-        ? { ...model, ...next, id: choice.model }
-        : model),
+      value: models.map((model, index) => {
+        if (index !== modelIndex) return model
+        const base = clearsApi ? withoutApi(model) : model
+        return { ...base, ...next, id: choice.model }
+      }),
     }
     : {
       op: 'set' as const,
       path: ['providers', choice.provider, 'modelOverrides', choice.model],
-      value: { ...route.modelOverrides?.[choice.model], ...next },
+      value: (() => {
+        const previous = route.modelOverrides?.[choice.model]
+        const base = clearsApi && previous !== undefined ? withoutApi(previous) : previous
+        return { ...base, ...next }
+      })(),
     }
   const response = await api.settings.mutate({
     ns: namespace.ns,
@@ -233,8 +250,8 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
   const [writable, setWritable] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'saving'>('idle')
   const [error, setError] = useState<string | null>(null)
-  const [draft, setDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [] })
-  const [initialDraft, setInitialDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [] })
+  const [draft, setDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' })
+  const [initialDraft, setInitialDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' })
 
   // The model selector owns the visible entry point. This listener lets its menu
   // open the capability dialog without leaving a second composer-row button.
@@ -290,6 +307,7 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
         maxTokens: String(profile?.maxTokens ?? 8_192),
         multimodal: profile?.input?.includes('image') === true,
         efforts: levels,
+        api: profile?.api ?? '',
       }
       setDraft(nextDraft)
       setInitialDraft(nextDraft)
@@ -357,6 +375,20 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
               <CapacitySlider label="上下文窗口" value={Number(draft.contextWindow)} min={1} max={2_000_000} stops={CONTEXT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('contextWindow', CONTEXT_STOPS, event) }} onChoose={(value) => { chooseCapacity('contextWindow', value) }} />
               <CapacitySlider label="最大输出 token" value={Number(draft.maxTokens)} min={1} max={128_000} stops={OUTPUT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('maxTokens', OUTPUT_STOPS, event) }} onChoose={(value) => { chooseCapacity('maxTokens', value) }} />
               <label className={css.checkbox} data-model-capabilities-multimodal><input type="checkbox" checked={draft.multimodal} onChange={(event: ChangeEvent<HTMLInputElement>) => { setDraft({ ...draft, multimodal: event.target.checked }) }} disabled={!writable || status === 'saving'} /><span>支持多模态图片输入</span></label>
+              <fieldset className={css.apiField} data-model-capabilities-api disabled={!writable || status === 'saving'}>
+                <legend>API 覆盖</legend>
+                <select
+                  className={css.apiSelect}
+                  value={draft.api}
+                  aria-label="API 覆盖"
+                  disabled={!writable || status === 'saving'}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) => { setDraft({ ...draft, api: event.target.value }) }}
+                >
+                  <option value="">默认 / none</option>
+                  {API_PROTOCOLS.map(protocol => <option key={protocol} value={protocol}>{protocol}</option>)}
+                </select>
+                <p className={css.precision}>默认 / none 沿用提供方设置的协议；覆盖后仅此模型改走所选协议。</p>
+              </fieldset>
               <fieldset data-model-capabilities-efforts disabled={!writable || status === 'saving'}><legend>思考等级</legend><div className={css.levels} data-model-capabilities-effort-list>{THINKING_LEVELS.map(level => <label key={level} className={css.checkbox} data-model-capabilities-effort><input type="checkbox" checked={draft.efforts.includes(level)} onChange={() => { toggleEffort(level) }} /><span>{level}</span></label>)}</div></fieldset>
               {error !== null && <p className={css.error} role="status">{error}</p>}
               {!writable && <p className={css.notice}>此部署的设置文档为只读。</p>}

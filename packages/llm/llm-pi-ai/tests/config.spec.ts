@@ -76,6 +76,18 @@ describe('modality schema boundary', () => {
   })
 })
 
+describe('per-model protocol schema boundary', () => {
+  it('accepts a protocol the adapter serves, on the entry and the route', () => {
+    expect(configWith({ api: 'anthropic-messages' })).not.toThrow()
+    expect(routeWith({ api: 'anthropic-messages' })).not.toThrow()
+  })
+
+  it('rejects a protocol outside the served table, on the entry and the route', () => {
+    expect(configWith({ api: 'quantum-telepathy' })).toThrow(/expected/)
+    expect(routeWith({ api: 'quantum-telepathy' })).toThrow(/expected/)
+  })
+})
+
 describe('request image policy bounds', () => {
   it.each([
     ['requestImagePixelBudget', 0, /requestImagePixelBudget must be a positive safe integer/],

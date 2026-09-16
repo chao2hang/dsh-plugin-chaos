@@ -1,5 +1,5 @@
 ---
-description: "Browser dialog for setting context-window, output-token, image-input, and reasoning-level capabilities on non-official llm-pi-ai models, for users choosing or debugging per-model overrides."
+description: "Browser dialog for setting context-window, output-token, image-input, reasoning-level, and wire-protocol capabilities on non-official llm-pi-ai models, for users choosing or debugging per-model overrides."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos-models` adds a Model capabilities dialog behind the model selector's menu: it reads the session's active model and writes a minimal capability patch to that model's `llm-pi-ai` settings entry. You can set the context window, the default maximum output tokens, image-input support, and the selectable reasoning levels; `llm-pi-ai` validates the write and applies it at its next model resolution, with no restart. Only the fields you changed are written. Official adapters and providers outside `llm-pi-ai` are refused with a notice instead of an unsupported override. The dialog is browser-only; the host entry carries the reasoning-level vocabulary and no runtime behavior.
+`dsh-plugin-chaos-models` adds a Model capabilities dialog behind the model selector's menu: it reads the session's active model and writes a minimal capability patch to that model's `llm-pi-ai` settings entry. You can set the context window, the default maximum output tokens, image-input support, the selectable reasoning levels, and the wire protocol the model speaks; `llm-pi-ai` validates the write and applies it at its next model resolution, with no restart. Only the fields you changed are written. Official adapters and providers outside `llm-pi-ai` are refused with a notice instead of an unsupported override. The dialog is browser-only; the host entry carries the reasoning-level and protocol vocabulary and no runtime behavior.
 
 ## Table of Contents
 
@@ -36,6 +36,7 @@ Choose this dialog when a non-official model is served through `llm-pi-ai` and i
 - **Context window** — a slider with unit precision plus common stops from 16K to 2M; the field accepts suffixes like `128K` or `1M`.
 - **Maximum output tokens** — a slider with unit precision plus common stops from 1K to 128K.
 - **Image input** — a checkbox that writes `input: ['text', 'image']` when on and `input: ['text']` when off.
+- **API override** — a select naming the wire protocol this one model speaks (`openai-completions`, `openai-responses`, `anthropic-messages`, `google-generative-ai`); the default keeps the provider's protocol. This is what lets one fixed `baseURL` serve models that disagree about the wire format.
 - **Reasoning levels** — the ordered pi-ai levels (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`); an empty selection — or `off` alone — writes `reasoningEfforts: false`, `off` selected alongside other levels writes pi-ai's parameterless `off` value, and every other selected level keeps its existing wire value.
 
 ### How saves are applied
@@ -60,10 +61,10 @@ The browser half registers one keyed `conversation.input.right` slot (`chaos-mod
 
 | File | Role |
 |---|---|
-| [`src/index.ts`](src/index.ts) | Host entry: reasoning-level vocabulary and the `reasoningEffortsOf` conversion |
+| [`src/index.ts`](src/index.ts) | Host entry: reasoning-level and wire-protocol vocabulary plus the `reasoningEffortsOf` conversion |
 | [`src/client/index.ts`](src/client/index.ts) | Browser entry: slot registration, settings cache, remote adapter |
 | [`src/client/ModelCapabilities.tsx`](src/client/ModelCapabilities.tsx) | Dialog component, capacity parsing and snapping, the settings write |
-| [`tests/models.client.spec.ts`](tests/models.client.spec.ts) | Level conversion, capacity parsing, and the three save-operation shapes |
+| [`tests/models.client.spec.ts`](tests/models.client.spec.ts) | Level conversion, capacity parsing, and the save-operation shapes |
 | — | No runtime invariant companion is published; the browser half owns one keyed slot registration whose dialog state derives from the cached settings snapshot and the model catalog on each open. |
 
 </details>

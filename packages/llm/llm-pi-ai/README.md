@@ -74,7 +74,7 @@ Each profile may set a `retryPolicy`; omission uses normal mode with five retrie
 |---|---|---|
 | `apiKeyEnv` | absent | Credential reference resolved per request; omission defers to pi-ai ambient discovery |
 | `displayName` | provider name | Label shown by selector surfaces |
-| `api` | catalog protocol | Wire protocol; only needed for routes the catalog does not supply |
+| `api` | catalog protocol | Wire protocol for the route's models; only needed for routes the catalog does not supply. A model entry's own `api` wins over this field |
 | `baseURL` | catalog endpoint | Endpoint of every model on the route |
 | `models` | installed catalog | Replaces the route's catalog wholesale; each entry defaults from the installed model |
 | `modelOverrides` | none | Reshapes individual installed-catalog models without replacing the rest |
@@ -95,6 +95,8 @@ A provider pi-ai ships a login for can be signed into through the harness author
 ### Resolve the model catalog
 
 A profile's `models` list replaces the route's installed catalog rather than extending it; each entry defaults its unset fields from the installed model of the same id, so narrowing a route to two models, correcting one capacity, or adding a model newer than the installed catalog are one-line edits. `modelOverrides` reshapes individual installed-catalog models without that cost — correct one model, keep the other thirty-seven — and is refused when set beside a `models` list, on a hand-declared route, or naming a model the catalog does not describe, because a silently unchanged model would be a typo someone hunts for later.
+
+Each entry may also name its own `api`, which wins over the route's field: a multi-protocol gateway is configured once with its fixed `baseURL`, and the per-model entry is where the exceptions live. A route whose models end up speaking one protocol is built single-protocol; a route whose models disagree is built with a per-model dispatch that serves every protocol the adapter table carries and delegates a model that kept its installed catalog protocol to the catalog provider. A model the catalog does not describe must name its protocol at the entry or the route, whichever layer knows the endpoint.
 
 ### Run with reasoning and wire compatibility
 
