@@ -4,7 +4,7 @@
 
 [English](2026-09-05-bootstrap-typert-before-host-tsc.md) | 中文
 
-> [TSC 优先构建笔记](../process/2026-06-17-ts-build-config.zh.md)拥有编译器归属；[API Remotes 构建笔记](../process/2026-08-08-api-remotes-generated-contract-build.zh.md)定义了宿主先生成客户端契约的顺序。本笔记覆盖该顺序在干净树上的缺口，以及守护它的子路径别名规则。
+> [TSC 优先构建笔记](../process/2026-06-17-ts-build-config.zh.md)拥有编译器归属；[API Remotes 构建笔记](../process/2026-08-08-api-remotes-generated-contract-build.md)定义了宿主先生成客户端契约的顺序。本笔记覆盖该顺序在干净树上的缺口，以及守护它的子路径别名规则。
 
 ## 问题
 

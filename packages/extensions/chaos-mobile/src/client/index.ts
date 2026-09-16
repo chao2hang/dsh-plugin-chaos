@@ -70,8 +70,8 @@ export function apply(ctx: ClientContext): void {
     priority: -1,
     inject: (): MobileOverlayInjected => ({
       toggleSidebar: () => { ctx.layout.toggleSidebar() },
-      openDetails: () => { ctx.layout.openDetails() },
-      closeDetails: () => { ctx.layout.closeDetails() },
+      openDetails: () => { ctx.layout.openDetails?.() },
+      closeDetails: () => { ctx.layout.closeDetails?.() },
       newSession: () => { workspaceNavigation.startSession() },
     }),
   }, MobileOverlay))

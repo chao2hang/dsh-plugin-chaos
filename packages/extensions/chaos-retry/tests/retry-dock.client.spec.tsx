@@ -53,6 +53,8 @@ function dockProps(fixture: AbnormalEndInput, inputActions: ReturnType<typeof ma
     useSessions: (() => undefined) as never,
     useWorkspaces: (() => undefined) as never,
     useTrajectory: (() => undefined) as never,
+    usePanelInfo: (() => undefined) as never,
+    useResource: (() => undefined) as never,
   }
 }
 

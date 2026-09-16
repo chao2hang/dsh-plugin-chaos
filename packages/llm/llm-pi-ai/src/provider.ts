@@ -26,7 +26,7 @@ import { anthropicMessagesApi } from '@earendil-works/pi-ai/api/anthropic-messag
 import { googleGenerativeAIApi } from '@earendil-works/pi-ai/api/google-generative-ai.lazy'
 import { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
 import { openAIResponsesApi } from '@earendil-works/pi-ai/api/openai-responses.lazy'
-import { catalogModels, catalogProvider } from './catalog.ts'
+import { catalogModels, catalogProvider, PiAiCatalogError } from './catalog.ts'
 
 /**
  * Wire protocols a configured route may name, mapped to pi-ai's lazily loaded
@@ -204,7 +204,7 @@ function multiProtocolProvider(spec: ProviderSpec, catalog: Provider | undefined
     // table's keys at the settings boundary, and model resolution refuses a
     // protocol-less model outright.
     if (catalog === undefined) {
-      throw new Error(
+      throw new PiAiCatalogError(
         `llm-pi-ai: provider "${spec.provider}" names api "${model.api}", which this build cannot serve;`
         + ` supported protocols are ${supportedProtocols().join(', ')}`,
       )
