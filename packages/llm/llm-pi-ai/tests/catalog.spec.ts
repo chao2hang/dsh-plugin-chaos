@@ -1250,7 +1250,7 @@ describe('per-model wire protocol override', () => {
         models: [{ id: 'standard' }, { id: 'repointed', api: 'anthropic-messages' }],
       },
     })
-    const models = resolved.get('acme-gateway')?.piProvider.getModels() ?? []
+    const models = resolved.get('acme-gateway')?.piProvider?.getModels() ?? []
     expect(models.find(model => model.id === 'standard')?.api).toBe('openai-completions')
     expect(models.find(model => model.id === 'repointed')?.api).toBe('anthropic-messages')
   })
@@ -1268,7 +1268,7 @@ describe('per-model wire protocol override', () => {
         ],
       },
     })
-    const models = resolved.get('acme-gateway')?.piProvider.getModels() ?? []
+    const models = resolved.get('acme-gateway')?.piProvider?.getModels() ?? []
     expect(models.map(model => model.api)).toEqual([
       'openai-completions',
       'anthropic-messages',
@@ -1284,7 +1284,7 @@ describe('per-model wire protocol override', () => {
     const resolved = resolveProfiles({
       deepseek: { modelOverrides: { [catalogModel.id]: { api: 'anthropic-messages' } } },
     })
-    const models = resolved.get('deepseek')?.piProvider.getModels() ?? []
+    const models = resolved.get('deepseek')?.piProvider?.getModels() ?? []
     const repointed = models.find(model => model.id === catalogModel.id)
     const kept = models.find(model => model.id === sibling.id)
     expect(repointed?.api).toBe('anthropic-messages')
