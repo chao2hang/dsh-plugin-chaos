@@ -201,14 +201,15 @@ function reasoningInfo(
   }
 }
 
-/** Merge deployment headers while removing case-insensitive attribution collisions. */
+/**
+ * Merge the Harness attribution defaults with the deployment's profile
+ * headers. Attribution supplies only the names the profile does not configure
+ * (case-insensitive, per Fetch): an explicitly configured `user-agent` is the
+ * deployment's own client identity and replaces the harness default, while
+ * unconfigured attribution names still apply.
+ */
 function requestHeaders(headers: Readonly<Record<string, string>> | undefined): Record<string, string> {
-  const attribution = attributionHeaders()
-  const reserved = new Set(Object.keys(attribution).map(name => name.toLowerCase()))
-  return {
-    ...Object.fromEntries(Object.entries(headers ?? {}).filter(([name]) => !reserved.has(name.toLowerCase()))),
-    ...attribution,
-  }
+  return { ...attributionHeaders(), ...headers }
 }
 
 /**
@@ -383,8 +384,9 @@ export class PiAiAdapter extends LlmAdapter {
         ...options.maxTokens === undefined ? {} : { maxTokens: options.maxTokens },
         ...options.sessionId === undefined ? {} : { sessionId: String(options.sessionId) },
         signal: watchdog.signal,
-        // Profile headers are deployment-owned; attribution names are
-        // Harness-owned and therefore win collisions.
+        // Profile headers are deployment-owned and win same-named attribution
+        // defaults (an explicit `user-agent` is the deployment's client
+        // identity); attribution fills only the names the profile omits.
         headers: requestHeaders(profile.headers),
       })
       const iterator = toStreamChunks(events, model.contextWindow, options.signal, model.id)[Symbol.asyncIterator]()

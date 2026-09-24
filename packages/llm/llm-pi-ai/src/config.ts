@@ -149,7 +149,14 @@ export interface PiAiProviderProfile {
    * to answer instead.
    */
   defaultInput?: PiAiModality[]
-  /** Provider request headers, validated against Fetch when the profile resolves; Harness attribution wins reserved names. */
+  /**
+   * Provider request headers, validated against Fetch when the profile
+   * resolves. Headers win same-named Harness attribution defaults, so an
+   * explicitly configured `user-agent` sends the deployment's own client
+   * identity; omitted names keep the Harness default. Endpoint and credential
+   * headers (`accept`, `anthropic-version`, `x-api-key`, `authorization`) are
+   * request-owned and never overridable here.
+   */
   headers?: Record<string, string>
   /** Provider-neutral pi-ai reasoning level. */
   reasoning?: ModelThinkingLevel

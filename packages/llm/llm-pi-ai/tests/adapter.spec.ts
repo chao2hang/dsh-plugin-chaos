@@ -113,14 +113,24 @@ describe('PiAiAdapter provider routing', () => {
     expect(second.requests).toHaveLength(0)
   })
 
-  it('merges profile headers with Harness attribution winning', async () => {
+  it('sends the Harness default user-agent when the profile configures none', async () => {
     const server = await mockServer([{ events: textEvents }])
     const ctx = await harness(server.url, {
-      headers: { 'x-company': 'private', 'User-Agent': 'wrong' },
+      headers: { 'x-company': 'private' },
     })
     await assemble(ctx, { model: 'deepseek-v4-flash', messages: [] })
     expect(server.headers[0]?.['x-company']).toBe('private')
     expect(server.headers[0]?.['user-agent']).toBe(userAgent())
+  })
+
+  it('sends an explicitly configured profile user-agent as the client identity', async () => {
+    const server = await mockServer([{ events: textEvents }])
+    const ctx = await harness(server.url, {
+      headers: { 'x-company': 'private', 'User-Agent': 'claude-cli/9.9.9 (external, cli)' },
+    })
+    await assemble(ctx, { model: 'deepseek-v4-flash', messages: [] })
+    expect(server.headers[0]?.['x-company']).toBe('private')
+    expect(server.headers[0]?.['user-agent']).toBe('claude-cli/9.9.9 (external, cli)')
   })
 
   it('forwards common stream options and profile reasoning', async () => {

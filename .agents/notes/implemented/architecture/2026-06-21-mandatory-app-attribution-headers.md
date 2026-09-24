@@ -34,13 +34,14 @@ The provider-neutral identity is owned by `dsh-llm` (`packages/llm/llm/src/attri
 - version: read from the owning package's manifest via `createRequire`, never a hand-copied constant
 - app URL: `https://github.com/deepseek-ai/deepseek-harness` - the repository home
 
-The default is mandatory and non-empty. White-label deployments pass their own `AppIdentity` to `attributionHeaders(identity)` - the override hook is the function parameter, with no deployment config plumbing until a consumer needs it - and omission falls back to the harness default rather than suppressing attribution. There is no per-request API for the model, user prompt, session id, cwd, user email, API key owner, or local machine identity to influence these fields.
+The default is mandatory and non-empty. White-label deployments pass their own `AppIdentity` to `attributionHeaders(identity)` - the override hook is the function parameter, and the pi-ai adapter carries the same hook into configuration: a route profile's `headers` may name any attribution header explicitly, and that configured value replaces the attribution default on that route while the default still fills omitted names (route config is the only accepted config plumbing). Omission falls back to the harness default rather than suppressing attribution. There is no per-request API for the model, user prompt, session id, cwd, user email, API key owner, or local machine identity to influence these fields.
 
 Wire mapping (`attributionHeaders`; header names lowercase in code - HTTP field names are case-insensitive on the wire):
 
 | Target | Mapping |
 |---|---|
 | All HTTP-based adapters | `User-Agent: {product}/{version} (+{url})` - the parenthesized `+url` comment stays within RFC 9110's conservative product/comment syntax. |
+| Route-configured profile `headers` (llm-pi-ai) | A profile value of the same name (case-insensitive) replaces the attribution default on that route; omitted attribution names still apply. Endpoint and credential headers (`accept`, `anthropic-version`, `x-api-key`, `authorization`) stay request-owned. |
 | Direct DeepSeek endpoint | `User-Agent` for app attribution; `x-deepseek-harness-user-id` and conditional `x-deepseek-harness-session-id` are separate request identity under the DeepSeek-specific decision. Do not send OpenRouter-only headers unless DeepSeek documents an equivalent contract. |
 | OpenRouter endpoints | `User-Agent` only. This decision excludes `HTTP-Referer`, `X-OpenRouter-Title`, `X-Title`, and `X-OpenRouter-Categories`. |
 | Future providers | `User-Agent` only unless a later provider-specific Agent Note accepts additional headers. Do not reuse `HTTP-Referer` by analogy. |
@@ -54,7 +55,7 @@ The landed contract:
 - `dsh-llm` documents the mandatory `User-Agent` attribution contract for `LlmAdapter` authors (`LlmAdapter` JSDoc, package README, and the adapter-contract section of `docs/subsystems/llm-streaming.md`).
 - A shared helper (`attributionHeaders` / `userAgent`) constructs the app identity and the standard `User-Agent` value from package metadata, so adapters do not hand-copy version constants.
 - `dsh-llm-deepseek` sends the shared `User-Agent` on every request and its mock-server suite asserts the exact value.
-- `dsh-llm-pi-ai` sends the same `User-Agent` through pi-ai's `StreamOptions.headers` hook and its mock-server suite asserts the exact value.
+- `dsh-llm-pi-ai` sends the same `User-Agent` through pi-ai's `StreamOptions.headers` hook and its mock-server suite asserts the exact value; its profile-`headers` suites additionally assert that an explicitly configured route `user-agent` reaches the wire verbatim while a route without one keeps the harness default.
 - No adapter sends OpenRouter-specific attribution headers (`HTTP-Referer`, `X-OpenRouter-Title`, `X-Title`, `X-OpenRouter-Categories`) as part of this decision.
 - No app-attribution field carries secrets, local paths, session ids, prompt text, model output, user email, or per-user stable identifiers.
 - The adapter READMEs state the `User-Agent` attribution policy and explicitly avoid documenting OpenRouter app attribution as implemented behavior.

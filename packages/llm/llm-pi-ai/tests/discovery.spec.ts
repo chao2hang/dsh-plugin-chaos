@@ -289,6 +289,32 @@ describe('draft-provider model discovery', () => {
       .toEqual(['private-tenant', 'private-tenant', undefined, undefined])
   })
 
+  it('lets a stored route user-agent replace the attribution default in discovery', async () => {
+    const server = await listingServer({ body: JSON.stringify({ data: [{ id: 'm' }] }) })
+    const ctx = new Context()
+    await ctx.plugin(LlmRuntime)
+    process.env['IDENTITY_GATEWAY_KEY'] = 'stored-key'
+    touchedEnv.push('IDENTITY_GATEWAY_KEY')
+    await ctx.plugin(LlmPiAi, {
+      providers: {
+        'identity-gateway': {
+          apiKeyEnv: 'IDENTITY_GATEWAY_KEY',
+          api: 'openai-completions',
+          baseURL: server.url,
+          headers: { 'User-Agent': 'claude-cli/9.9.9 (external, cli)' },
+          models: [{ id: 'identity-large' }],
+        },
+        'plain-gateway': { apiKeyEnv: 'IDENTITY_GATEWAY_KEY', api: 'openai-completions', baseURL: server.url, models: [{ id: 'plain-large' }] },
+      },
+    })
+
+    await ctx.llm.discoverModels('llm-pi-ai', { provider: 'identity-gateway', baseURL: server.url })
+    await ctx.llm.discoverModels('llm-pi-ai', { provider: 'plain-gateway', baseURL: server.url })
+
+    expect(server.headers.map(headers => headers['user-agent']))
+      .toEqual(['claude-cli/9.9.9 (external, cli)', userAgent()])
+  })
+
   it('leaves a catalog route\'s credential unresolved, having never reached the network', async () => {
     // The catalog answers before any endpoint is asked, so a route whose
     // profile names a credential that is not set must still answer rather than

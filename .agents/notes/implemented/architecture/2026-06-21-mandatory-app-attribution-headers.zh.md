@@ -34,13 +34,14 @@ OpenRouter 应用归属刻意未实现。`HTTP-Referer`、`X-OpenRouter-Title`�
 - 版本：通过 `createRequire` 从所属包的 manifest（元数据清单）读取，绝不手动复制常量
 - 应用 URL：`https://github.com/deepseek-ai/deepseek-harness`——仓库主页
 
-默认值是强制的且非空。白标部署通过向 `attributionHeaders(identity)` 传入自己的 `AppIdentity` 来覆盖——覆盖钩子就是函数参数，在有消费方需要之前不做部署配置管道——省略时回退到 harness 默认值而非抑制归属。没有逐请求 API 允许模型、用户提示词、会话 id、cwd、用户邮箱、API key 所有者或本地机器身份影响这些字段。
+默认值是强制的且非空。白标部署通过向 `attributionHeaders(identity)` 传入自己的 `AppIdentity` 来覆盖——覆盖钩子就是函数参数，pi-ai 适配器把同一钩子带进了配置：路由 profile 的 `headers` 可以显式命名任何归属头部，该配置值在所属路由上替换归属默认值，默认值仍填充省略的名字（路由配置是唯一接受的配置管道）。省略时回退到 harness 默认值而非抑制归属。没有逐请求 API 允许模型、用户提示词、会话 id、cwd、用户邮箱、API key 所有者或本地机器身份影响这些字段。
 
 线路映射（`attributionHeaders`；代码中头部名称小写——HTTP 字段名在线路上不区分大小写）：
 
 | 目标 | 映射 |
 |---|---|
 | 所有基于 HTTP 的适配器 | `User-Agent: {product}/{version} (+{url})`——括号中的 `+url` 注释符合 RFC 9110 保守的 product/comment 语法。 |
+| 路由配置的 profile `headers`（llm-pi-ai） | 同名 profile 值（大小写不敏感）在所属路由上替换归属默认值；省略的归属名仍照常应用。端点与凭据头部（`accept`、`anthropic-version`、`x-api-key`、`authorization`）保持请求自有。 |
 | 直连 DeepSeek 端点 | `User-Agent` 用于应用归属；`x-deepseek-harness-user-id` 与条件性的 `x-deepseek-harness-session-id` 由 DeepSeek 特有决策作为独立请求身份管理。除非 DeepSeek 文档化了等效约定，否则不发送 OpenRouter 特有头部。 |
 | OpenRouter 端点 | 仅发送 `User-Agent`。本决策排除 `HTTP-Referer`、`X-OpenRouter-Title`、`X-Title` 与 `X-OpenRouter-Categories`。 |
 | 未来提供方 | 仅 `User-Agent`，除非后续提供方特有的 Agent Note 接受额外头部。不要类比复用 `HTTP-Referer`。 |
@@ -54,7 +55,7 @@ OpenRouter 应用归属刻意未实现。`HTTP-Referer`、`X-OpenRouter-Title`�
 - `dsh-llm` 为 `LlmAdapter` 作者文档化了强制的 `User-Agent` 归属约定（`LlmAdapter` JSDoc、包 README，以及 `docs/subsystems/llm-streaming.md` 的适配器约定（adapter contract）章节）。
 - 共享辅助函数（`attributionHeaders` / `userAgent`）从包元数据构建应用身份和标准 `User-Agent` 值，适配器无需手动复制版本常量。
 - `dsh-llm-deepseek` 在每个请求上发送共享的 `User-Agent`，其 mock 服务器套件断言精确值。
-- `dsh-llm-pi-ai` 通过 pi-ai 的 `StreamOptions.headers` 钩子发送相同的 `User-Agent`，其 mock 服务器套件断言精确值。
+- `dsh-llm-pi-ai` 通过 pi-ai 的 `StreamOptions.headers` 钩子发送相同的 `User-Agent`，其 mock 服务器套件断言精确值；其 profile-`headers` 套件还断言显式配置的路由 `user-agent` 原样到达线路，而未配置的路由保留 harness 默认值。
 - 本决策下没有适配器发送 OpenRouter 特有的归属头部（`HTTP-Referer`、`X-OpenRouter-Title`、`X-Title`、`X-OpenRouter-Categories`）。
 - 没有应用归属字段携带机密、本地路径、会话 id、提示词文本、模型输出、用户邮箱或逐用户的稳定标识符。
 - 适配器 README 声明了 `User-Agent` 归属策略，并明确避免将 OpenRouter 应用归属记录为已实现的行为。

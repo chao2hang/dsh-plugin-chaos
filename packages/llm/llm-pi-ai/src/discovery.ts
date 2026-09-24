@@ -314,7 +314,14 @@ export async function discoverModels(
   const apiKey = supplied === undefined ? undefined : usableProbeKey(supplied)
   let response: Response
   try {
+    // Stored profile headers are deployment-owned and win same-named
+    // attribution defaults (an explicit `user-agent` is the deployment's
+    // client identity); endpoint and credential headers stay request-owned
+    // and always win over both.
     const headers = new Headers(stored?.headers === undefined ? undefined : Object.entries(stored.headers))
+    for (const [name, value] of Object.entries(attributionHeaders())) {
+      if (!headers.has(name)) headers.set(name, value)
+    }
     headers.set('accept', 'application/json')
     if (api === 'anthropic-messages') {
       headers.set('anthropic-version', ANTHROPIC_VERSION)
@@ -322,7 +329,6 @@ export async function discoverModels(
     } else if (apiKey !== undefined) {
       headers.set('authorization', `Bearer ${apiKey}`)
     }
-    for (const [name, value] of Object.entries(attributionHeaders())) headers.set(name, value)
     response = await fetch(url, {
       method: 'GET',
       headers,

@@ -1,7 +1,12 @@
 /* The model menu owns the entry point; this root only keeps the dialog mounted. */
 .root { display: contents; }
-.dialog { width: min(520px, 100%); }
-.fields { display: flex; flex-direction: column; gap: 18px; }
+/* Wide enough for two capacity columns; never taller than the viewport. */
+.dialog { width: min(720px, 100%); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); }
+/* The primitive pins header and footer outside this region; it scrolls. */
+.dialogContent { min-height: 0; overflow-y: auto; }
+.fields { display: flex; flex-direction: column; gap: 14px; }
+/* Two capacity editors share one row on wide dialogs and stack narrowly. */
+.capacityRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .notice { color: var(--dsw-alias-label-tertiary); font-size: 12px; line-height: 18px; }
 .fields > label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 20px; }
 .capacity { display: flex; flex-direction: column; gap: 7px; padding: 12px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); }
@@ -25,6 +30,12 @@
 .apiSelect { width: 100%; min-height: 36px; padding: 0 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; line-height: 20px; cursor: pointer; }
 .apiSelect:focus { outline: none; border-color: var(--dsw-alias-brand-primary); }
 .apiSelect:disabled { cursor: default; opacity: .5; }
+/* The identity field keeps one editable value beside its version lookup. */
+.identityRow { display: flex; gap: 8px; }
+.identityInput { flex: 1 1 auto; min-width: 0; min-height: 36px; padding: 0 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; line-height: 20px; }
+.identityInput:focus { outline: none; border-color: var(--dsw-alias-brand-primary); }
+.identityLookup { flex: none; min-height: 36px; padding: 0 12px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; line-height: 20px; cursor: pointer; }
+.identityLookup:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
 .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
 .levels .checkbox { min-width: 0; min-height: 40px; padding: 0 12px; }
 .error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }

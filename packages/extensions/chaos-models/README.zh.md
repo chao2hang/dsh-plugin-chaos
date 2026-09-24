@@ -37,11 +37,12 @@ kind: "package-reference"
 - **最大输出 token**——带单位精度的滑块，附 1K 到 128K 的常用档位。
 - **图片输入**——复选框，开启时写入 `input: ['text', 'image']`，关闭时写入 `input: ['text']`。
 - **API 覆盖**——选择该模型使用的线协议（`openai-completions`、`openai-responses`、`anthropic-messages`、`google-generative-ai`）；默认保留提供方的协议。固定 `baseURL` 之所以能服务线格式不一致的模型，靠的就是它。
+- **客户端标识 (User-Agent)**——作用于提供方级，对路由上所有模型生效：预设（Claude Code、OpenAI Codex CLI、Qwen Code）、自由输入，或经 npm registry 实时查询用最新版本填充预设模板。显式值会在所属路由上替换 Harness 归属 `user-agent`（`llm-pi-ai` 将 profile 头合并于归属默认值之上）；清空即恢复默认，Codex 预设同时管理网关要求与 Codex UA 成对出现的 `originator` 头。
 - **思考等级**——有序的 pi-ai 等级（`off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`）；未选择任何等级——或只选 `off`——时写入 `reasoningEfforts: false`，`off` 与其他等级同选时使用 pi-ai 的无参数 `off` 值，其他被选等级保留其现有线值。
 
 ### 保存如何应用
 
-保存路由 `models` 列表中已声明的模型会编辑该条目（写入以一条编辑后的行替换整个数组）；保存目录模型则写入 `modelOverrides.<model-id>` 条目。写入是对 `llm-pi-ai` 命名空间的一次设置路径变更，携带快照的 revision；只有被修改的字段离开对话框。`llm-pi-ai` 校验该 section 并在下一次模型解析时应用——适配器目录无需重启即重建。对话框的设置快照在每个客户端只预热一次，并在每次设置提交后失效，因此重新打开无需再次等待完整设置读取。
+保存路由 `models` 列表中已声明的模型会编辑该条目（写入以一条编辑后的行替换整个数组）；保存目录模型则写入 `modelOverrides.<model-id>` 条目；身份标识变更写入路由完整的 `headers` 对象（清空后 unset）。写入是对 `llm-pi-ai` 命名空间的一次设置路径变更，携带快照的 revision；只有被修改的字段离开对话框。`llm-pi-ai` 校验该 section 并在下一次模型解析时应用——适配器目录无需重启即重建。对话框的设置快照在每个客户端只预热一次，并在每次设置提交后失效，因此重新打开无需再次等待完整设置读取。
 
 -----
 

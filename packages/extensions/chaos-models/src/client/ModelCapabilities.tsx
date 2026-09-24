@@ -4,6 +4,10 @@ import type { SettingsNamespaceView, SettingsPathOpView } from '@deepseek-ai/dsh
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { API_PROTOCOLS, THINKING_LEVELS, type ThinkingLevel } from '../index.ts'
+import {
+  CLIENT_IDENTITY_PRESETS, CUSTOM_IDENTITY_ID, detectClientPlatform, fillIdentityTemplate,
+  latestNpmVersion, mergedIdentityHeaders, presetIdOfValue,
+} from './clientIdentity.ts'
 import css from './ModelCapabilities.module.css'
 
 /** One pi-ai model row as represented by the existing settings document. */
@@ -19,7 +23,11 @@ type ModelProfile = {
 
 /** Settings document shape the extension reads and patches. */
 interface PiAiSettings {
-  providers?: Record<string, { models?: ModelProfile[]; modelOverrides?: Record<string, Omit<ModelProfile, 'id'>> }>
+  providers?: Record<string, {
+    models?: ModelProfile[]
+    modelOverrides?: Record<string, Omit<ModelProfile, 'id'>>
+    headers?: Record<string, string>
+  }>
 }
 
 /** A model row selected in the composer's directory. */
@@ -120,6 +128,17 @@ function withoutApi<T extends { api?: string }>(value: T): Omit<T, 'api'> {
   return rest
 }
 
+/**
+ * One identity write the dialog commits beside the capability patch: the
+ * complete next `headers` object of the provider route, and the one it was
+ * read from. Both are whole objects because the settings path mutation
+ * addresses the map, not its entries.
+ */
+export interface IdentityPatch {
+  readonly next: Readonly<Record<string, string>>
+  readonly previous: Readonly<Record<string, string>>
+}
+
 /** Persist the model capability patch through pi-ai's own settings schema. */
 export async function saveModelCapabilities(
   api: ModelSettingsApi,
@@ -127,6 +146,7 @@ export async function saveModelCapabilities(
   choice: ModelChoice,
   draft: CapabilityDraft,
   initial: CapabilityDraft,
+  identity?: IdentityPatch,
 ): Promise<string | null> {
   const contextWindow = parseCapacity(draft.contextWindow)
   const maxTokens = parseCapacity(draft.maxTokens)
@@ -175,10 +195,19 @@ export async function saveModelCapabilities(
         return { ...base, ...next }
       })(),
     }
+  // The identity headers are provider-scoped and written only when the dialog
+  // changed them; an emptied map removes the stored object entirely.
+  const ops: SettingsPathOpView[] = []
+  if (identity !== undefined && JSON.stringify(identity.next) !== JSON.stringify(identity.previous)) {
+    ops.push(Object.keys(identity.next).length === 0
+      ? { op: 'unset', path: ['providers', choice.provider, 'headers'] }
+      : { op: 'set', path: ['providers', choice.provider, 'headers'], value: identity.next })
+  }
+  ops.push(op)
   const response = await api.settings.mutate({
     ns: namespace.ns,
     expectedRevision: namespace.revision,
-    ops: [op],
+    ops,
   })
   return response.result.ok ? null : response.result.error.message
 }
@@ -252,6 +281,14 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
   const [error, setError] = useState<string | null>(null)
   const [draft, setDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' })
   const [initialDraft, setInitialDraft] = useState<CapabilityDraft>({ contextWindow: '128K', maxTokens: '8K', multimodal: false, efforts: [], api: '' })
+  // The client identity is provider-scoped: the stored route headers are the
+  // save-time baseline, while the draft carries the select choice, the
+  // editable `user-agent` value, and the preset extras to write beside it.
+  const [initialIdentityHeaders, setInitialIdentityHeaders] = useState<Record<string, string>>({})
+  const [identityPreset, setIdentityPreset] = useState('')
+  const [identityValue, setIdentityValue] = useState('')
+  const [identityExtra, setIdentityExtra] = useState<Record<string, string>>({})
+  const [identityLookupBusy, setIdentityLookupBusy] = useState(false)
 
   // The model selector owns the visible entry point. This listener lets its menu
   // open the capability dialog without leaving a second composer-row button.
@@ -311,6 +348,16 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
       }
       setDraft(nextDraft)
       setInitialDraft(nextDraft)
+      // Seed the identity draft from the route's stored headers, re-selecting
+      // the preset a saved value came from; its extras re-arm for clearing.
+      const storedHeaders = piAiSettings.providers?.[nextChoice.provider]?.headers ?? {}
+      const storedAgent = storedHeaders['user-agent'] ?? ''
+      const storedPresetId = presetIdOfValue(CLIENT_IDENTITY_PRESETS, storedAgent)
+      const storedPreset = CLIENT_IDENTITY_PRESETS.find(preset => preset.id === storedPresetId)
+      setInitialIdentityHeaders(storedHeaders)
+      setIdentityPreset(storedPresetId)
+      setIdentityValue(storedAgent)
+      setIdentityExtra(storedPreset?.extraHeaders === undefined ? {} : { ...storedPreset.extraHeaders })
       setStatus('idle')
     }).catch((reason: unknown) => {
       if (!active) return
@@ -335,11 +382,26 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
         : [...current.efforts, level],
     }))
   }
+  /**
+   * The identity patch the save commits: the dialog-managed keys merged over
+   * the route's stored headers. Clearing the value also clears the preset
+   * extras, so a removed identity leaves no orphaned originator behind.
+   */
+  const identityPatchOf = (): IdentityPatch => {
+    const value = identityValue.trim()
+    const managed: Record<string, string | undefined> = { 'user-agent': value.length === 0 ? undefined : value }
+    if (value.length === 0) {
+      for (const name of Object.keys(identityExtra)) managed[name] = undefined
+    } else {
+      for (const [name, extra] of Object.entries(identityExtra)) managed[name] = extra
+    }
+    return { next: mergedIdentityHeaders(initialIdentityHeaders, managed), previous: initialIdentityHeaders }
+  }
   const save = (): void => {
     if (choice === null || namespace === null) return
     setStatus('saving')
     setError(null)
-    void saveModelCapabilities(api, namespace, choice, draft, initialDraft).then((failure) => {
+    void saveModelCapabilities(api, namespace, choice, draft, initialDraft, identityPatchOf()).then((failure) => {
       if (failure !== null) setError(failure)
       else {
         invalidateSettings()
@@ -351,6 +413,33 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
       setStatus('idle')
     })
   }
+  /** Query the selected preset's npm package and fill the template in place. */
+  const lookupLatestVersion = (): void => {
+    const preset = CLIENT_IDENTITY_PRESETS.find(candidate => candidate.id === identityPreset)
+    if (preset === undefined) return
+    setIdentityLookupBusy(true)
+    void latestNpmVersion(preset.npmPackage).then((version) => {
+      setIdentityValue(fillIdentityTemplate(preset.template, version, detectClientPlatform(navigator.userAgent)))
+      setIdentityExtra(preset.extraHeaders === undefined ? {} : { ...preset.extraHeaders })
+      setIdentityLookupBusy(false)
+    }, (reason: unknown) => {
+      setError(reason instanceof Error ? reason.message : String(reason))
+      setIdentityLookupBusy(false)
+    })
+  }
+  const selectedPreset = CLIENT_IDENTITY_PRESETS.find(preset => preset.id === identityPreset)
+  const identityHint = useMemo(() => {
+    const route = choice === null ? '当前提供方' : choice.providerName
+    if (selectedPreset !== undefined) {
+      const extra = selectedPreset.extraHeaders === undefined
+        ? ''
+        : `，并附带 ${Object.entries(selectedPreset.extraHeaders).map(([name, value]) => `${name}: ${value}`).join('、')} 头`
+      return `将发送 ${selectedPreset.template}${extra}，对提供方 ${route} 的全部模型生效；版本号经「查询最新版本」实时填入。`
+    }
+    return identityValue.trim().length === 0
+      ? `未自定义时发送 deepseek-harness/<版本>，对提供方 ${route} 的全部模型生效。`
+      : `自定义值对提供方 ${route} 的全部模型生效。`
+  }, [selectedPreset, identityValue, choice])
   const title = useMemo(() => choice === null ? '模型能力设置' : `${choice.modelName} 的能力设置`, [choice])
 
   return (
@@ -362,6 +451,7 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
         closeLabel="关闭模型能力设置"
         description={choice === null ? '' : `${choice.providerName} · ${choice.model}`}
         className={css.dialog as string}
+        contentClassName={css.dialogContent as string}
         footer={(
           <div className={css.actions} data-model-capabilities-actions>
             <Button variant="outline" onClick={() => { setOpen(false) }}>取消</Button>
@@ -372,8 +462,10 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
         <div className={css.fields} data-model-capabilities-fields>
           {status === 'loading' ? <p className={css.notice}>正在读取模型配置…</p> : (
             <>
-              <CapacitySlider label="上下文窗口" value={Number(draft.contextWindow)} min={1} max={2_000_000} stops={CONTEXT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('contextWindow', CONTEXT_STOPS, event) }} onChoose={(value) => { chooseCapacity('contextWindow', value) }} />
-              <CapacitySlider label="最大输出 token" value={Number(draft.maxTokens)} min={1} max={128_000} stops={OUTPUT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('maxTokens', OUTPUT_STOPS, event) }} onChoose={(value) => { chooseCapacity('maxTokens', value) }} />
+              <div className={css.capacityRow}>
+                <CapacitySlider label="上下文窗口" value={Number(draft.contextWindow)} min={1} max={2_000_000} stops={CONTEXT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('contextWindow', CONTEXT_STOPS, event) }} onChoose={(value) => { chooseCapacity('contextWindow', value) }} />
+                <CapacitySlider label="最大输出 token" value={Number(draft.maxTokens)} min={1} max={128_000} stops={OUTPUT_STOPS} disabled={!writable || status === 'saving'} onChange={(event) => { updateCapacity('maxTokens', OUTPUT_STOPS, event) }} onChoose={(value) => { chooseCapacity('maxTokens', value) }} />
+              </div>
               <label className={css.checkbox} data-model-capabilities-multimodal><input type="checkbox" checked={draft.multimodal} onChange={(event: ChangeEvent<HTMLInputElement>) => { setDraft({ ...draft, multimodal: event.target.checked }) }} disabled={!writable || status === 'saving'} /><span>支持多模态图片输入</span></label>
               <fieldset className={css.apiField} data-model-capabilities-api disabled={!writable || status === 'saving'}>
                 <legend>API 覆盖</legend>
@@ -388,6 +480,50 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
                   {API_PROTOCOLS.map(protocol => <option key={protocol} value={protocol}>{protocol}</option>)}
                 </select>
                 <p className={css.precision}>默认 / none 沿用提供方设置的协议；覆盖后仅此模型改走所选协议。</p>
+              </fieldset>
+              <fieldset className={css.apiField} data-model-capabilities-identity disabled={!writable || status === 'saving'}>
+                <legend>客户端标识 (User-Agent)</legend>
+                <select
+                  className={css.apiSelect}
+                  value={identityPreset}
+                  aria-label="客户端标识预设"
+                  disabled={!writable || status === 'saving' || identityLookupBusy}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+                    setIdentityPreset(event.target.value)
+                    // Choosing the default is a clearing action; a preset only
+                    // arms the template until 查询最新版本 fills it.
+                    if (event.target.value === '') {
+                      setIdentityValue('')
+                      setIdentityExtra({})
+                    }
+                  }}
+                >
+                  <option value="">DeepSeek Harness（默认）</option>
+                  {CLIENT_IDENTITY_PRESETS.map(preset => <option key={preset.id} value={preset.id}>{preset.label}</option>)}
+                  <option value={CUSTOM_IDENTITY_ID}>自定义…</option>
+                </select>
+                <div className={css.identityRow}>
+                  <input
+                    className={css.identityInput}
+                    type="text"
+                    value={identityValue}
+                    placeholder="默认 deepseek-harness/<版本>"
+                    aria-label="User-Agent"
+                    disabled={!writable || status === 'saving' || identityLookupBusy}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                      setIdentityValue(event.target.value)
+                      setIdentityPreset(presetIdOfValue(CLIENT_IDENTITY_PRESETS, event.target.value))
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className={css.identityLookup}
+                    disabled={!writable || status === 'saving' || identityLookupBusy
+                      || identityPreset === '' || identityPreset === CUSTOM_IDENTITY_ID}
+                    onClick={lookupLatestVersion}
+                  >{identityLookupBusy ? '查询中…' : '查询最新版本'}</button>
+                </div>
+                <p className={css.precision}>{identityHint}</p>
               </fieldset>
               <fieldset data-model-capabilities-efforts disabled={!writable || status === 'saving'}><legend>思考等级</legend><div className={css.levels} data-model-capabilities-effort-list>{THINKING_LEVELS.map(level => <label key={level} className={css.checkbox} data-model-capabilities-effort><input type="checkbox" checked={draft.efforts.includes(level)} onChange={() => { toggleEffort(level) }} /><span>{level}</span></label>)}</div></fieldset>
               {error !== null && <p className={css.error} role="status">{error}</p>}
