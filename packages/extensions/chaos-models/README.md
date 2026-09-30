@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos-models` adds a Model capabilities dialog behind the model selector's menu: it reads the session's active model and writes a minimal capability patch to that model's `llm-pi-ai` settings entry. You can set the context window, the default maximum output tokens, image-input support, the selectable reasoning levels, and the wire protocol the model speaks; `llm-pi-ai` validates the write and applies it at its next model resolution, with no restart. Only the fields you changed are written. Official adapters and providers outside `llm-pi-ai` are refused with a notice instead of an unsupported override. The dialog is browser-only; the host entry carries the reasoning-level and protocol vocabulary and no runtime behavior.
+`dsh-plugin-chaos-models` adds a Model capabilities dialog behind the model selector's menu: it reads the session's active model and writes a minimal capability patch to that model's `llm-pi-ai` settings entry. You can set the context window, the default maximum output tokens, image-input support, the selectable reasoning levels, and the wire protocol the model speaks; `llm-pi-ai` validates the write and applies it at its next model resolution, with no restart. Only changed fields are written. Official adapters and providers outside `llm-pi-ai` are refused with a notice. The dialog is browser-only; the host entry carries only the vocabulary.
 
 ## Table of Contents
 

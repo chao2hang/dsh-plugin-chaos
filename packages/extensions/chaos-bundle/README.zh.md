@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-`dsh-plugin-chaos` 是一个可安装的 profile 层，为基于 web-app bundle 的 profile 添加可选的 Chaos 插件：think-tag 呈现与归档会话保留清扫器。web-app bundle 已经提供六个核心 Chaos 行——chaos-mobile、chaos-auth、chaos-restart、chaos-models、chaos-retry 与 process-control——因此本层只添加 web-app 层未随附的内容。用 `dsh plugin --profile <name> add` 安装，或把它列入 profile 的 `dsh.profile.bundles`；移除它只去掉这两个可选行，不影响核心集。本包是一份 patch 文档加一组依赖声明，不是运行时代码：每条行为都属于行所指向的插件。
+`dsh-plugin-chaos` 是一个可安装的 profile 层，为基于 web-app bundle 的 profile 添加可选的 Chaos 插件：think-tag 呈现与归档会话保留清扫器。web-app bundle 已经提供六个核心 Chaos 行——chaos-mobile、chaos-auth、chaos-restart、chaos-models、chaos-retry 与 process-control——因此本层只添加 web-app 层未随附的内容。用 `dsh plugin --profile <name> add` 安装，或列入 profile 的 `dsh.profile.bundles`；移除它只去掉这两个可选行。本包是一份 patch 文档加一组依赖声明；每条行为都属于行所指向的插件。
 
 ## 目录
 

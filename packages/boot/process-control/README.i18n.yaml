@@ -1,6 +1,58 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/boot/process-control/README.md
-README.md: 0a54b540a62d8a0708ff9fcc446b217998de2148
-README.zh.md: 7f61ea36d7c779982eb024d1355e0bdb0d34f695
+/:
+  en: 4fbc891379d881d5
+  zh: 43dcba58ba907078
+/deepseek-ai-dsh-process-control:
+  en: 94bee7ae792503d7
+  zh: 91f2b4aad252f4df
+/deepseek-ai-dsh-process-control/summary:
+  en: fffab89229a6e1c6
+  zh: 30f0ab90cb1ba7d9
+/deepseek-ai-dsh-process-control/table-of-contents:
+  en: 76368b6b1da79c80
+  zh: 52384aee991ac542
+/deepseek-ai-dsh-process-control/use-this-package:
+  en: af70958af7c993de
+  zh: 1fe0641a26f99c0d
+/deepseek-ai-dsh-process-control/use-this-package/when-to-choose-it:
+  en: 7591f698cf09e560
+  zh: 92a9c0635b9ef703
+/deepseek-ai-dsh-process-control/use-this-package/service-surface:
+  en: fbc805a2c302ee9b
+  zh: 98e4e11de0bf5613
+/deepseek-ai-dsh-process-control/use-this-package/mounting:
+  en: aeb16e66d2371938
+  zh: 9bc2cd395b8e0ef9
+/deepseek-ai-dsh-process-control/understand-the-implementation:
+  en: 2d28fb90fdb77c2b
+  zh: 70c80950a60c8501
+/deepseek-ai-dsh-process-control/understand-the-implementation/design-concept:
+  en: 14fdf3db6c8f2f99
+  zh: e7aec8b0f18f34b9
+/deepseek-ai-dsh-process-control/understand-the-implementation/source-map:
+  en: 173dd43f05027651
+  zh: 20d5c9307a4f7d42
+/deepseek-ai-dsh-process-control/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-process-control/model-experience/restart-capability:
+  en: 6c3e7315a25bde98
+  zh: 18167ff3ef35927b
+/deepseek-ai-dsh-process-control/model-experience/restart-capability/what-the-model-sees:
+  en: f0692d64873eb81e
+  zh: f250766c37cc9b1b
+/deepseek-ai-dsh-process-control/model-experience/restart-capability/token-effect:
+  en: 8ba4ab3f26613516
+  zh: 45ce608e3618f28e
+/deepseek-ai-dsh-process-control/model-experience/restart-capability/kv-cache-effect:
+  en: 0f649e4788557573
+  zh: 39e48816c1bdf081
+/deepseek-ai-dsh-process-control/known-limitations-and-deferred-work:
+  en: 6ef38d8a75e5c25e
+  zh: 5e2ea8ea0df4822a
+/deepseek-ai-dsh-process-control/known-limitations-and-deferred-work/dev-note:
+  en: ac852223d5ade69a
+  zh: f6d29a4c1712ae5d

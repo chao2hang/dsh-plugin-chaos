@@ -38,7 +38,7 @@ function start(args: string[], config: Config = {}): { ctx: Context; exits: numb
   internals.stderr = capture
   provideCmdline(ctx, {
     args,
-    exit: async (code) => { exits.push(code) },
+    exit: (code) => { exits.push(code) },
     ready: { onReady: (listener) => { listener(); return () => {} } },
   })
   apply(ctx, config)

@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos` is an installable profile layer that adds the optional Chaos plugins to a profile built on the web-app bundle: think-tag presentation and the archived-session retention sweeper. The web-app bundle already contributes the six core Chaos rows — chaos-mobile, chaos-auth, chaos-restart, chaos-models, chaos-retry, and process-control — so this layer adds only what the web-app layer does not ship. Install it with `dsh plugin --profile <name> add` or name it in a profile's `dsh.profile.bundles` list; removing it drops the two optional rows without touching the core set. The package is a patch document plus a dependency declaration, not runtime code: every behavior belongs to the plugin each row names.
+`dsh-plugin-chaos` is an installable profile layer that adds the optional Chaos plugins to a profile built on the web-app bundle: think-tag presentation and the archived-session retention sweeper. The web-app bundle already contributes the six core Chaos rows — chaos-mobile, chaos-auth, chaos-restart, chaos-models, chaos-retry, and process-control — so this layer adds only what the web-app layer does not ship. Install it with `dsh plugin --profile <name> add` or a profile's `dsh.profile.bundles` list; removing it drops only the two optional rows. The package is a patch document plus a dependency declaration; every behavior belongs to the plugin each row names.
 
 ## Table of Contents
 

@@ -46,11 +46,12 @@ export function chatSnapshotOf(
       source: (key: string) => ({
         getSnapshot: () => byKey.get(key),
         subscribe: () => () => {},
-      }) as never,
+      }),
+      turnDataSource: () => ({ getSnapshot: () => [], subscribe: () => () => {} }),
       processSource: () => ({
         getSnapshot: () => undefined,
         subscribe: () => () => {},
-      }) as never,
+      }),
       values: () => nodes,
     },
     locations: { getTurn: () => [], getStep: () => [] },
@@ -88,7 +89,6 @@ export function makeSession(over: SessionFixtureOverrides = {}): AbnormalEndInpu
   return {
     session: {
       sessionId: SID,
-      queue: [],
       pendingSubmissions: [],
       running: false,
       subagent: null,

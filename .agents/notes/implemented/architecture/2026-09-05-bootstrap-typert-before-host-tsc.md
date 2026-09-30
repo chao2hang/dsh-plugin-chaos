@@ -4,7 +4,7 @@ Status: implemented
 
 English | [中文](2026-09-05-bootstrap-typert-before-host-tsc.zh.md)
 
-> The [TSC-first build note](../process/2026-06-17-ts-build-config.md) owns the compiler ownership; the [API Remotes build note](../process/2026-08-08-api-remotes-generated-contract-build.md) defines the Host-generates-Client-contracts order. This note covers the clean-tree gap in that order and the subpath alias rule that guards it.
+> The [TSC-first build note](../process/2026-06-17-ts-build-config.md) owns the compiler ownership; the [API Remotes build note](../../archived/process/2026-08-08-api-remotes-generated-contract-build.md) defines the Host-generates-Client-contracts order. This note covers the clean-tree gap in that order and the subpath alias rule that guards it.
 
 ## Problem
 

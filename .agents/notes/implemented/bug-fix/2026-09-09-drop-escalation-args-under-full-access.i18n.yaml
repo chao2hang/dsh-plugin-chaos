@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-09-drop-escalation-args-under-full-access.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-09-drop-escalation-args-under-full-access.md
-2026-09-09-drop-escalation-args-under-full-access.md: ff0d036575467790fa7abf3153ca2c59f9607a8c
-2026-09-09-drop-escalation-args-under-full-access.zh.md: 3befa0405c415e8da2730a684b4ceea84bb93b35
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use:
+  en: 237dc939554d2b64
+  zh: f3d70e35e93551b9
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use/problem:
+  en: 51e9ab550d33c460
+  zh: 0792e3573505261a
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use/decision:
+  en: 1d5e002b63ea6ad7
+  zh: 9ac897f8c3486e19
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use/alternatives-considered:
+  en: 3167bf6d7c722c6c
+  zh: b3f3cc9375ccecf5
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use/consequences:
+  en: c5f71f69bbc6bded
+  zh: c77e76f7a28c58c4
+/agent-note-drop-escalation-arguments-a-danger-full-access-call-cannot-use/testing:
+  en: 4cceb826aa00ef6d
+  zh: 9abb9a227c5e1d06

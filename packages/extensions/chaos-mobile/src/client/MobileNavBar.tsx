@@ -8,7 +8,7 @@
  * Design reference: iOS HIG — Navigation Bars.
  */
 import type { ReactNode } from 'react'
-import { IconChevronLeftOutline14, IconEllipsisOutline16, IconPanelLeftOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronLeftOutlineMedium, IconEllipsisOutlineMedium, IconPanelLeftOutlineMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './MobileNavBar.module.css'
 
 /** Panel actions injected by the layout-aware overlay registration. */
@@ -55,7 +55,7 @@ export function MobileNavBar({
           onClick={toggleSidebar}
           aria-label="Open menu"
         >
-          <IconPanelLeftOutline16 size={20} />
+          <IconPanelLeftOutlineMedium size={20} />
         </button>
         {/* Back — visible while details is open (CSS drives visibility). */}
         <button
@@ -66,7 +66,7 @@ export function MobileNavBar({
           onClick={settingsOpen ? closeSettings : closeDetails}
           aria-label="Back"
         >
-          <IconChevronLeftOutline14 size={20} />
+          <IconChevronLeftOutlineMedium size={20} />
         </button>
       </div>
       <div className={css.title} aria-live="polite">
@@ -82,7 +82,7 @@ export function MobileNavBar({
           aria-label="More"
           onClick={openOverflow}
         >
-          <IconEllipsisOutline16 size={20} />
+          <IconEllipsisOutlineMedium size={20} />
         </button>
       </div>
     </nav>

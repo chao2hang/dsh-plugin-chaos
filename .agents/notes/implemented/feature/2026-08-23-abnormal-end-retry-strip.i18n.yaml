@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-abnormal-end-retry-strip.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-23-abnormal-end-retry-strip.md
-2026-08-23-abnormal-end-retry-strip.md: 3e12f94e43f6311e9fed5e48daff2f42952edf15
-2026-08-23-abnormal-end-retry-strip.zh.md: a875949c87d5b2fca262039421fca3a2c73fdbb7
+/agent-note-abnormal-end-retry-strip:
+  en: 86febf09935fcb5d
+  zh: 1fa1879c2bd2529d
+/agent-note-abnormal-end-retry-strip/problem:
+  en: c554b9872a6a0132
+  zh: aec1ccc335d3c5b7
+/agent-note-abnormal-end-retry-strip/decision:
+  en: 86fc2b8083252050
+  zh: c0acfa74955fc082
+/agent-note-abnormal-end-retry-strip/alternatives-considered:
+  en: f0c59cbdf402d777
+  zh: 28347303cfba6b3e
+/agent-note-abnormal-end-retry-strip/consequences:
+  en: cccf506a06606129
+  zh: 4ea75104d4b61f6d

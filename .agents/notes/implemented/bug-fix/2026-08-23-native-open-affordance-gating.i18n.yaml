@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-native-open-affordance-gating.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-native-open-affordance-gating.md
-2026-08-23-native-open-affordance-gating.md: 9a4e71e57edbf2f92fbb14c9829558d5fb5400a6
-2026-08-23-native-open-affordance-gating.zh.md: 4c663cf429f3f1e57ac0d295f008cefd20b910ca
+/agent-note-gate-every-native-path-open-affordance-on-the-reported-capability:
+  en: b2a41ff134474cd8
+  zh: 46029857ea085b9b
+/agent-note-gate-every-native-path-open-affordance-on-the-reported-capability/problem:
+  en: 441b7a51874d6044
+  zh: f183beae966779dd
+/agent-note-gate-every-native-path-open-affordance-on-the-reported-capability/decision:
+  en: 06a95bb048fe9244
+  zh: bb9f55a9531c2186
+/agent-note-gate-every-native-path-open-affordance-on-the-reported-capability/alternatives-considered:
+  en: 50232edfa0ca7254
+  zh: c09e4ebb75695be8
+/agent-note-gate-every-native-path-open-affordance-on-the-reported-capability/consequences:
+  en: 30aa6971758ef453
+  zh: 293a1538ea144c01

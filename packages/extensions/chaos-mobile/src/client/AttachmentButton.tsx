@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ComposerAttachment } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import { IconPaperclipOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconPaperclipOutlineMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './AttachmentButton.module.css'
 
 interface DraftConversation {
@@ -87,7 +87,7 @@ export function AttachmentButton(
   }
 
   return (
-    <div ref={root} className={css.root}>
+    <div ref={root} className={css.root} data-composer-attach>
       <input ref={camera} className={css.picker} type="file" accept="image/*" capture="environment" onChange={selectFiles} />
       <input ref={images} className={css.picker} type="file" accept="image/*" multiple onChange={selectFiles} />
       {/* Document-only accept: without it several mobile browsers route a bare
@@ -102,7 +102,7 @@ export function AttachmentButton(
         aria-expanded={menuOpen}
         onClick={() => { setMenuOpen(open => !open) }}
       >
-        <IconPaperclipOutline16 size={18} />
+        <IconPaperclipOutlineMedium size={18} />
       </button>
       {menuOpen && (
         <div className={css.menu} role="menu" aria-label="选择附件类型">

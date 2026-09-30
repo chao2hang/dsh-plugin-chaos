@@ -261,7 +261,7 @@ export function buildProvider(spec: ProviderSpec): Provider {
     const api = spec.api ?? apis[0]
     const factory = api === undefined ? undefined : PROTOCOLS[api]
     if (factory === undefined) {
-      throw new Error(
+      throw new PiAiCatalogError(
         `llm-pi-ai: provider "${spec.provider}" names api "${spec.api}", which this build cannot serve;`
         + ` supported protocols are ${supportedProtocols().join(', ')}`,
       )

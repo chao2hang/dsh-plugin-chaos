@@ -206,6 +206,9 @@ describe('SurfacePresentation — sheet mode', () => {
   it('resetSurfacePresentation restores inline behavior after sheet mode', () => {
     setSurfacePresentation(sheetPresentation)
     resetSurfacePresentation()
+    // Earlier specs in this file click, so keyboard modality must be restored
+    // before a focus-triggered tooltip may show.
+    fireEvent.keyDown(window, { key: 'Tab' })
     render(
       <Tooltip label="hint" side="bottom">
         <button>anchor</button>

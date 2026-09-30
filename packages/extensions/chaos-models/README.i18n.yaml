@@ -1,6 +1,52 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-models/README.md
-README.md: 989cc22fd45992645150d359da339d2572ed79d5
-README.zh.md: c553eae2367367c5d155e9bd079c84f9a9b640cd
+/:
+  en: 8478e2c2262dc74a
+  zh: c2920986228e3041
+/deepseek-ai-dsh-plugin-chaos-models:
+  en: 2e15e678f0475023
+  zh: dc2bc362e4b6229e
+/deepseek-ai-dsh-plugin-chaos-models/summary:
+  en: 325d83c5feb2fc62
+  zh: 915f9667621847de
+/deepseek-ai-dsh-plugin-chaos-models/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-models/use-this-package:
+  en: fbbab8d133879b05
+  zh: 938a5e9cd2e5ccee
+/deepseek-ai-dsh-plugin-chaos-models/use-this-package/when-to-choose-it:
+  en: 4814cfaabcb8a92a
+  zh: 9f6e9d480540f82f
+/deepseek-ai-dsh-plugin-chaos-models/use-this-package/what-the-dialog-configures:
+  en: 06badaca8a80f280
+  zh: 5f8f972ad7e69cb2
+/deepseek-ai-dsh-plugin-chaos-models/use-this-package/how-saves-are-applied:
+  en: 755ba71e3fff952a
+  zh: 2b47cffb3823c2ec
+/deepseek-ai-dsh-plugin-chaos-models/understand-the-implementation:
+  en: cb6b4c7496cfd6ab
+  zh: 7313a5b829e36485
+/deepseek-ai-dsh-plugin-chaos-models/understand-the-implementation/client-wiring:
+  en: ff4838804690305e
+  zh: d10442ab0605df1e
+/deepseek-ai-dsh-plugin-chaos-models/understand-the-implementation/source-map:
+  en: 67381975f2e01627
+  zh: cdee1f33d66585db
+/deepseek-ai-dsh-plugin-chaos-models/further-exploration:
+  en: d8cafc3077abcb61
+  zh: 0c77ec879685f102
+/deepseek-ai-dsh-plugin-chaos-models/model-experience:
+  en: e0c62ed8f796773b
+  zh: 8294808766ad2be5
+/deepseek-ai-dsh-plugin-chaos-models/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/deepseek-ai-dsh-plugin-chaos-models/known-limitations-and-deferred-work:
+  en: ac7b55f35d19f07c
+  zh: 8b4dcb167eb78b90
+/deepseek-ai-dsh-plugin-chaos-models/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

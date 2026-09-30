@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { IconRefreshOutline16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconRefreshOutlineMedium, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { AbnormalEnd } from './retry-model.ts'
 import { detectAbnormalEnd, lastUserTextOf } from './retry-model.ts'
@@ -45,12 +45,12 @@ export function RetryStrip({ end, onRetry, t }: RetryStripProps) {
   return (
     <div className={css.dock} data-chaos-retry>
       <div className={css.bar} title={end.message}>
-        <span className={css.glyph}><IconRefreshOutline16 size={14} /></span>
+        <span className={css.glyph}><IconRefreshOutlineMedium size={14} /></span>
         <span className={css.label}>{t(END_LABELS[end.kind])}</span>
         {end.message !== undefined && <span className={css.detail}>{end.message}</span>}
         <Tooltip label={t('action.retryAria')} side="bottom" delayMs={500}>
           <button type="button" className={css.retryBtn} onClick={onRetry} aria-label={t('action.retryAria')}>
-            <IconRefreshOutline16 size={14} />
+            <IconRefreshOutlineMedium size={14} />
             <span>{t('action.retry')}</span>
           </button>
         </Tooltip>
@@ -71,10 +71,10 @@ export type RetryDockProps = PropsRuntime<'conversation.input.dock'> & PropsLoca
  * @returns the strip, or null when the conversation did not end abnormally or
  * carries no resentable user text.
  */
-export function RetryDock({ useSession, useChat, useSessionPendingInteraction, sessionId, inputActions, t }: RetryDockProps) {
+export function RetryDock({ useSession, useChat, useSessionStatus, sessionId, inputActions, t }: RetryDockProps) {
   const session = useSession(snapshot => snapshot)
   const chat = useChat(snapshot => snapshot)
-  const pendingInteraction = useSessionPendingInteraction(snapshot => snapshot.get(sessionId))
+  const pendingInteraction = useSessionStatus(snapshot => snapshot.get(sessionId)?.pendingInteraction)
   const end = detectAbnormalEnd({ session, chat, pendingInteraction })
   // Memo keeps the resendable text stable while unrelated snapshot fields
   // change, so the callback below does not churn.

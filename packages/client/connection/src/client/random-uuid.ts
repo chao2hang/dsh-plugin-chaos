@@ -6,7 +6,7 @@
  */
 export function randomUuid(): string {
   const cryptoApi = globalThis.crypto
-  if (typeof cryptoApi?.randomUUID === 'function') return cryptoApi.randomUUID()
+  if (typeof cryptoApi.randomUUID === 'function') return cryptoApi.randomUUID()
 
   const bytes = cryptoApi.getRandomValues(new Uint8Array(16))
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)

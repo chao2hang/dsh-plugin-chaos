@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-05-bootstrap-typert-before-host-tsc.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-05-bootstrap-typert-before-host-tsc.md
-2026-09-05-bootstrap-typert-before-host-tsc.md: 6affee32149a22537887f08bfba843df5ff93072
-2026-09-05-bootstrap-typert-before-host-tsc.zh.md: dba9c72d2694627ae1deab177ad0932bf6e4a861
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree:
+  en: 7c4e7315305880cf
+  zh: ec05b637ce6f23ff
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree/problem:
+  en: 63c4888156aeaf8f
+  zh: 19f7d2e182511c68
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree/decision:
+  en: afcc9e9dbd624723
+  zh: 4c883acf320e696f
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree/alternatives-considered:
+  en: f56e74f3b40aa42b
+  zh: 439c16179c8cb9c6
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree/consequences:
+  en: 4d9f325b369d939d
+  zh: 1974d25b2ba009e1
+/agent-note-bootstrap-typert-before-the-host-compile-on-a-clean-tree/testing:
+  en: badc408448d0480f
+  zh: f627f4f853e0c69a

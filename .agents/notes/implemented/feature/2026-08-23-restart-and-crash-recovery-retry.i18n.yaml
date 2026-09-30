@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-restart-and-crash-recovery-retry.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-23-restart-and-crash-recovery-retry.md
-2026-08-23-restart-and-crash-recovery-retry.md: fc31c83d3e673476f36cafbe8bf5d4f8abf205f8
-2026-08-23-restart-and-crash-recovery-retry.zh.md: 5b82c1374c559721665841f120497192531229f3
+/agent-note-restart-control-and-crash-recovery-retry:
+  en: c522e90a205f6f92
+  zh: 73db4175118781c8
+/agent-note-restart-control-and-crash-recovery-retry/problem:
+  en: 542963f6c2cc898d
+  zh: f9309cef59567a54
+/agent-note-restart-control-and-crash-recovery-retry/decision:
+  en: 148dee896a9b42e4
+  zh: 9217d7d24c71a012
+/agent-note-restart-control-and-crash-recovery-retry/alternatives-considered:
+  en: 024ba5b1362fb6d6
+  zh: 970627a536f052f4
+/agent-note-restart-control-and-crash-recovery-retry/consequences:
+  en: a4c4f182e9cdb2ef
+  zh: d73c46f08af9dc6e

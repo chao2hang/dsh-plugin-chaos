@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-mobile-hero-composer-docking.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-mobile-hero-composer-docking.md
-2026-08-23-mobile-hero-composer-docking.md: 4278af8d1897f0532a1f854ecc4bf1929b590ce1
-2026-08-23-mobile-hero-composer-docking.zh.md: c05920ec3888841307da2fc6b95a3e56c2c4b58e
+/agent-note-mobile-hero-composer-docking:
+  en: 2e95c0e5c76518c9
+  zh: 23df56707520deec
+/agent-note-mobile-hero-composer-docking/problem:
+  en: 313d3d5905f5ad5b
+  zh: acc8ea17825d4cb3
+/agent-note-mobile-hero-composer-docking/decision:
+  en: d0bdde9da0667b59
+  zh: 6a6bac29428e2bff
+/agent-note-mobile-hero-composer-docking/alternatives-considered:
+  en: 54bb3bc656533c1b
+  zh: 338c7a4fc80bdb9b
+/agent-note-mobile-hero-composer-docking/consequences:
+  en: f73812a43ed8d3ea
+  zh: f889a8a923d43c3d

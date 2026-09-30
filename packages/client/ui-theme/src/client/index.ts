@@ -9,9 +9,10 @@
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
-// Type-only: the ctx.settingsScope Context merge. Cross-plugin collaboration
+import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
+// Type-only: the ctx.configForms Context merge. Cross-plugin collaboration
 // goes through the service, never a value import (client bundle purity gate).
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: pulls the SlotRegistry service merge (ctx.slots).
@@ -144,6 +145,7 @@ const BUILTIN_INSPECT_TOKENS: readonly ThemeTokenInspection[] = Object.freeze([
   { name: '--dsw-alias-label-primary', description: 'Primary text color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-label-primary' },
   { name: '--dsw-alias-label-secondary', description: 'Secondary text color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-label-secondary' },
   { name: '--dsw-alias-state-error-primary', description: 'Primary error state color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-state-error-primary' },
+  { name: '--dsw-alias-state-idle-primary', description: 'Primary inactive state color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-state-idle-primary' },
   { name: '--dsw-alias-state-success-primary', description: 'Primary success state color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-state-success-primary' },
   { name: '--dsw-alias-state-warn-primary', description: 'Primary warning state color.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-alias-state-warn-primary' },
   { name: '--dsw-specific-sidebar-fill', description: 'Sidebar column and title-row background.', valueType: 'CSS color', requiresLightAndDark: true, cssVariable: '--dsw-specific-sidebar-fill' },
@@ -162,7 +164,7 @@ const BUILTIN_INSPECT_TOKENS: readonly ThemeTokenInspection[] = Object.freeze([
  */
 export class ThemeRuntime {
   private readonly ctx: ClientContext
-  private readonly host: SettingsScope<ThemeSettings>
+  private readonly host: ConfigForm<ThemeSettings>
   private themes: ThemeDefinition[] = [...BUILTIN_THEMES]
   private preference: ThemePreference
   private fontSize: number = bootstrapFontSize()
@@ -180,7 +182,7 @@ export class ThemeRuntime {
    * media-query and scope listeners are released through ctx.effect on dispose).
    * @param host - durable preference scope owned by the same plugin.
    */
-  constructor(ctx: ClientContext, host: SettingsScope<ThemeSettings>) {
+  constructor(ctx: ClientContext, host: ConfigForm<ThemeSettings>) {
     this.ctx = ctx
     this.host = host
     this.preference = DEFAULT_PREFERENCE
@@ -243,7 +245,7 @@ export class ThemeRuntime {
     }
     if (this.preference === id) return
     this.preference = id as ThemePreference
-    if (isThemePreference(id) && this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(THEME_PREFERENCE_FIELD, id)
+    if (isThemePreference(id) && this.persistable()) void this.host.set(THEME_PREFERENCE_FIELD, id)
     this.publish()
   }
 
@@ -259,7 +261,7 @@ export class ThemeRuntime {
     }
     if (this.fontSize === px) return
     this.fontSize = px
-    if (this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(FONT_SIZE_FIELD, px)
+    if (this.persistable()) void this.host.set(FONT_SIZE_FIELD, px)
     this.publish()
   }
 
@@ -270,7 +272,7 @@ export class ThemeRuntime {
   setUiFontSize(size: UiFontSize): void {
     if (this.uiFontSize === size) return
     this.uiFontSize = size
-    if (this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(UI_FONT_SIZE_FIELD, size)
+    if (this.persistable()) void this.host.set(UI_FONT_SIZE_FIELD, size)
     this.publish()
   }
 
@@ -281,8 +283,18 @@ export class ThemeRuntime {
   setCodeFontSize(size: CodeFontSize): void {
     if (this.codeFontSize === size) return
     this.codeFontSize = size
-    if (this.ctx.get('connection')?.isLoopback !== false && this.host.getSnapshot().mode === 'host') void this.host.set(CODE_FONT_SIZE_FIELD, size)
+    if (this.persistable()) void this.host.set(CODE_FONT_SIZE_FIELD, size)
     this.publish()
+  }
+
+  /**
+   * Appearance writes persist only on the host side of a loopback connection;
+   * remote browsers mirror the host's settings document instead of writing it.
+   * @returns whether this client may write appearance settings to the host scope.
+   */
+  private persistable(): boolean {
+    const connection = this.ctx.get('connection') as ConnectionHandle | undefined
+    return connection?.isLoopback !== false && this.host.getSnapshot().mode === 'host'
   }
 
   /** Adopt the scope's accepted durable appearance values without writing them back. */
@@ -451,9 +463,9 @@ function dynamicToken(name: string): ThemeTokenInspection {
 /**
  * Required services: settings transport plus slots/locale for the Appearance
  * row. `remote` carries the forwarded settings invalidation that
- * `ctx.settingsScope.bind(spec)` subscribes to on this context.
+ * `ctx.configForms.get(entryId)` subscribes to on this context.
  */
-export const inject = ['slots', 'locale', 'remote', 'settingsScope']
+export const inject = ['slots', 'locale', 'remote', 'configForms']
 
 /**
  * Client plugin body: provide the theme service and register the
@@ -463,7 +475,7 @@ export const inject = ['slots', 'locale', 'remote', 'settingsScope']
  */
 export function apply(ctx: ClientContext): void {
   installThemeStyles(ctx)
-  const host = ctx.settingsScope.bind<ThemeSettings>({ namespace: THEME_SETTINGS_NAMESPACE })
+  const host = ctx.configForms.get<ThemeSettings>(THEME_SETTINGS_NAMESPACE)
   const theme = new ThemeRuntime(ctx, host)
   ctx.provide('theme', theme)
 

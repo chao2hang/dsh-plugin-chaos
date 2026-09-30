@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-04-chaos-unused-removal.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-chaos-unused-removal.md
-2026-09-04-chaos-unused-removal.md: 8ddc4a137f9403335341fd567214be2ef201b074
-2026-09-04-chaos-unused-removal.zh.md: f8398f73a519322595f5c4e7998a2d71826ad8cf
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance:
+  en: fe9976648d176dea
+  zh: 584b5463cee18b17
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance/problem:
+  en: 66d3caf553618d53
+  zh: 0bc6616d7e3f453e
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance/decision:
+  en: e0e0e380cbfc9fc3
+  zh: a90e071c4001e62f
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance/alternatives-considered:
+  en: 5dd2b97b0fddcdac
+  zh: 2cfb0f465b2775f4
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance/consequences:
+  en: 5d738c5c7ddf4457
+  zh: e259408d69849448
+/agent-note-chaos-unused-feature-removal-at-file-sandbox-guidance/testing:
+  en: 45c8d1d20d272a56
+  zh: 512d242ba8a5065e

@@ -1,6 +1,58 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-restart/README.md
-README.md: d362d0c74c399a0cf11abc3c824f6ebec2a8fe41
-README.zh.md: c8ef07e489c7bf77cb0d2483e69d1f132230f338
+/:
+  en: e559afd7c6c189ff
+  zh: 5c68280fd4715336
+/deepseek-ai-dsh-plugin-chaos-restart:
+  en: bf3400c448d9545e
+  zh: 9a454ba8c6aec767
+/deepseek-ai-dsh-plugin-chaos-restart/summary:
+  en: 99eaaacbab2ea611
+  zh: 9f538ae36bfd53ba
+/deepseek-ai-dsh-plugin-chaos-restart/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-restart/use-this-package:
+  en: f545162f24ef3f5b
+  zh: 30613f6f71b18d6a
+/deepseek-ai-dsh-plugin-chaos-restart/use-this-package/when-to-choose-it:
+  en: a429f5bcbac021fc
+  zh: 9837f26488ac4f8b
+/deepseek-ai-dsh-plugin-chaos-restart/use-this-package/minimal-configuration:
+  en: a59fafe65dd934e2
+  zh: 532124bf3c61ca20
+/deepseek-ai-dsh-plugin-chaos-restart/use-this-package/what-the-routes-answer:
+  en: 50aac2cc1b972ab7
+  zh: 540b006302755429
+/deepseek-ai-dsh-plugin-chaos-restart/use-this-package/what-a-restart-costs-and-what-it-does-not:
+  en: 5dab1441fa09f7fb
+  zh: 980de456978c0aa2
+/deepseek-ai-dsh-plugin-chaos-restart/understand-the-implementation:
+  en: 5e0927827280dd29
+  zh: 291768806d8f2274
+/deepseek-ai-dsh-plugin-chaos-restart/understand-the-implementation/host-half:
+  en: ba0db65d2051af4f
+  zh: ed55bbd88d40bba8
+/deepseek-ai-dsh-plugin-chaos-restart/understand-the-implementation/browser-half:
+  en: 44149195176b8dcf
+  zh: 0037ef4dba62045d
+/deepseek-ai-dsh-plugin-chaos-restart/understand-the-implementation/source-map:
+  en: db5d56e5878e43f8
+  zh: d34798f0a4459887
+/deepseek-ai-dsh-plugin-chaos-restart/further-exploration:
+  en: b51872e04eeef9d1
+  zh: ff6eab4e403c86e9
+/deepseek-ai-dsh-plugin-chaos-restart/model-experience:
+  en: 7cbd5f568fa751c1
+  zh: a444600a89f959e3
+/deepseek-ai-dsh-plugin-chaos-restart/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/deepseek-ai-dsh-plugin-chaos-restart/known-limitations-and-deferred-work:
+  en: 58ba0cfa41a62379
+  zh: 927a805d9ac721e4
+/deepseek-ai-dsh-plugin-chaos-restart/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

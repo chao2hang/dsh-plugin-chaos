@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-16-per-model-wire-protocol-override.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-16-per-model-wire-protocol-override.md
-2026-09-16-per-model-wire-protocol-override.md: fa052f85551d91690aae184b6ef10daf66d314bb
-2026-09-16-per-model-wire-protocol-override.zh.md: 03a14804761e5b54f3a8bb22b16aa989bb5c6f88
+/agent-note-per-model-wire-protocol-override-for-pi-ai-routes:
+  en: 5d3c812286b63951
+  zh: 2fa753b6e4e3f74c
+/agent-note-per-model-wire-protocol-override-for-pi-ai-routes/problem:
+  en: 1d92c31fce516b02
+  zh: 41a394f2b492fbfa
+/agent-note-per-model-wire-protocol-override-for-pi-ai-routes/decision:
+  en: 7bce5c9595a8a911
+  zh: e8191d300c0c22fd
+/agent-note-per-model-wire-protocol-override-for-pi-ai-routes/alternatives-considered:
+  en: 45c024fed85ab66e
+  zh: d8a6a866ce4f0e04
+/agent-note-per-model-wire-protocol-override-for-pi-ai-routes/consequences:
+  en: 7fb1e39e750ac23e
+  zh: c9943e9b454f5087

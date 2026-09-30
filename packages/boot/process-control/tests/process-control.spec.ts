@@ -13,12 +13,12 @@ afterEach(async () => {
 function createService(exit?: (code: number) => Promise<void>): ProcessControlService {
   const ctx = new Context()
   contexts.push(ctx)
-  if (exit !== undefined) ctx.provide('appExit', exit)
+  if (exit !== undefined) ctx.provide('appExit', exit as (code: number) => void)
   return new ProcessControlService(ctx)
 }
 
-function child() {
-  return { unref: vi.fn() } as unknown as ReturnType<typeof originalSpawn>
+function child(unref: ReturnType<typeof vi.fn> = vi.fn()) {
+  return { unref } as unknown as ReturnType<typeof originalSpawn>
 }
 
 describe('ProcessControlService', () => {
@@ -42,7 +42,8 @@ describe('ProcessControlService', () => {
     let release!: () => void
     const stopped = new Promise<void>((resolve) => { release = resolve })
     const exit = vi.fn(() => stopped)
-    const spawned = child()
+    const unref = vi.fn()
+    const spawned = child(unref)
     internals.spawn = vi.fn(() => spawned) as typeof internals.spawn
     const service = createService(exit)
 
@@ -56,7 +57,7 @@ describe('ProcessControlService', () => {
       detached: true,
       stdio: 'inherit',
     }))
-    expect(spawned.unref).toHaveBeenCalledOnce()
+    expect(unref).toHaveBeenCalledOnce()
   })
 
   it('does not spawn when application teardown fails', async () => {

@@ -19,29 +19,12 @@ interface SettingsRemote {
   ): Promise<{ ok: true; value: SettingsNamespaceView } | { ok: false; error: { message: string } }>
 }
 
-/** Installed dsh wire: the deployment model catalog (no session parameter). */
-type ModelCatalogResponse = {
-  ok: true
-  value: {
-    default: { provider: string; model: string; reasoningEffort?: string }
-    groups: { id: string; name: string; models: { id: string; name: string; description?: string }[] }[]
-  }
-} | { ok: false; error: { code?: string; message: string } }
-
-interface SessionRemote {
-  modelCatalog(): Promise<ModelCatalogResponse>
-}
-
 function settingsRemoteOf(ctx: ClientContext): SettingsRemote {
-  const remote = ctx.remote as ClientContext['remote'] & { settings?: SettingsRemote }
-  if (remote.settings === undefined) throw new Error('chaos-models: the dsh settings remote is unavailable')
-  return remote.settings
+  return ctx.remote.settings
 }
 
-function sessionRemoteOf(ctx: ClientContext): SessionRemote {
-  const remote = ctx.remote as ClientContext['remote'] & { session?: SessionRemote }
-  if (remote.session === undefined) throw new Error('chaos-models: the dsh session remote is unavailable')
-  return remote.session
+function sessionRemoteOf(ctx: ClientContext) {
+  return ctx.remote.session
 }
 
 /** Required client services. */
@@ -80,7 +63,7 @@ class PiAiSettingsCache {
  * @param sessionRemote - the mounted session namespace.
  * @returns the settings describe/mutate plus the model-catalog read.
  */
-function apiFromRemotes(settingsRemote: SettingsRemote, sessionRemote: SessionRemote): ModelSettingsApi {
+function apiFromRemotes(settingsRemote: SettingsRemote, sessionRemote: ReturnType<typeof sessionRemoteOf>): ModelSettingsApi {
   return {
     settings: {
       describe: () => settingsRemote.describe().then(result => ({ result })),

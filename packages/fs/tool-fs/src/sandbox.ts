@@ -13,7 +13,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
 import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox'
-import { ESCALATION_TARGETS, approveEscalation, escalationHintMarker, normalizeEscalationArgs, sandboxDenialMarker } from '@deepseek-ai/dsh-sandbox'
+import { ESCALATION_TARGETS, approveEscalation, escalationHintMarker, normalizeEscalationArgs, sandboxDenialMarker, sandboxPermissionsDescription } from '@deepseek-ai/dsh-sandbox'
 import type { SandboxPolicyService } from '@deepseek-ai/dsh-sandbox-policy'
 import { FsError } from '@deepseek-ai/dsh-fs'
 
@@ -61,13 +61,12 @@ export class FsSandboxController {
       sandbox_permissions: {
         type: 'string',
         enum: [...this.escalationModes],
-        description: 'The wider sandbox mode this file operation needs. Only valid as a one-shot retry '
-          + 'of an operation the sandbox just denied; requires justification and user approval.',
+        description: sandboxPermissionsDescription('operation'),
       },
       justification: {
         type: 'string',
         description: 'Required with sandbox_permissions: one sentence for the user explaining '
-          + 'why this exact file operation needs the wider access.',
+          + 'why this exact file operation needs the wider access. Use the language of the user’s current request.',
       },
     }
   }
@@ -75,12 +74,12 @@ export class FsSandboxController {
   /**
    * The policy to stamp onto this mutation: an approved escalation grant (a
    * strictly wider retry resolved through `ctx.approval` before anything
-   * executes), else the session's standing mode. The calling session's cwd is
-   * always carried as the workspace root. Escalation arguments are judged
-   * against the standing mode once it is resolved: a `danger-full-access`
-   * session drops them (nothing is wider, so they can only be speculative
-   * noise from a model filling the optional fields); every other mode
-   * enforces the shared pairing rule before approval.
+   * executes), else the session's standing mode. Repeating the standing mode
+   * requires no approval. The calling session's cwd is
+   * always carried as the workspace root. Normalizes the escalation arguments
+   * first: a call already standing under `danger-full-access` drops them
+   * (nothing is wider, so the optional fields are model-fill noise, not a
+   * request); every other mode enforces the shared pairing rule before approval.
    * @param toolName - the mutating tool's name, for the approval audit trail.
    * @param args - the call's escalation arguments.
    * @param exec - the tool-execution context (agent, callId, signal).

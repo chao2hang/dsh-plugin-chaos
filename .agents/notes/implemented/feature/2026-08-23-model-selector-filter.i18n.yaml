@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-model-selector-filter.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-23-model-selector-filter.md
-2026-08-23-model-selector-filter.md: 133fd93da7a79017dc5e268de8354621a0f557d6
-2026-08-23-model-selector-filter.zh.md: 8d2383fa5c1ab279872dbbf03d39585600a7b918
+/agent-note-model-selector-filter:
+  en: 82df8b38e433db39
+  zh: bd2b563153b84a79
+/agent-note-model-selector-filter/problem:
+  en: 0c98282e9f4641f7
+  zh: b69b521abc54115c
+/agent-note-model-selector-filter/decision:
+  en: 0f1509e15bb3a282
+  zh: 7d08eff77db91b1d
+/agent-note-model-selector-filter/alternatives-considered:
+  en: b7f400da8fd3edf7
+  zh: 8eaaaa47961839fb
+/agent-note-model-selector-filter/consequences:
+  en: ba1c00e530e0ed66
+  zh: 3cab578bbc0450b7

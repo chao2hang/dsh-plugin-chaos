@@ -1,6 +1,31 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-12-chaos-mobile-refactor.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-12-chaos-mobile-refactor.md
-2026-08-12-chaos-mobile-refactor.md: e542ee2b37653d42629769a72618f2baf8d751ed
-2026-08-12-chaos-mobile-refactor.zh.md: e592a543d0efbf82b49e8136f55747c351fc5b61
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation:
+  en: 08e2cedb3104d56e
+  zh: 2308893f55d26819
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/problem:
+  en: 0857e6ffcf47c435
+  zh: d2ca61244ddbbb32
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/decision:
+  en: a59cacfbaaf57efa
+  zh: 7e58a6a097da349a
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/alternatives-considered:
+  en: 6119e2aff3b6be5a
+  zh: 4ca7d7cbf02e476f
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/alternatives-considered/why-not-replace-the-root-slot:
+  en: 1337a19e02971dd6
+  zh: 25328841085ef049
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/alternatives-considered/why-not-use-a-css-only-approach-with-stronger-selectors:
+  en: f608007758371ac2
+  zh: 1388c9f324a673af
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/alternatives-considered/why-self-build-mobilesheet-instead-of-using-vaul-react-modal-sheet:
+  en: a7e0937e1a45fbb4
+  zh: c607c1ff2e18164f
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/alternatives-considered/why-a-module-level-store-instead-of-react-context-for-surfacepresentation:
+  en: 9f6ff7a2eea54451
+  zh: 419efd1a51be5672
+/agent-note-refactor-chaos-mobile-from-css-hijack-to-ios-style-mobile-presentation/consequences:
+  en: ed4a791a2d7d82ce
+  zh: 8c235d402d447ba8

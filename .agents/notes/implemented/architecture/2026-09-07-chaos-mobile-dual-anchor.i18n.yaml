@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-07-chaos-mobile-dual-anchor.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-07-chaos-mobile-dual-anchor.md
-2026-09-07-chaos-mobile-dual-anchor.md: 909f16f40bca0455ee619f929f012b31278899fb
-2026-09-07-chaos-mobile-dual-anchor.zh.md: 91131607ff342816382715ca442765a97cd56f0a
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page:
+  en: 8c5100c6ae99e594
+  zh: 5e1a4e615d808036
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page/problem:
+  en: efe206dfeedbfc0e
+  zh: 35a9f13564c02a8d
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page/decision:
+  en: 38d7f7fe190b281c
+  zh: d0f64454d4769fee
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page/alternatives-considered:
+  en: ae4a2ae135107894
+  zh: b0e1e0d085bdd2a4
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page/consequences:
+  en: ef2cb62633f75e6a
+  zh: e99114e63e256ba1
+/agent-note-chaos-mobile-on-released-frontends-dual-anchors-and-the-plugin-owned-details-push-page/testing:
+  en: 213de0e0b549360a
+  zh: a098ddbbfbebf39f

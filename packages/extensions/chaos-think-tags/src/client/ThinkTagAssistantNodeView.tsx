@@ -2,7 +2,7 @@ import { Fragment, memo, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { ChatNodeViewProps, TurnTailOwnerProps } from '@deepseek-ai/dsh-client-ui-chat/client'
-import { DisclosureRow, IconThinkOutline14, JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives'
+import { DisclosureRow, IconThinkOutlineMedium, JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives'
 import { normalizeThinkTags } from './think-tags.ts'
 import css from './ThinkTagAssistantNodeView.module.css'
@@ -18,7 +18,7 @@ function ThinkRow({ text }: { text: string }) {
         leadingClassName={css.leading}
         titleClassName={css.title}
         chevronClassName={css.chevron}
-        icon={<IconThinkOutline14 size={14} />}
+        icon={<IconThinkOutlineMedium size={14} />}
         title="Think"
         open={open}
         expandable

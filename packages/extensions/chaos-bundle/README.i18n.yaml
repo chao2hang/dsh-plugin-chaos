@@ -1,6 +1,52 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-bundle/README.md
-README.md: a36db0c213a33e1737a78ab5879b05b7ce24656c
-README.zh.md: 4eeca1d9ca58292a6d0ae238e4a0f9dd11ceaea8
+/:
+  en: be92fb2dcf44ed49
+  zh: a56e67bb40292e61
+/deepseek-ai-dsh-plugin-chaos:
+  en: d8b7b848e108bfc7
+  zh: bb1eb2e5cf4dbc0f
+/deepseek-ai-dsh-plugin-chaos/summary:
+  en: ac7431e032106e71
+  zh: 1cfeaf53f5ce64f3
+/deepseek-ai-dsh-plugin-chaos/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos/use-this-package:
+  en: e9536e5e37f5a459
+  zh: afa430e08422bdb6
+/deepseek-ai-dsh-plugin-chaos/use-this-package/install-into-a-profile:
+  en: 0ec5ab920a89e060
+  zh: 7f671c518d5e9fa5
+/deepseek-ai-dsh-plugin-chaos/use-this-package/what-you-get:
+  en: 15afa2220c697709
+  zh: dd8b959010583d4b
+/deepseek-ai-dsh-plugin-chaos/understand-the-implementation:
+  en: 3bd9f97baccaf416
+  zh: e5f7cfbe858a5339
+/deepseek-ai-dsh-plugin-chaos/understand-the-implementation/layer-semantics:
+  en: ea0c010cdf6022e4
+  zh: d75228a980349258
+/deepseek-ai-dsh-plugin-chaos/understand-the-implementation/extension-points-the-inserted-plugins-rely-on:
+  en: 997de5dc0c464790
+  zh: ac9a535fbb791da2
+/deepseek-ai-dsh-plugin-chaos/understand-the-implementation/source-map:
+  en: 9173915f0e4de4aa
+  zh: 2a068590c6790c88
+/deepseek-ai-dsh-plugin-chaos/further-exploration:
+  en: fda7da90c0b6ec0c
+  zh: 1be9d2b73f54ae6b
+/deepseek-ai-dsh-plugin-chaos/model-experience:
+  en: ad7e6253617f36b1
+  zh: 48fcd843dca5a543
+/deepseek-ai-dsh-plugin-chaos/model-experience/kv-cache-effect:
+  en: db3b3e59b8fc551a
+  zh: f6b50b4acec8bbdd
+/deepseek-ai-dsh-plugin-chaos/known-limitations-and-deferred-work:
+  en: 2b01b5a09f29360d
+  zh: 91070ea6aade627d
+/deepseek-ai-dsh-plugin-chaos/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

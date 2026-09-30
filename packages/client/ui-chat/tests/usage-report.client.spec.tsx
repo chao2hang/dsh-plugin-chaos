@@ -24,6 +24,7 @@ const report = {
 }
 const usageReport = { read: async () => ({ result: { ok: true as const, value: report } }) }
 const props = {
+  inspectCall: undefined,
   viewRequest: null,
   openView: () => {},
   completeViewRequest: () => {},
@@ -35,6 +36,8 @@ const props = {
   inputActions: {} as never,
   useTrajectory: (() => undefined) as never,
   useSessions: (() => undefined) as never,
+  useSessionStatus: (() => new Map()) as never,
+  useSessionRetainInfo: (() => undefined) as never,
   useSessionPendingInteraction: (() => undefined) as never,
   useWorkspaces: (() => undefined) as never,
   useProjection: (() => undefined) as never,
@@ -132,6 +135,7 @@ describe('UsageReport', () => {
   })
 
   it('renders 30 daily columns, neutral zero days, route segments, and a legend', async () => {
+    vi.useFakeTimers({ now: new Date('2026-08-30T12:00:00'), toFake: ['Date'] })
     const view = render(<UsageReport {...props} usageReport={usageReport as never} />)
 
     await waitFor(() =>{  expect(view.getByRole('group', { name: 'Daily token trend' })).toBeTruthy() })
@@ -146,6 +150,7 @@ describe('UsageReport', () => {
   })
 
   it('lets people inspect a selected day without cluttering the time axis', async () => {
+    vi.useFakeTimers({ now: new Date('2026-08-30T12:00:00'), toFake: ['Date'] })
     const view = render(<UsageReport {...props} usageReport={usageReport as never} />)
 
     const activeDay = await view.findByRole('button', { name: /2026-08-23/ })

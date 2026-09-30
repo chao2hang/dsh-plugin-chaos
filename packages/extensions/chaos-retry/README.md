@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos-retry` shows a docked strip above the composer when a conversation's latest turn ended abnormally, offering a one-click resend of the conversation's last user message. Four endings qualify: a terminal turn error, an interrupted assistant prefix, the per-request output-token cap notice, and the crash-recovery closure a process death leaves. The plugin also contributes the missing `turn-interrupted` chat node, so a turn killed before its first token still projects to a transcript row instead of nothing. Clicking Retry writes the last user message into the composer draft and submits it through the public input actions — the same path the send button takes. The package is browser-only; the host entry exists so the Loader can mount the row.
+`dsh-plugin-chaos-retry` shows a docked strip above the composer when a conversation's latest turn ended abnormally, offering a one-click resend of the conversation's last user message. Four endings qualify: a terminal turn error, an interrupted assistant prefix, the output-token cap notice, and the crash-recovery closure process death leaves. The plugin also contributes the missing `turn-interrupted` chat node, so a turn killed before its first token still projects to a transcript row. Clicking Retry writes the last user message into the composer draft and submits it through the public input actions. The package is browser-only; the host entry exists for Loader mounting.
 
 ## Table of Contents
 

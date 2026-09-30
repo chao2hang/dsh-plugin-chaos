@@ -129,7 +129,7 @@ describe('sweepArchivedSessions', () => {
     const at = new Date(NOW - 60 * DAY_MS)
     await utimes(join(directory, 'session.jsonl'), at, at)
     const outcome = await sweepArchivedSessions(
-      { archived: new Set([id]), headers: [noCwd as SessionHeader], isLive: () => false },
+      { archived: new Set([id]), headers: [noCwd], isLive: () => false },
       options(),
     )
     expect(outcome.deleted.map(d => d.id)).toEqual([id])

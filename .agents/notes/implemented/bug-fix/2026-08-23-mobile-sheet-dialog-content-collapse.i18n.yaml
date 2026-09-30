@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-mobile-sheet-dialog-content-collapse.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-mobile-sheet-dialog-content-collapse.md
-2026-08-23-mobile-sheet-dialog-content-collapse.md: 99e1c8fc4834d9e7530f0dcbe5275e1287cb600e
-2026-08-23-mobile-sheet-dialog-content-collapse.zh.md: 6bdcb40cee58e5cec21c53ce9929e450b93f9c25
+/agent-note-mobile-sheet-dialog-content-collapse:
+  en: 13a9662b2471229e
+  zh: a12bde695d6dc47d
+/agent-note-mobile-sheet-dialog-content-collapse/problem:
+  en: 059af94b3fac8f20
+  zh: f664575725fe9c39
+/agent-note-mobile-sheet-dialog-content-collapse/decision:
+  en: 8b41817e9b8ac1c9
+  zh: f803dc2622390d67
+/agent-note-mobile-sheet-dialog-content-collapse/alternatives-considered:
+  en: 1bf29707d6f823ed
+  zh: 34b0899752fef0da
+/agent-note-mobile-sheet-dialog-content-collapse/consequences:
+  en: 776cddfcf64d16dc
+  zh: 39414fcfc3542d34

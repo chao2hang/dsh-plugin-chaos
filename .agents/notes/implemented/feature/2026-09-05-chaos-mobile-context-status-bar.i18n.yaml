@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-05-chaos-mobile-context-status-bar.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-05-chaos-mobile-context-status-bar.md
-2026-09-05-chaos-mobile-context-status-bar.md: 5694f84edd636d642a1fa3ab9fc317e2cfea0cd5
-2026-09-05-chaos-mobile-context-status-bar.zh.md: 31d913d8c1fac900ce2e534ad444877a2e47fc94
+/agent-note-chaos-mobile-context-meter-moves-to-a-top-status-bar-and-the-overflow-sheet:
+  en: 553efff7cac5e7ae
+  zh: 1d8e0a01a865b7ba
+/agent-note-chaos-mobile-context-meter-moves-to-a-top-status-bar-and-the-overflow-sheet/problem:
+  en: 2ee99c1c8d9c9fc3
+  zh: 8f64137b1c753030
+/agent-note-chaos-mobile-context-meter-moves-to-a-top-status-bar-and-the-overflow-sheet/decision:
+  en: bba05a6666620414
+  zh: 0b92238f30df8a30
+/agent-note-chaos-mobile-context-meter-moves-to-a-top-status-bar-and-the-overflow-sheet/alternatives-considered:
+  en: 7ae2e8e8c3610143
+  zh: 2c219adf95ed7b21
+/agent-note-chaos-mobile-context-meter-moves-to-a-top-status-bar-and-the-overflow-sheet/consequences:
+  en: 75f214760eabd34d
+  zh: 0e1bc2e42c44c061

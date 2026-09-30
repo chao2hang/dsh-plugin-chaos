@@ -1,6 +1,64 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-auth/README.md
-README.md: b385cd5f54992633b322cfe0dfd7fb35afbee672
-README.zh.md: e80e80ece94cb5b815d2d61e1fccb4895f0de1c6
+/:
+  en: 391b24089c4deaab
+  zh: 0eeb20abef10b83d
+/deepseek-ai-dsh-plugin-chaos-auth:
+  en: 33e1df92d86eb634
+  zh: 69633849b9237b80
+/deepseek-ai-dsh-plugin-chaos-auth/summary:
+  en: b6a8cb1ea3563f69
+  zh: d92a7c1f3fac6f42
+/deepseek-ai-dsh-plugin-chaos-auth/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package:
+  en: 6f29e5b41ec53e00
+  zh: 451f5f155a40a6e8
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package/when-to-choose-it:
+  en: 7858e56c3c43be43
+  zh: 5fe2406c42e83fcc
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package/minimal-configuration:
+  en: dad2606dd398e417
+  zh: 55ea0e48f8fc4790
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package/activation-and-the-token:
+  en: 3cc0f2d8f5f87d91
+  zh: 4e91fde2f0e08608
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package/guards-and-routes:
+  en: b4d7cd3df8a3af16
+  zh: dd7b930db8627db4
+/deepseek-ai-dsh-plugin-chaos-auth/use-this-package/browser-sessions:
+  en: f7b160e2b8b2ec39
+  zh: ed67f42dca2c02ae
+/deepseek-ai-dsh-plugin-chaos-auth/understand-the-implementation:
+  en: d061d4e30f664d82
+  zh: 372733f5b9b842ce
+/deepseek-ai-dsh-plugin-chaos-auth/understand-the-implementation/source-map:
+  en: d54fd7c499313848
+  zh: d37a1b25b3be1b62
+/deepseek-ai-dsh-plugin-chaos-auth/further-exploration:
+  en: e6aefb036b376ea6
+  zh: d8a478743cd53119
+/deepseek-ai-dsh-plugin-chaos-auth/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-plugin-chaos-auth/model-experience/guarded-web-server-surface:
+  en: 5dc370490ece94eb
+  zh: e4ee1f68e1d43a1f
+/deepseek-ai-dsh-plugin-chaos-auth/model-experience/guarded-web-server-surface/what-the-model-sees:
+  en: c19a428a3e3e0a5e
+  zh: 182697e5757bc942
+/deepseek-ai-dsh-plugin-chaos-auth/model-experience/guarded-web-server-surface/token-effect:
+  en: 5051f6cb23388fc0
+  zh: 3c3f5eca865715fa
+/deepseek-ai-dsh-plugin-chaos-auth/model-experience/guarded-web-server-surface/kv-cache-effect:
+  en: 4a04c611cc93c7bb
+  zh: 307a80fea8de729c
+/deepseek-ai-dsh-plugin-chaos-auth/known-limitations-and-deferred-work:
+  en: 24626da303f0dbb8
+  zh: 7703b304eb22cc0f
+/deepseek-ai-dsh-plugin-chaos-auth/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

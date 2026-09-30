@@ -3,27 +3,27 @@
 /* Wide enough for two capacity columns; never taller than the viewport. */
 .dialog { width: min(720px, 100%); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); }
 /* The primitive pins header and footer outside this region; it scrolls. */
-.dialogContent { min-height: 0; overflow-y: auto; }
+.dialogContent { min-height: 0; overflow-y: auto; --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2); --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2); }
 .fields { display: flex; flex-direction: column; gap: 14px; }
 /* Two capacity editors share one row on wide dialogs and stack narrowly. */
 .capacityRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .notice { color: var(--dsw-alias-label-tertiary); font-size: 12px; line-height: 18px; }
 .fields > label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 20px; }
-.capacity { display: flex; flex-direction: column; gap: 7px; padding: 12px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); }
+.capacity { display: flex; flex-direction: column; gap: 7px; padding: 12px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); }
 .capacityHeading { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 22px; font-weight: 500; }
 .capacityHeading output { color: var(--dsw-alias-label-primary); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .capacity input[type='range'] { width: 100%; height: 32px; margin: 0; accent-color: var(--dsw-alias-brand-primary); touch-action: pan-x; }
 .precision { margin: -2px 0 1px; color: var(--dsw-alias-label-tertiary); font-size: 12px; line-height: 18px; }
 .stops { display: flex; flex-wrap: wrap; gap: 6px; }
-.stops button { min-height: 30px; padding: 0 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 15px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; cursor: pointer; }
+.stops button { min-height: 30px; padding: 0 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 15px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; cursor: pointer; }
 .stops button:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
 .stops button[data-active] { border-color: var(--dsw-alias-brand-primary); color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover); }
 /* The generic label rule above stacks fields. Capability toggles are rows,
    so their checkbox and label must share the same baseline. */
 .fields > label.checkbox { flex-direction: row; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 12px; }
-.checkbox { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); font-size: 13px; line-height: 20px; }
+.checkbox { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); font-size: 13px; line-height: 20px; }
 .checkbox input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--dsw-alias-brand-primary); }
-.dialog fieldset { margin: 0; padding: 8px 10px 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); }
+.dialog fieldset { margin: 0; padding: 8px 10px 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 12px; background: var(--dsw-alias-bg-layer-1); }
 .dialog legend { padding: 0 4px; color: var(--dsw-alias-label-secondary); font-size: 13px; line-height: 20px; }
 /* The protocol override keeps one full-width picker beside its hint line. */
 .apiField { display: flex; flex-direction: column; gap: 8px; }
@@ -34,7 +34,7 @@
 .identityRow { display: flex; gap: 8px; }
 .identityInput { flex: 1 1 auto; min-width: 0; min-height: 36px; padding: 0 10px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 10px; background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-primary); font: inherit; font-size: 13px; line-height: 20px; }
 .identityInput:focus { outline: none; border-color: var(--dsw-alias-brand-primary); }
-.identityLookup { flex: none; min-height: 36px; padding: 0 12px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 10px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; line-height: 20px; cursor: pointer; }
+.identityLookup { flex: none; min-height: 36px; padding: 0 12px; border: 0.5px solid var(--dsw-alias-border-l2); border-radius: 10px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px; line-height: 20px; cursor: pointer; }
 .identityLookup:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
 .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
 .levels .checkbox { min-width: 0; min-height: 40px; padding: 0 12px; }

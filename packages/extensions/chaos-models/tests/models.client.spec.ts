@@ -33,7 +33,7 @@ describe('model capability settings', () => {
     await expect(saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
@@ -53,7 +53,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
@@ -73,7 +73,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: {} } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'openai', providerName: 'OpenAI', model: 'gpt-x', modelName: 'GPT X' },
@@ -93,7 +93,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: { modelOverrides: { 'gpt-x': { api: 'openai-completions', contextWindow: 4096 } } } } },
         schema: {}, applies: 'live', secrets: [],
       },
@@ -114,7 +114,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: { modelOverrides: { 'gpt-x': { api: 'openai-responses' } } } } },
         schema: {}, applies: 'live', secrets: [],
       },
@@ -135,7 +135,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { local: { models: [{ id: 'served', name: 'Served' }, { id: 'unchanged' }] } } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
@@ -158,7 +158,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { local: { models: [{ id: 'served', name: 'Served', api: 'openai-completions' }] } } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
@@ -176,7 +176,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate: clearing } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { local: { models: [{ id: 'served', name: 'Served', api: 'openai-completions', contextWindow: 8192 }] } } }, schema: {}, applies: 'live', secrets: [],
       },
       { provider: 'local', providerName: 'Local', model: 'served', modelName: 'Served' },
@@ -262,7 +262,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: { headers: { 'user-agent': 'old' } } } },
         schema: {}, applies: 'live', secrets: [],
       },
@@ -287,7 +287,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: { headers: { 'user-agent': 'old', originator: 'codex_cli_rs' } } } },
         schema: {}, applies: 'live', secrets: [],
       },
@@ -310,7 +310,7 @@ describe('model capability settings', () => {
     await saveModelCapabilities(
       { settings: { mutate } } as never,
       {
-        ns: 'llm-pi-ai', revision: 3,
+        ns: 'llm-pi-ai', revision: 3, autoGenerate: false,
         value: { providers: { openai: { headers: previous } } },
         schema: {}, applies: 'live', secrets: [],
       },

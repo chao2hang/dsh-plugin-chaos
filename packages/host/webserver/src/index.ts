@@ -107,9 +107,10 @@ function createGzipMiddleware(config: ResolvedConfig): NodeMiddleware {
       if (response.getHeader('content-range') !== undefined) return false
       const contentType = response.getHeader('content-type')
       if (typeof contentType === 'string' && contentType.toLowerCase().startsWith('text/event-stream')) return false
+      if (typeof contentType === 'string' && /^multipart\/form-data(?:;|$)/i.test(contentType)) return true
       return compressionMiddleware.filter(request, response)
     },
-  }) as unknown as NodeMiddleware
+  }) as NodeMiddleware
 
   return (req, res, next) => {
     // The Web Worker tunnel has no socket and transfers identity bytes.
@@ -417,7 +418,7 @@ export class WebServer extends Service {
    * @param socket - the duplex socket.
    * @param head - the first packet of the upgraded data.
    */
-  private async handleUpgradeRoute(req: IncomingMessage, socket: Duplex, head: Buffer): Promise<void> {
+  private handleUpgradeRoute(req: IncomingMessage, socket: Duplex, head: Buffer): void {
     let route: WebUpgradeRoute | undefined
     try {
       /* v8 ignore next -- node:http always sets url on server requests. */

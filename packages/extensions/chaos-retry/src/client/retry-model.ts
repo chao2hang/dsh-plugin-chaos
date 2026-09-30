@@ -72,7 +72,7 @@ export function detectAbnormalEnd(input: AbnormalEndInput): AbnormalEnd | null {
   // yet; a queued/steering inbox row or an effective pending interaction means
   // the same.
   if (pendingInteraction !== undefined) return null
-  if (session.queue.length > 0) return null
+  if (session.pendingSubmissions.length > 0) return null
   if (chat === undefined || chat.legacy.partial !== null) return null
 
   const last = lastChatNode(chat)

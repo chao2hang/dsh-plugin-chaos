@@ -134,7 +134,11 @@ export function MobileOverlay({
 }: MobileOverlayProps): ReactNode {
   const viewport = useViewport()
   const mobile = isMobileViewport(viewport.width, viewport.height)
-  const summary = useSessions(state => state.current === undefined ? undefined : state.byId[state.current])
+  const summary = useSessions((state) => {
+    const current = Object.values(state.byId)
+      .find(session => (session.retainedBy.mainView ?? 0) > 0)?.id
+    return current === undefined ? undefined : state.byId[current]
+  })
   const [overflowOpen, setOverflowOpen] = useState(false)
   // The trajectory tab exists only while a session is active; the switches
   // seed from localStorage so the menu reflects the persisted visibility.

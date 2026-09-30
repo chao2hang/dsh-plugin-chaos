@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { Button, IconLoadingOutline16, IconRefreshOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, IconLoadingOutlineMedium, IconRefreshOutlineMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import type { RestartPort } from './restart-port.ts'
@@ -88,7 +88,7 @@ export function RestartSection({ port, busySessions, t }: RestartSectionProps) {
           <Button
             variant="outline"
             size="sm"
-            icon={<IconRefreshOutline16 size={16} />}
+            icon={<IconRefreshOutlineMedium size={16} />}
             onClick={() => { setPhase('confirming') }}
           >
             {t('action.restart')}
@@ -96,7 +96,7 @@ export function RestartSection({ port, busySessions, t }: RestartSectionProps) {
         )}
         {phase === 'restarting' && (
           <span className={css.waiting} role="status">
-            <IconLoadingOutline16 size={16} />
+            <IconLoadingOutlineMedium size={16} />
             {t('status.restarting')}
           </span>
         )}

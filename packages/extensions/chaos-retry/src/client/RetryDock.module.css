@@ -41,11 +41,12 @@
   gap: 4px;
   margin-left: auto;
   padding: 3px 10px;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 0.5px solid var(--dsw-alias-border-l2);
   border-radius: 999px;
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+  corner-shape: round;
 }
 
 .retryBtn:hover {

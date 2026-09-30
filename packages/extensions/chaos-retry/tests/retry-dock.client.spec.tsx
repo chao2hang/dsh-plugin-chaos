@@ -5,7 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { SessionPendingInteraction } from '@deepseek-ai/dsh-client-ui-session/client'
+import type { SessionStatus } from '@deepseek-ai/dsh-client-ui-session/client'
 import type { ChatSnapshot } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -29,15 +29,15 @@ function makeInputActions() {
 }
 
 /** Selector-seat stub: answers one selector over `value` and erases the hook type. */
-function seatOf<T>(value: T) {
+function seatOf<T>(value: T): (selector: (snapshot: T) => unknown) => never {
   return ((selector: (snapshot: T) => unknown) => selector(value)) as never
 }
 
 // Framework seats: the dock reads the standard seats, not owner props.
 function dockProps(fixture: AbnormalEndInput, inputActions: ReturnType<typeof makeInputActions>) {
   const chat = fixture.chat as ChatSnapshot
-  const pendingMap = new Map<SessionId, SessionPendingInteraction>()
-  if (fixture.pendingInteraction !== undefined) pendingMap.set(SID, fixture.pendingInteraction)
+  const pendingMap = new Map<SessionId, SessionStatus>()
+  pendingMap.set(SID, { running: undefined, pendingInteraction: fixture.pendingInteraction, completionUnread: false })
   return {
     sessionId: SID,
     session: fixture.session,
@@ -46,7 +46,8 @@ function dockProps(fixture: AbnormalEndInput, inputActions: ReturnType<typeof ma
     t: t as never,
     useSession: seatOf(fixture.session),
     useChat: seatOf(chat),
-    useSessionPendingInteraction: seatOf(pendingMap),
+    useSessionStatus: seatOf(pendingMap),
+    useSessionRetainInfo: (() => undefined) as never,
     useConversation: (() => undefined) as never,
     useProjection: (() => undefined) as never,
     useInput: (() => undefined) as never,

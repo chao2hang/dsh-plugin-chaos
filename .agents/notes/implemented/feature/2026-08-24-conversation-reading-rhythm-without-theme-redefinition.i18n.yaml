@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-24-conversation-reading-rhythm-without-theme-redefinition.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-24-conversation-reading-rhythm-without-theme-redefinition.md
-2026-08-24-conversation-reading-rhythm-without-theme-redefinition.md: 410a13c01180066c970777788573eb16d3d38610
-2026-08-24-conversation-reading-rhythm-without-theme-redefinition.zh.md: f3de82fc305758bf13151ed89130fbdf4037a03c
+/agent-note-conversation-reading-rhythm-without-theme-redefinition:
+  en: 28d932c03bb5394a
+  zh: c9dacfa29fb3eb67
+/agent-note-conversation-reading-rhythm-without-theme-redefinition/problem:
+  en: cd9e66218d5a5a70
+  zh: 598967fce4dc741a
+/agent-note-conversation-reading-rhythm-without-theme-redefinition/decision:
+  en: bb4153b9439778ca
+  zh: 0e4140627400d7e8
+/agent-note-conversation-reading-rhythm-without-theme-redefinition/alternatives-considered:
+  en: e8e9b0670e72888a
+  zh: 687e31771874adee
+/agent-note-conversation-reading-rhythm-without-theme-redefinition/consequences:
+  en: 9056cba907bf97aa
+  zh: 6aef85f2e330f591

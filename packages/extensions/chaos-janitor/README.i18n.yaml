@@ -1,6 +1,55 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-janitor/README.md
-README.md: d710ec41712cae59fd9acfa6036aada43f4f4467
-README.zh.md: 9f42d886c49ccb56b122a7a79650db57ea1dacab
+/:
+  en: e7de1ef33fd22e75
+  zh: 84e139566778eb3b
+/deepseek-ai-dsh-plugin-chaos-janitor:
+  en: 08f5e64e969cbd70
+  zh: b49294439375a399
+/deepseek-ai-dsh-plugin-chaos-janitor/summary:
+  en: 9a153a926e5af6af
+  zh: a2c9fe8775f83721
+/deepseek-ai-dsh-plugin-chaos-janitor/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-janitor/use-this-package:
+  en: 9321ee1ee40f2bb3
+  zh: 3b01206f5f17e3ed
+/deepseek-ai-dsh-plugin-chaos-janitor/use-this-package/when-to-choose-it:
+  en: 42fc62ab481182df
+  zh: 08fcca9eeb42ef5c
+/deepseek-ai-dsh-plugin-chaos-janitor/use-this-package/minimal-configuration:
+  en: 646849fe158e9130
+  zh: ab1aabaea80c9077
+/deepseek-ai-dsh-plugin-chaos-janitor/use-this-package/what-a-sweep-does:
+  en: 282af1e33c3506d8
+  zh: e7fb52fd4ef24aea
+/deepseek-ai-dsh-plugin-chaos-janitor/use-this-package/what-a-sweep-never-deletes:
+  en: 11c216b53986f7f0
+  zh: 0a32b72422397fb6
+/deepseek-ai-dsh-plugin-chaos-janitor/understand-the-implementation:
+  en: fb291a52ca05e5cd
+  zh: 47fee3deb02d412a
+/deepseek-ai-dsh-plugin-chaos-janitor/understand-the-implementation/design-concept:
+  en: b5f8575e845e328b
+  zh: 0c11e272c5ad46e7
+/deepseek-ai-dsh-plugin-chaos-janitor/understand-the-implementation/source-map:
+  en: 9c41ebce68e45476
+  zh: b77cdc8dd8c1532e
+/deepseek-ai-dsh-plugin-chaos-janitor/further-exploration:
+  en: 645d2d5672f16c6d
+  zh: ea510d1e9adfe260
+/deepseek-ai-dsh-plugin-chaos-janitor/model-experience:
+  en: 50a0d5d859cea765
+  zh: fdeb69eec0767bb7
+/deepseek-ai-dsh-plugin-chaos-janitor/model-experience/kv-cache-effect:
+  en: d4ae42191639990c
+  zh: cd26407559fb642f
+/deepseek-ai-dsh-plugin-chaos-janitor/known-limitations-and-deferred-work:
+  en: 0d74c3e380d0154a
+  zh: 617a391dbd289375
+/deepseek-ai-dsh-plugin-chaos-janitor/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-04-chaos-janitor-archived-session-retention.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-chaos-janitor-archived-session-retention.md
-2026-09-04-chaos-janitor-archived-session-retention.md: 4c3915e259bdc6e528ca013c602cb948add17316
-2026-09-04-chaos-janitor-archived-session-retention.zh.md: 9d6cdb9f7738fa3fb955c10b5ec5fa82064654e7
+/agent-note-chaos-janitor-archived-session-retention:
+  en: 166b767401c1e32f
+  zh: 6124d093ec90cf7f
+/agent-note-chaos-janitor-archived-session-retention/problem:
+  en: 7f949acbed3eca8e
+  zh: ddda211588fae435
+/agent-note-chaos-janitor-archived-session-retention/decision:
+  en: d7f93bc1097f42c5
+  zh: af687d51360bc6bb
+/agent-note-chaos-janitor-archived-session-retention/alternatives-considered:
+  en: 03eb6c097d562d33
+  zh: 2a0a9f0daf5046aa
+/agent-note-chaos-janitor-archived-session-retention/consequences:
+  en: 11a46ca259693fd4
+  zh: b7a663088e0ae4b2
+/agent-note-chaos-janitor-archived-session-retention/testing:
+  en: de26b6fe814b0b0b
+  zh: 33c2d07578177296

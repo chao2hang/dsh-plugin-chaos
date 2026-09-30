@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-05-janitor-generation-log-pattern.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-05-janitor-generation-log-pattern.md
-2026-09-05-janitor-generation-log-pattern.md: b73dbb0c9d0ffe1a23951d8ef1c27abdb78ba7aa
-2026-09-05-janitor-generation-log-pattern.zh.md: a1ad2a09d69da57e0cdf838393dc34bee257cc9b
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings:
+  en: 48a0e78021bbfe1d
+  zh: 22212d030c2d6335
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings/problem:
+  en: 082129c6113369b9
+  zh: 25d393058b18ff6a
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings/decision:
+  en: 1f4513613310c98b
+  zh: e8efd63e7553f2c7
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings/alternatives-considered:
+  en: 6e85bb04b4b07d6d
+  zh: 5f6f918a951368af
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings/consequences:
+  en: 2f25f25b7421f7b7
+  zh: 9272c311ac85c852
+/agent-note-janitor-generation-log-pattern-matches-both-compression-spellings/testing:
+  en: 84da4c56dbbafd36
+  zh: 5ddc8a3b008feca1

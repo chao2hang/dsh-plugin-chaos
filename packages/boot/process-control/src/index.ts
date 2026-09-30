@@ -70,7 +70,9 @@ export class ProcessControlService extends Service implements IProcessControl {
     this.pending = true
 
     try {
-      await appExit(0)
+      // The declared face is `void`, but a host may settle its exit request
+      // asynchronously; the successor spawns only after the tree releases.
+      await (appExit as (code: number) => Promise<void>)(0)
       const child = internals.spawn(process.execPath, process.argv.slice(1), {
         stdio: 'inherit',
         env: { ...process.env },

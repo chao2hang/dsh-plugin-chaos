@@ -49,11 +49,11 @@ type SettingsMutateResult = {
 }
 
 /** One provider group of the deployment model catalog. */
-type ModelCatalogGroup = { id: string; name: string; models: { id: string; name: string }[] }
+type ModelCatalogGroup = { id: string; name: string; models: readonly { id: string; name: string }[] }
 
 /** One model-catalog read for a session's workspace. */
 type ModelCatalogResult = {
-  result: { ok: true; value: { current: { provider: string; model: string }; groups: ModelCatalogGroup[] } }
+  result: { ok: true; value: { current: { provider: string; model: string }; groups: readonly ModelCatalogGroup[] } }
     | { ok: false; error: { message: string } }
 }
 
@@ -350,7 +350,7 @@ export function ModelCapabilities({ sessionId, api, describe, invalidateSettings
       setInitialDraft(nextDraft)
       // Seed the identity draft from the route's stored headers, re-selecting
       // the preset a saved value came from; its extras re-arm for clearing.
-      const storedHeaders = piAiSettings.providers?.[nextChoice.provider]?.headers ?? {}
+      const storedHeaders = piAiSettings.providers[nextChoice.provider]?.headers ?? {}
       const storedAgent = storedHeaders['user-agent'] ?? ''
       const storedPresetId = presetIdOfValue(CLIENT_IDENTITY_PRESETS, storedAgent)
       const storedPreset = CLIENT_IDENTITY_PRESETS.find(preset => preset.id === storedPresetId)

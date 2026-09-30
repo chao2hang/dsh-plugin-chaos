@@ -1,6 +1,55 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-retry/README.md
-README.md: a0b0063043476274ebdc3a8e1415d4cde93c0a10
-README.zh.md: a75b55d2126b3ee58f490abdbb8cd5782d3a082f
+/:
+  en: a56c1481b5a2b192
+  zh: 583b633d78fde13d
+/deepseek-ai-dsh-plugin-chaos-retry:
+  en: d52d18697c1b3ae3
+  zh: 987bb34c78d88dff
+/deepseek-ai-dsh-plugin-chaos-retry/summary:
+  en: 744477ab16eff04d
+  zh: 7bd6e00fc949a982
+/deepseek-ai-dsh-plugin-chaos-retry/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-retry/use-this-package:
+  en: cffc2aa614934a33
+  zh: af91ab8d0e858c6d
+/deepseek-ai-dsh-plugin-chaos-retry/use-this-package/when-to-choose-it:
+  en: 3b494acbda8541d8
+  zh: 18afb77b46ecdba2
+/deepseek-ai-dsh-plugin-chaos-retry/use-this-package/what-triggers-the-strip:
+  en: 1c3bfff90b919f91
+  zh: 0326773d9c5890d3
+/deepseek-ai-dsh-plugin-chaos-retry/use-this-package/what-retry-does:
+  en: db8f42c633814501
+  zh: 07ef09804cd8b4c2
+/deepseek-ai-dsh-plugin-chaos-retry/use-this-package/the-crash-recovery-row:
+  en: 10460cf5b1c103df
+  zh: 13730a4cfd743096
+/deepseek-ai-dsh-plugin-chaos-retry/understand-the-implementation:
+  en: fd120fd503b06ac8
+  zh: 3a39d6100a917b68
+/deepseek-ai-dsh-plugin-chaos-retry/understand-the-implementation/design-concept:
+  en: b89bceeec91e08f2
+  zh: 45d11f766ede940e
+/deepseek-ai-dsh-plugin-chaos-retry/understand-the-implementation/source-map:
+  en: e277ed29e4dd879e
+  zh: 28e41215b38168f2
+/deepseek-ai-dsh-plugin-chaos-retry/further-exploration:
+  en: 2287df8445868178
+  zh: 0b193d5e5f1595e5
+/deepseek-ai-dsh-plugin-chaos-retry/model-experience:
+  en: 41aab2bcd91595de
+  zh: f5ffc729faed9b29
+/deepseek-ai-dsh-plugin-chaos-retry/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/deepseek-ai-dsh-plugin-chaos-retry/known-limitations-and-deferred-work:
+  en: f7fa8d57181850b4
+  zh: 6f96ed80bfa535fa
+/deepseek-ai-dsh-plugin-chaos-retry/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98

@@ -7,9 +7,9 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  IconCloseOutline16,
-  IconCopyOutline16,
-  LinkIcon,
+  IconCloseOutlineMedium,
+  IconCopyOutlineMedium,
+  LinkIconMedium,
   MarkdownText,
   Modal,
   classifyLinkPath,
@@ -208,7 +208,7 @@ export const FilePreviewModal = memo(function FilePreviewModal({
         <div className={css.header}>
           <div className={css.titleSection}>
             <div className={css.titleRow}>
-              <LinkIcon kind={data?.kind === 'directory' ? 'folder' : linkKind} size={18} />
+              <LinkIconMedium kind={data?.kind === 'directory' ? 'folder' : linkKind} size={18} />
               <span className={css.fileName} title={data?.name || currentPath}>{data?.name || currentPath}</span>
               <div className={css.metaPills}>
                 {data && 'extension' in data && data.extension && (
@@ -251,10 +251,10 @@ export const FilePreviewModal = memo(function FilePreviewModal({
               <button
                 type="button"
                 className={css.btnAction}
-                onClick={handleCopy}
+                onClick={() => void handleCopy()}
                 title="复制全部内容"
               >
-                <IconCopyOutline16 size={13} />
+                <IconCopyOutlineMedium size={13} />
                 <span>{copied ? '已复制' : '复制'}</span>
               </button>
             )}
@@ -279,7 +279,7 @@ export const FilePreviewModal = memo(function FilePreviewModal({
               aria-label="关闭预览"
               title="关闭"
             >
-              <IconCloseOutline16 size={16} />
+              <IconCloseOutlineMedium size={16} />
             </button>
           </div>
         </div>

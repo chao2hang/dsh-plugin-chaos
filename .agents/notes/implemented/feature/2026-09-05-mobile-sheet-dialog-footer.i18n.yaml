@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-05-mobile-sheet-dialog-footer.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-05-mobile-sheet-dialog-footer.md
-2026-09-05-mobile-sheet-dialog-footer.md: cab06cedc6bdaf5e26e60c7d73551feb733fe50b
-2026-09-05-mobile-sheet-dialog-footer.zh.md: cf5d549682179967282a4e5f88ab37681163ad1a
+/agent-note-phone-dialogs-open-at-the-large-detent-with-their-action-row-pinned:
+  en: 147dbe84e7015258
+  zh: 68bef316d03aa261
+/agent-note-phone-dialogs-open-at-the-large-detent-with-their-action-row-pinned/problem:
+  en: 818368d62f00a4e4
+  zh: 25e3cd017f35a129
+/agent-note-phone-dialogs-open-at-the-large-detent-with-their-action-row-pinned/decision:
+  en: 6157f6fd6d35df6e
+  zh: e6331502e5031c37
+/agent-note-phone-dialogs-open-at-the-large-detent-with-their-action-row-pinned/alternatives-considered:
+  en: 88cffd90c2df80ce
+  zh: a5a496df323a13d9
+/agent-note-phone-dialogs-open-at-the-large-detent-with-their-action-row-pinned/consequences:
+  en: 6c4258147b2b1cef
+  zh: f19e94cf45c34611

@@ -28,7 +28,8 @@ function renderSection(port: RestartPort, busy = 0) {
     <RestartSection
       port={port} busySessions={() => busy} close={() => {}} t={t as never}
       useSessions={(() => undefined) as never} useWorkspaces={(() => undefined) as never}
-      useSessionPendingInteraction={(() => undefined) as never}
+      useSessionStatus={(() => new Map()) as never}
+      useSessionRetainInfo={() => undefined}
       usePanelInfo={(() => undefined) as never}
       useResource={(() => undefined) as never}
     />,

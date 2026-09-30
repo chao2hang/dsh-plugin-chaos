@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-24-session-log-download-sidebar-menu.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-24-session-log-download-sidebar-menu.md
-2026-08-24-session-log-download-sidebar-menu.md: d81a3b80c605eac39ae8dbba32ca02ab468417a2
-2026-08-24-session-log-download-sidebar-menu.zh.md: 2ad1afb7bc6d6632d99852736375797acf2d88e7
+/agent-note-session-log-download-sidebar-menu:
+  en: 3eeee40ac973f4d4
+  zh: f5ca32928dc3d2a3
+/agent-note-session-log-download-sidebar-menu/problem:
+  en: d150463a9ed737a1
+  zh: a31535f07662df94
+/agent-note-session-log-download-sidebar-menu/decision:
+  en: 09ca2d5efb9e18a9
+  zh: 0411387028bfd302
+/agent-note-session-log-download-sidebar-menu/alternatives-considered:
+  en: 5cc5e56b2505aa57
+  zh: b156abf0d4eff7d1
+/agent-note-session-log-download-sidebar-menu/consequences:
+  en: 8ee0ed9cb4e1104d
+  zh: 88814d6d4d18c1c9

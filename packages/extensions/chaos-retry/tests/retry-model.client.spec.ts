@@ -51,7 +51,7 @@ describe('detectAbnormalEnd', () => {
         partial: { turn: 1, step: 1, blocks: [] },
       }),
     }))).toBeNull()
-    expect(detectAbnormalEnd(makeSession({ session: { queue: [{ id: 'q' } as never] } }))).toBeNull()
+    expect(detectAbnormalEnd(makeSession({ session: { pendingSubmissions: [{ requestId: 'q', placement: 'queued', time: 0, text: '', attachments: [] } as never] } }))).toBeNull()
     expect(detectAbnormalEnd(makeSession({
       pendingInteraction: new PendingApproval(SID, { toolName: 'bash' }),
     }))).toBeNull()

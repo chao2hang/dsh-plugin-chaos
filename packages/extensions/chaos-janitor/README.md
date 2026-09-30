@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos-janitor` deletes an archived session's directory once its session log has been quiet for more than `maxArchivedDays` days, sweeping the sessions root the JSONL backend writes. The default `maxArchivedDays: 0` keeps the plugin mounted but deletes nothing, so retention is always an explicit choice. A sweep never deletes a live session, a session whose log cannot be read, or a directory holding anything but a known log file — it records a skip instead of guessing. Set `dryRun: true` to log the deletions a retention value would perform before committing to it. The plugin ships no browser half and renders no UI.
+`dsh-plugin-chaos-janitor` deletes an archived session's directory once its session log has been quiet for more than `maxArchivedDays` days, sweeping the sessions root the JSONL backend writes. The default `maxArchivedDays: 0` keeps the plugin mounted but deletes nothing, so retention is always an explicit choice. A sweep never deletes a live session, a session whose log cannot be read, or a directory holding anything but a known log file — it records a skip instead of guessing. Set `dryRun: true` to log would-be deletions before committing to them. The plugin ships no browser half and renders no UI.
 
 ## Table of Contents
 

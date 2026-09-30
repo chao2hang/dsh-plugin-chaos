@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-plugin-chaos-restart` 让运维从浏览器替换运行中的 web 服务器进程：web 服务器上的一对宿主路由，以及驱动它们的设置页「系统」区块。`GET /api/system/status` 报告启动方式能否派生后继进程；`POST /api/system/restart` 等待 process-control 服务销毁当前应用树并以相同命令行派生分离的后继进程，然后在进程结束前经仍然打开的连接回执。会话是持久的——重启付出的是进行中的回合，不是对话历史——确认步骤会在有会话运行时给出警告。宿主报告不支持重启时，区块给出说明而不是控件。
+`dsh-plugin-chaos-restart` 让运维从浏览器替换运行中的 web 服务器进程：一对宿主路由，以及驱动它们的设置页「系统」区块。`GET /api/system/status` 报告启动方式能否派生后继进程；`POST /api/system/restart` 经 process-control 服务销毁当前应用树并以相同命令行派生分离的后继进程，先经仍然打开的连接回执。会话是持久的——重启付出的是进行中的回合，不是历史——确认步骤会在有会话运行时给出警告。宿主报告不支持重启时，区块给出说明而不是控件。
 
 ## 目录
 

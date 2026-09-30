@@ -89,7 +89,7 @@ describe('handleFilePreview HTTP route', () => {
     const fake = createFakeResponse()
     await handleFilePreview(req, fake.res)
     expect(fake.statusCode).toBe(400)
-    expect(JSON.parse(fake.body).error).toContain('Missing path')
+    expect((JSON.parse(fake.body) as { error: string }).error).toContain('Missing path')
   })
 
   it('returns 404 for nonexistent path', async () => {
@@ -97,7 +97,7 @@ describe('handleFilePreview HTTP route', () => {
     const fake = createFakeResponse()
     await handleFilePreview(req, fake.res)
     expect(fake.statusCode).toBe(404)
-    expect(JSON.parse(fake.body).error).toBe('File not found')
+    expect((JSON.parse(fake.body) as { error: string }).error).toBe('File not found')
   })
 
   it('serves JSON metadata and text content for code/json files', async () => {
@@ -106,7 +106,15 @@ describe('handleFilePreview HTTP route', () => {
     await handleFilePreview(req, fake.res)
     expect(fake.statusCode).toBe(200)
     expect(fake.headers['content-type']).toContain('application/json')
-    const json = JSON.parse(fake.body)
+    const json = JSON.parse(fake.body) as {
+      ok: boolean
+      kind: string
+      name: string
+      extension: string
+      language: string
+      content: string
+      lineCount: number
+    }
     expect(json.ok).toBe(true)
     expect(json.kind).toBe('text')
     expect(json.name).toBe('package.json')
@@ -121,10 +129,14 @@ describe('handleFilePreview HTTP route', () => {
     const fake = createFakeResponse()
     await handleFilePreview(req, fake.res)
     expect(fake.statusCode).toBe(200)
-    const json = JSON.parse(fake.body)
+    const json = JSON.parse(fake.body) as {
+      ok: boolean
+      kind: string
+      entries: { name: string }[]
+    }
     expect(json.ok).toBe(true)
     expect(json.kind).toBe('directory')
-    expect(json.entries.some((e: { name: string }) => e.name === 'client')).toBe(true)
-    expect(json.entries.some((e: { name: string }) => e.name === 'index.ts')).toBe(true)
+    expect(json.entries.some(e => e.name === 'client')).toBe(true)
+    expect(json.entries.some(e => e.name === 'index.ts')).toBe(true)
   })
 })

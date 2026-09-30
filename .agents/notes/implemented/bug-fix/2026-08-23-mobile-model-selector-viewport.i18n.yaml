@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-23-mobile-model-selector-viewport.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-23-mobile-model-selector-viewport.md
-2026-08-23-mobile-model-selector-viewport.md: daafbb3a88ea0cf46bddff538f8ae15de781a9f8
-2026-08-23-mobile-model-selector-viewport.zh.md: 8455add7c0344c808360a35602c5c64b0ddb56c5
+/agent-note-mobile-model-selector-viewport:
+  en: 9d9d5d55a0932e7b
+  zh: 0df934836316afae
+/agent-note-mobile-model-selector-viewport/problem:
+  en: d08d34b175321947
+  zh: 9b54efdc1ac0500c
+/agent-note-mobile-model-selector-viewport/decision:
+  en: a51699efb42955f6
+  zh: f7e69d4fd36b534f
+/agent-note-mobile-model-selector-viewport/alternatives-considered:
+  en: dd5b40546dadd65d
+  zh: a14983a9ade7cc60
+/agent-note-mobile-model-selector-viewport/consequences:
+  en: fc002a6ec06ef403
+  zh: fe8ce3bd3d4c9d59

@@ -3,7 +3,7 @@
 // through Cordis Context (not hand-built ctx.plugin), and verifies the mobile
 // overlay registers into the shell.overlay slot with the correct inject face.
 import { Context } from '@deepseek-ai/cordis'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import { stubConfigForm } from '@deepseek-ai/dsh-client-test-runtime'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
@@ -27,11 +27,13 @@ async function bench() {
   ctx.provide('locale', new LocaleRuntime(ctx))
   ctx.provide('connection', { api: { settings: {} }, isLoopback: false } as never)
   ctx.provide('remote', { $on: () => () => {} } as never)
-  ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
+  ctx.provide('configForms', { get: () => stubConfigForm().scope } as never)
   await ctx.plugin({ inject: themeInject, apply: themeApply }).await()
   await slotsFiber.await()
   await ctx.plugin({ inject: layoutInject, apply: layoutApply }).await()
 
+  // ui-layout now registers command labels through the shortcuts registry.
+  ctx.provide('shortcuts', { register: () => () => {} } as never)
   // chaos-mobile also requires 'conversation' — provide a minimal stub.
   ctx.provide('conversation', { createDrafts: () => [], releaseDraftAttachments: () => {} } as never)
   // ...and 'uiWorkspace' for the overflow sheet's new-session action.

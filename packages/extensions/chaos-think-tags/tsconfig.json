@@ -4,9 +4,12 @@
   "include": ["src"],
   "references": [
     { "path": "../../../vendor/cordis" },
-    { "path": "../../client/ui-chat" },
-    { "path": "../../client/locale" },
-    { "path": "../../client/ui-conversation" },
+    { "path": "../../client/ui-chat/tsconfig.host.json" },
+    { "path": "../../client/ui-chat/tsconfig.client.json" },
+    { "path": "../../client/locale/tsconfig.host.json" },
+    { "path": "../../client/locale/tsconfig.client.json" },
+    { "path": "../../client/ui-conversation/tsconfig.host.json" },
+    { "path": "../../client/ui-conversation/tsconfig.client.json" },
     { "path": "../../client/ui-primitives" },
     { "path": "../../client/ui-renderer" },
     { "path": "../../client/ui-slots" }

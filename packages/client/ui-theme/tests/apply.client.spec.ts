@@ -37,7 +37,7 @@ async function bench(isLoopback = true) {
     ns: THEME_SETTINGS_NAMESPACE,
     schema: ThemeSettingsSchema.toJSON(),
     value: { ...section },
-    applies: 'live' as const,
+    autoGenerate: true, applies: 'live' as const,
     secrets: [],
     revision: 0,
   })
@@ -88,7 +88,7 @@ function fontSizeFaceOf(slots: SlotRegistry) {
 
 describe('ui-theme apply', () => {
   it('declares the slot and locale services', () => {
-    expect(inject).toEqual(['slots', 'locale', 'remote', 'settingsScope'])
+    expect(inject).toEqual(['slots', 'locale', 'remote', 'configForms'])
   })
 
   it('provides the service, registers localized copy, and registers both rows (declaration before or after apply)', async () => {
@@ -153,7 +153,7 @@ describe('ui-theme apply', () => {
     await vi.waitFor(() => { expect(b.mutate).toHaveBeenCalledTimes(2) })
   })
 
-  it('loads Host settings at boot, refreshes its namespace, and keeps remote browsers process-local', async () => {
+  it('loads Host settings at boot, refreshes its namespace, and writes through on remote browsers', async () => {
     const b = await bench()
     // The shared mirror read once at bench time; a Host-side change reaches it
     // through the document invalidation, exactly as production announces one.
@@ -187,7 +187,10 @@ describe('ui-theme apply', () => {
     remoteTheme.setTheme('dark')
     await Promise.resolve()
     expect(remote.describe).not.toHaveBeenCalled()
-    expect(remote.mutate).not.toHaveBeenCalled()
+    // Chaos serves authenticated remote browsers from the host settings
+    // surface, so the write reaches the Host instead of staying process-local.
+    await vi.waitFor(() => { expect(remote.mutate).toHaveBeenCalledTimes(1) })
+    expect(remote.mutate.mock.calls[0]![1]).toMatchObject([{ op: 'set', path: ['preference'], value: 'dark' }])
   })
 
   it('activates before a slow settings refresh and converges when it settles', async () => {

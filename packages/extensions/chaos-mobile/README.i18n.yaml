@@ -1,6 +1,37 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-mobile/README.md
-README.md: 2a7804b1e32ed65fad8f1b3d81e8b8bb7c0b36d2
-README.zh.md: 7ff88e902ca2e97a800b5672dcef05c715f56ffa
+/:
+  en: b57997ecd895a9f5
+  zh: b85450351ba0a3b3
+/deepseek-ai-dsh-plugin-chaos-mobile:
+  en: 2182566e4561f2fa
+  zh: 632d51bb11dbf574
+/deepseek-ai-dsh-plugin-chaos-mobile/summary:
+  en: c730948ded7d8054
+  zh: a4a098e84b7726ae
+/deepseek-ai-dsh-plugin-chaos-mobile/table-of-contents:
+  en: 57371c9d3ad66e0d
+  zh: f44665b0c71e6abe
+/deepseek-ai-dsh-plugin-chaos-mobile/use-this-package:
+  en: b132181e04733e03
+  zh: 5fff2f047921d9f5
+/deepseek-ai-dsh-plugin-chaos-mobile/use-this-package/no-configuration:
+  en: 32f571a7bc02dd6b
+  zh: 2e49f31520f7ee6b
+/deepseek-ai-dsh-plugin-chaos-mobile/composition:
+  en: da3c9acf99df3241
+  zh: 316fb5180fcedcc8
+/deepseek-ai-dsh-plugin-chaos-mobile/model-experience:
+  en: 45fd95a48fe60797
+  zh: 1f1005a2bb0241c4
+/deepseek-ai-dsh-plugin-chaos-mobile/model-experience/kv-cache-effect:
+  en: d4ae42191639990c
+  zh: 4a59b767ccdecda9
+/deepseek-ai-dsh-plugin-chaos-mobile/known-limitations-and-deferred-work:
+  en: 96c072870fb1b434
+  zh: 4de30635c810411f
+/deepseek-ai-dsh-plugin-chaos-mobile/known-limitations-and-deferred-work/dev-note:
+  en: 79cf64b7d8b55694
+  zh: c606889caf84d717

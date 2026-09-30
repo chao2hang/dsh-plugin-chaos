@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-07-chaos-auth-route-mode.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-07-chaos-auth-route-mode.md
-2026-09-07-chaos-auth-route-mode.md: 1945aef28996161c273b8b454e1ca18e31f4cda0
-2026-09-07-chaos-auth-route-mode.zh.md: 282e54525df0d3a4d699b35cfa45c86185933ef2
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver:
+  en: ece7fc5fd9c10754
+  zh: e794678a58a99a23
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver/problem:
+  en: 3b4d6e99430ece10
+  zh: b30a31bcd35050c6
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver/decision:
+  en: 63ad5967461f729b
+  zh: ba369e0b0899b8cb
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver/alternatives-considered:
+  en: 575fbbfc9024d8a5
+  zh: fe0b18c8dd711f5e
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver/consequences:
+  en: 07699ae12d7f7903
+  zh: d0d3fb00108b77f8
+/agent-note-chaos-auth-dual-mode-entry-route-gating-on-the-published-webserver/testing:
+  en: 94e3288767a45eab
+  zh: 24d81137de0f0255

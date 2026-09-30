@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-04-chaos-fork-baseline-supersession.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-chaos-fork-baseline-supersession.md
-2026-09-04-chaos-fork-baseline-supersession.md: 8cb14ee9e49c3141d66531a76e648aa19d6f97af
-2026-09-04-chaos-fork-baseline-supersession.zh.md: 64f483e3fde436e3c41a834bb5b4db12528f2f29
+/agent-note-chaos-fork-baseline-supersession-push:
+  en: 6f36a67a0f98e340
+  zh: 753ce5ed11944d2f
+/agent-note-chaos-fork-baseline-supersession-push/problem:
+  en: 7922084641cdc73a
+  zh: 0da2aa9129d0ecc0
+/agent-note-chaos-fork-baseline-supersession-push/decision:
+  en: a8001efc4ec0e017
+  zh: b39d69eaac9e2990
+/agent-note-chaos-fork-baseline-supersession-push/alternatives-considered:
+  en: afe41c47973f6914
+  zh: 15c2ba43d79a46dd
+/agent-note-chaos-fork-baseline-supersession-push/consequences:
+  en: 0111d7b584bb829b
+  zh: 047e43264906087a
+/agent-note-chaos-fork-baseline-supersession-push/testing:
+  en: 079323230a38a68e
+  zh: 5ade23f62c422945

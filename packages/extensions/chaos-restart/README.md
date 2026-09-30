@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-plugin-chaos-restart` lets an operator replace the running web-server process from the browser: a host route pair on the web server and a System section on the Settings page that drives them. `GET /api/system/status` reports whether the launcher can spawn a successor; `POST /api/system/restart` waits for the process-control service to dispose the current application tree and spawn a detached successor with the same command line, then acknowledges over the still-open connection before the process completes. Sessions are durable — a restart costs the in-flight turn, not the conversation history — and the confirmation step warns when sessions are running. The section explains instead of offering the control when the host reports no restart capability.
+`dsh-plugin-chaos-restart` lets an operator replace the running web-server process from the browser: a host route pair and a System section on the Settings page that drives them. `GET /api/system/status` reports whether the launcher can spawn a successor; `POST /api/system/restart` disposes the current application tree through the process-control service and spawns a detached successor with the same command line, acknowledging over the still-open connection first. Sessions are durable — a restart costs the in-flight turn, not history — and the confirmation step warns when sessions run. The section explains instead of offering the control when no restart capability is reported.
 
 ## Table of Contents
 

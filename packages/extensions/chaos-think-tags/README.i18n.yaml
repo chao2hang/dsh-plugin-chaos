@@ -1,6 +1,52 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/extensions/chaos-think-tags/README.md
-README.md: 3c5f5a65f5fdef97b593e09f6691edd15d86229e
-README.zh.md: 580bdb92bcdb55e271e263d92b0a08a5e3810630
+/:
+  en: 5eac07dd27151613
+  zh: 35dac851fd4dbb19
+/deepseek-ai-dsh-plugin-chaos-think-tags:
+  en: bdb314f386fe77c8
+  zh: fc109c23e0c4b13b
+/deepseek-ai-dsh-plugin-chaos-think-tags/summary:
+  en: 88b8c72fd0e88f22
+  zh: 356fdcba8404103e
+/deepseek-ai-dsh-plugin-chaos-think-tags/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-plugin-chaos-think-tags/use-this-package:
+  en: 39cd8386b82cfae7
+  zh: edd37ccbbb7446e7
+/deepseek-ai-dsh-plugin-chaos-think-tags/use-this-package/when-to-choose-it:
+  en: 2ea30fab4b28788d
+  zh: ff02d7cc530cd507
+/deepseek-ai-dsh-plugin-chaos-think-tags/use-this-package/how-parsing-works:
+  en: a7b737eaffeb55bb
+  zh: 4c54b07471b5d351
+/deepseek-ai-dsh-plugin-chaos-think-tags/use-this-package/what-stays-untouched:
+  en: 392b3b79bff812d8
+  zh: 19ff68f4799fae78
+/deepseek-ai-dsh-plugin-chaos-think-tags/understand-the-implementation:
+  en: 776d4a4be68de1d2
+  zh: 6776900382a2ef3e
+/deepseek-ai-dsh-plugin-chaos-think-tags/understand-the-implementation/renderer-replacement:
+  en: 4c68796bdff6b879
+  zh: 0bd615401e3d1bb9
+/deepseek-ai-dsh-plugin-chaos-think-tags/understand-the-implementation/source-map:
+  en: 9941c8945183e72c
+  zh: c94ea225fa9b3f6d
+/deepseek-ai-dsh-plugin-chaos-think-tags/further-exploration:
+  en: 8cbc20e594f8cb76
+  zh: c417d3be4f5b5ecd
+/deepseek-ai-dsh-plugin-chaos-think-tags/model-experience:
+  en: 462881e596051e92
+  zh: 25d9898aff1b5976
+/deepseek-ai-dsh-plugin-chaos-think-tags/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/deepseek-ai-dsh-plugin-chaos-think-tags/known-limitations-and-deferred-work:
+  en: 8170a435bd8911a4
+  zh: f5145322094ee5ea
+/deepseek-ai-dsh-plugin-chaos-think-tags/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 3bb0c20c93f16f98
