@@ -41,7 +41,7 @@ const CSS_SUFFIX = '.mjs'
  */
 function stylesheetPath(source, importer) {
   const emitted = resolve(dirname(importer), source)
-  const marker = '/lib/types/'
+  const marker = '/lib/'
   const boundary = emitted.indexOf(marker)
   if (boundary < 0) return emitted
   return resolve(emitted.slice(0, boundary), 'src', emitted.slice(boundary + marker.length))
@@ -50,7 +50,7 @@ function stylesheetPath(source, importer) {
 await build({
   cwd: packageDir,
   name: `${id}/client`,
-  entry: { client: 'lib/types/client/index.js' },
+  entry: { client: 'lib/client/index.js' },
   outDir: 'lib',
   format: 'cjs',
   platform: 'browser',
