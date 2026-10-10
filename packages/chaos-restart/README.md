@@ -44,7 +44,7 @@ Choose this control when the web server runs under a launcher that can spawn a s
 |---|---|---|
 | `enabled` | `true` | Mount the host routes; `false` leaves them unregistered while the browser section stays mounted and reports no capability |
 
-The Chaos bundle patch mounts the row with `enabled: true`. The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-plugin-chaos-restart) is the exhaustive source for every accepted field.
+The Chaos bundle patch mounts the row with `enabled: true`. The generated [configuration catalog](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-restart) is the exhaustive source for every accepted field.
 
 ### What the routes answer
 
@@ -95,11 +95,11 @@ The client entry registers the `chaos-restart` locale namespace and one `setting
 
 Read these pages when the package-level contract is not enough.
 
-- [Process control](../../boot/process-control/README.md) — the service that disposes the current tree and spawns the successor.
+- [Process control](../process-control/README.md) — the service that disposes the current tree and spawns the successor.
 - [Retry strip](../chaos-retry/README.md) — the recovery affordance for the turn a restart interrupts.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that mounts this row.
-- [Host web server](../../host/webserver/README.md) — the route registration seam.
-- [Generated configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-plugin-chaos-restart) — the accepted config fields and their JSDoc.
+- [Host web server](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/host/webserver/README.md) — the route registration seam.
+- [Generated configuration catalog](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-restart) — the accepted config fields and their JSDoc.
 
 -----
 

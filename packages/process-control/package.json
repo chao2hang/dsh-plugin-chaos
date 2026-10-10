@@ -7,8 +7,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
-    "directory": "packages/boot/process-control"
+    "url": "git+https://github.com/chao2hang/dsh-plugin-chaos.git",
+    "directory": "packages/process-control"
   },
   "type": "module",
   "main": "lib/index.js",
@@ -22,19 +22,18 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "bundle": "tsdown",
+    "bundle": "tsc -p tsconfig.build.json",
     "watch": "tsdown --watch"
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-cmdline": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
+    "@deepseek-ai/dsh-cmdline": "link:/home/chaos/deepseek-harness-chaos/packages/boot/cmdline"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-cmdline": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
+    "@deepseek-ai/dsh-cmdline": "link:/home/chaos/deepseek-harness-chaos/packages/boot/cmdline",
+    "tsdown": "^0.22.2"
   },
   "files": [
     "lib/index.js",

@@ -1,0 +1,32 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/chaos-auth"
+    },
+    {
+      "path": "packages/chaos-bundle"
+    },
+    {
+      "path": "packages/chaos-janitor"
+    },
+    {
+      "path": "packages/chaos-mobile"
+    },
+    {
+      "path": "packages/chaos-models"
+    },
+    {
+      "path": "packages/chaos-restart"
+    },
+    {
+      "path": "packages/chaos-retry"
+    },
+    {
+      "path": "packages/chaos-think-tags"
+    },
+    {
+      "path": "packages/process-control"
+    }
+  ]
+}

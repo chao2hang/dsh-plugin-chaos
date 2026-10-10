@@ -48,7 +48,7 @@ kind: "package-reference"
 | `intervalMinutes` | `60` | 清扫节奏，单位为分钟 |
 | `dryRun` | `false` | 只记录将执行的删除而不真正删除 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-plugin-chaos-janitor)是每个受支持字段的穷尽式真源。
+生成的[配置目录](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-janitor)是每个受支持字段的穷尽式真源。
 
 ### 清扫做什么
 
@@ -96,11 +96,11 @@ kind: "package-reference"
 
 当包级约定不够用时阅读以下页面。
 
-- [JSONL 会话持久化](../../session/session-persistence-jsonl/README.zh.md)——提供被清扫路径的布局契约所属后端。
-- [会话持久化子系统](../../../docs/subsystems/persistence.zh.md)——后端无关的服务语义。
-- [工作区 registry](../../workspace/workspace/README.zh.md)——清扫读取的归档集合。
+- [JSONL 会话持久化](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/session/session-persistence-jsonl/README.zh.md)——提供被清扫路径的布局契约所属后端。
+- [会话持久化子系统](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/persistence.zh.md)——后端无关的服务语义。
+- [工作区 registry](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/workspace/workspace/README.zh.md)——清扫读取的归档集合。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——插入本行的层。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-plugin-chaos-janitor)——受支持的配置字段及其 JSDoc。
+- [生成的配置目录](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-janitor)——受支持的配置字段及其 JSDoc。
 
 -----
 

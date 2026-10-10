@@ -74,8 +74,8 @@ The client registers a keyed `conversation.chat.node` renderer for `assistant-st
 
 Read these pages when the package-level contract is not enough.
 
-- [Chat UI](../../client/ui-chat/README.md) — the keyed node renderer family and the default assistant renderer this plugin shadows.
-- [Conversation UI](../../client/ui-conversation/README.md) — the assistant blocks the normalizer consumes.
+- [Chat UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-chat/README.md) — the keyed node renderer family and the default assistant renderer this plugin shadows.
+- [Conversation UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-conversation/README.md) — the assistant blocks the normalizer consumes.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that inserts this row.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that mounts this row over the web-app composition.
 

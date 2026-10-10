@@ -74,8 +74,8 @@ kind: "package-reference"
 
 当包级约定不够用时阅读以下页面。
 
-- [聊天 UI](../../client/ui-chat/README.zh.md)——带键节点渲染器家族与本插件遮蔽的默认 assistant 渲染器。
-- [会话 UI](../../client/ui-conversation/README.zh.md)——normalizer 消费的 assistant block。
+- [聊天 UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-chat/README.zh.md)——带键节点渲染器家族与本插件遮蔽的默认 assistant 渲染器。
+- [会话 UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-conversation/README.zh.md)——normalizer 消费的 assistant block。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——插入本行的层。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——在 web-app 组合之上挂载本行的层。
 

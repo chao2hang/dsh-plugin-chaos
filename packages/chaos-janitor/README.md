@@ -48,7 +48,7 @@ Choose this sweeper when archived sessions should not accumulate forever under t
 | `intervalMinutes` | `60` | Sweep cadence in minutes |
 | `dryRun` | `false` | Log the deletions a sweep would perform without deleting |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-plugin-chaos-janitor) is the exhaustive source for every accepted field.
+The generated [configuration catalog](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-janitor) is the exhaustive source for every accepted field.
 
 ### What a sweep does
 
@@ -96,11 +96,11 @@ The plugin entry derives the sessions root and owns the timer lifecycle; the swe
 
 Read these pages when the package-level contract is not enough.
 
-- [JSONL session persistence](../../session/session-persistence-jsonl/README.md) — the backend whose layout contract supplies the swept paths.
-- [Session persistence subsystem](../../../docs/subsystems/persistence.md) — backend-neutral service semantics.
-- [Workspace registry](../../workspace/workspace/README.md) — the archived set the sweep reads.
+- [JSONL session persistence](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/session/session-persistence-jsonl/README.md) — the backend whose layout contract supplies the swept paths.
+- [Session persistence subsystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/persistence.md) — backend-neutral service semantics.
+- [Workspace registry](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/workspace/workspace/README.md) — the archived set the sweep reads.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that inserts this row.
-- [Generated configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-plugin-chaos-janitor) — the accepted config fields and their JSDoc.
+- [Generated configuration catalog](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-janitor) — the accepted config fields and their JSDoc.
 
 -----
 

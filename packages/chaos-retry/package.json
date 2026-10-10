@@ -7,8 +7,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
-    "directory": "packages/extensions/chaos-retry"
+    "url": "git+https://github.com/chao2hang/dsh-plugin-chaos.git",
+    "directory": "packages/chaos-retry"
   },
   "type": "module",
   "main": "lib/index.js",
@@ -41,31 +41,42 @@
     }
   },
   "scripts": {
-    "bundle": "tsdown && node ../chaos-bundle/scripts/client-bundle.mjs",
+    "bundle": "tsc -p tsconfig.build.json && node ../chaos-bundle/scripts/client-bundle.mjs",
     "watch": "tsdown --watch"
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
+    "@deepseek-ai/dsh-api-session-controller": "link:/home/chaos/deepseek-harness-chaos/packages/api/session-controller",
+    "@deepseek-ai/dsh-client-locale": "link:/home/chaos/deepseek-harness-chaos/packages/client/locale",
+    "@deepseek-ai/dsh-client-ui-chat": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-chat",
+    "@deepseek-ai/dsh-client-ui-conversation": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation",
+    "@deepseek-ai/dsh-client-ui-primitives": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives",
+    "@deepseek-ai/dsh-client-ui-renderer": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer",
+    "@deepseek-ai/dsh-client-ui-session": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-session",
+    "@deepseek-ai/dsh-client-ui-slots": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots",
+    "@deepseek-ai/dsh-session": "link:/home/chaos/deepseek-harness-chaos/packages/core/session"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-api-session-controller": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-approval": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-chat": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-conversation": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-renderer": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-session": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
+    "@deepseek-ai/dsh-api-session-controller": "link:/home/chaos/deepseek-harness-chaos/packages/api/session-controller",
+    "@deepseek-ai/dsh-attachment": "link:/home/chaos/deepseek-harness-chaos/packages/attachment/attachment",
+    "@deepseek-ai/dsh-client-locale": "link:/home/chaos/deepseek-harness-chaos/packages/client/locale",
+    "@deepseek-ai/dsh-client-test-runtime": "link:/home/chaos/deepseek-harness-chaos/packages/test-support/client-runtime",
+    "@deepseek-ai/dsh-client-ui-approval": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-approval",
+    "@deepseek-ai/dsh-client-ui-chat": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-chat",
+    "@deepseek-ai/dsh-client-ui-conversation": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation",
+    "@deepseek-ai/dsh-client-ui-primitives": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives",
+    "@deepseek-ai/dsh-client-ui-renderer": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer",
+    "@deepseek-ai/dsh-client-ui-session": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-session",
+    "@deepseek-ai/dsh-client-ui-slots": "link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots",
+    "@deepseek-ai/dsh-session": "link:/home/chaos/deepseek-harness-chaos/packages/core/session",
     "@testing-library/react": "^16.1.0",
     "@types/react": "~18.3.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "lightningcss": "^1.30.1",
+    "tsdown": "^0.22.2"
   },
   "files": [
     "lib/index.js",

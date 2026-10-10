@@ -34,7 +34,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-plugin-chaos
 dsh plugin --profile <name> remove @deepseek-ai/dsh-plugin-chaos
 ```
 
-该命令在首次使用时初始化 profile，在 profile 目录内转发给 pnpm，然后按安装状态对账 `dsh.profile.bundles` 列表：解析到一个声明了 `dsh.bundle.patch` 的包的依赖——即本包——加入层栈，移除该依赖则将其移出。没有该声明的依赖保持为普通依赖，对账时会给出警告。从源码检出安装时，请传带 `./` 前缀的包路径（`dsh plugin --profile <name> add ./packages/extensions/chaos-bundle`），让启动器把它锚定到调用目录。`@deepseek-ai/dsh-base` 这类内置 bundle 从 dsh 安装目录解析，对账绝不会改动它们。
+该命令在首次使用时初始化 profile，在 profile 目录内转发给 pnpm，然后按安装状态对账 `dsh.profile.bundles` 列表：解析到一个声明了 `dsh.bundle.patch` 的包的依赖——即本包——加入层栈，移除该依赖则将其移出。没有该声明的依赖保持为普通依赖，对账时会给出警告。从源码检出安装时，请传带 `./` 前缀的包路径（`dsh plugin --profile <name> add .`），让启动器把它锚定到调用目录。`@deepseek-ai/dsh-base` 这类内置 bundle 从 dsh 安装目录解析，对账绝不会改动它们。
 
 也可以在 profile 的 `dsh.profile.bundles` 列表中、`@deepseek-ai/dsh-web-app` 之后列出本 bundle：
 
@@ -52,7 +52,7 @@ dsh plugin --profile <name> remove @deepseek-ai/dsh-plugin-chaos
 
 | 行 | 包 | 增加的内容 |
 |---|---|---|
-| `process-control` | [process-control](../../boot/process-control/README.zh.md) | 报告当前进程能否替换自身，并在被要求时派生后继进程 |
+| `process-control` | [process-control](../process-control/README.zh.md) | 报告当前进程能否替换自身，并在被要求时派生后继进程 |
 | `chaos-mobile` | [chaos-mobile](../chaos-mobile/README.zh.md) | 为手机视口适配 Web 布局：抽屉、底部 sheet 与触控目标 |
 | `chaos-auth` | [chaos-auth](../chaos-auth/README.zh.md) | 当 web 服务器在回环之外可达时要求 token 登录 |
 | `chaos-restart` | [chaos-restart](../chaos-restart/README.zh.md) | 从设置区块替换运行中的 web 服务器进程 |
@@ -98,11 +98,11 @@ patch 条目替换目标行的整个 `config` 而不是合并进去；后续 bun
 
 当层级约定不够用时阅读以下页面。
 
-- [web-app bundle](../../bundle/web-app/README.zh.md)——本 bundle 在其后插入各行的层。
+- [web-app bundle](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/bundle/web-app/README.zh.md)——本 bundle 在其后插入各行的层。
 - [归档会话保留清扫器](../chaos-janitor/README.zh.md)——清扫行为与配置。
 - [Think-tag 呈现](../chaos-think-tags/README.zh.md)——think-tags 行挂载的渲染器。
-- [Base bundle](../../bundle/base/README.zh.md)——共享核心层形态与 patch 语义。
-- [app-boot profile 章节](../../boot/app-boot/README.zh.md)——profile 如何解析与堆叠 bundle 层。
+- [Base bundle](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/bundle/base/README.zh.md)——共享核心层形态与 patch 语义。
+- [app-boot profile 章节](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/boot/app-boot/README.zh.md)——profile 如何解析与堆叠 bundle 层。
 
 -----
 

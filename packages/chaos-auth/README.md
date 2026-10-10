@@ -50,7 +50,7 @@ Choose this plugin when the Web profile binds a non-loopback interface or sits b
 | `tokenRef` | `DSH_AUTH_TOKEN` | Credentials reference resolved to the login token at startup |
 | `publicUrl` | `''` | Reverse-proxy public URL; an `https://` prefix enables the `Secure` cookie flag, and any non-empty value also activates the gate on loopback |
 
-The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-plugin-chaos-auth) is the exhaustive source for every accepted field.
+The generated [configuration catalog](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-auth) is the exhaustive source for every accepted field.
 
 ### Activation and the token
 
@@ -95,10 +95,10 @@ The plugin is a function plugin over two injected services: `webServer` supplies
 
 Read these pages when the package-level contract is not enough.
 
-- [Web server](../../host/webserver/README.md) — the guarded HTTP carrier and its `registerGuard` seam.
-- [Credentials](../../credentials/credentials/README.md) — the system that resolves `tokenRef` to the login token.
+- [Web server](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/host/webserver/README.md) — the guarded HTTP carrier and its `registerGuard` seam.
+- [Credentials](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/credentials/credentials/README.md) — the system that resolves `tokenRef` to the login token.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that mounts this plugin over the web-app composition.
-- [Connection](../../client/connection/README.md) — the browser transport whose authenticated URL a login redirects to.
+- [Connection](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/connection/README.md) — the browser transport whose authenticated URL a login redirects to.
 
 -----
 

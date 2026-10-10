@@ -167,8 +167,15 @@ export function apply(ctx: Context, config: Config): void {
   // The fork webserver exposes guards as the cross-cutting interception seam.
   // The published webserver offers only named routes plus a single fallback
   // seat (owned by the SPA dist server), so route mode gates the entry path.
-  const hasGuards = typeof webServer.registerGuard === 'function' &&
-    typeof webServer.registerUpgradeGuard === 'function'
+  // registerGuard and registerUpgradeGuard exist only on the fork's webserver.
+  // The published webserver's type has neither, so the lookup stays dynamic and
+  // route mode gates the entry path instead.
+  const guarded = webServer as typeof webServer & {
+    registerGuard?: (guard: (req: IncomingMessage, res: ServerResponse) => boolean) => () => void
+    registerUpgradeGuard?: (guard: (req: IncomingMessage, socket: Duplex) => boolean) => () => void
+  }
+  const hasGuards = typeof guarded.registerGuard === 'function' &&
+    typeof guarded.registerUpgradeGuard === 'function'
 
   const storeConfig: SessionStoreConfig = {
     idleTimeoutMs: config.idleTimeoutMs,
@@ -334,7 +341,7 @@ export function apply(ctx: Context, config: Config): void {
   // Register request guard: checks session before route matching.
   if (hasGuards) {
     ctx.effect(() => {
-      const disposeGuard = webServer.registerGuard((req: IncomingMessage, res: ServerResponse) => {
+      const disposeGuard = guarded.registerGuard!((req: IncomingMessage, res: ServerResponse) => {
         // Auth endpoints and the install manifest are public.
         const requestUrl = new URL(req.url ?? '/', 'http://x')
         if (isPublicUnauthenticatedPath(requestUrl.pathname, requestUrl.search)) return true
@@ -361,7 +368,7 @@ export function apply(ctx: Context, config: Config): void {
 
     // Register upgrade guard: checks session before WebSocket upgrade.
     ctx.effect(() => {
-      const disposeUpgradeGuard = webServer.registerUpgradeGuard((req: IncomingMessage, socket: Duplex) => {
+      const disposeUpgradeGuard = guarded.registerUpgradeGuard!((req: IncomingMessage, socket: Duplex) => {
         const sessionId = extractSessionId(req)
         const session = sessions.validate(sessionId)
         if (session !== undefined) {

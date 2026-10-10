@@ -77,8 +77,8 @@ kind: "package-reference"
 
 当包级约定不够用时阅读以下页面。
 
-- [pi-ai LLM 适配器](../../llm/llm-pi-ai/README.zh.md)——拥有校验与 models / modelOverrides 形态的设置路由。
-- [模型选择菜单](../../client/ui-model-selection/README.zh.md)——其能力设置行打开本对话框的菜单。
+- [pi-ai LLM 适配器](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/llm/llm-pi-ai/README.zh.md)——拥有校验与 models / modelOverrides 形态的设置路由。
+- [模型选择菜单](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-model-selection/README.zh.md)——其能力设置行打开本对话框的菜单。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——把本插件声明为依赖的层。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——挂载本行的层。
 

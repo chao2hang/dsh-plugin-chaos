@@ -87,8 +87,8 @@ kind: "package-reference"
 当包级约定不够用时阅读以下页面。
 
 - [服务自重启](../chaos-restart/README.zh.md)——本插件负责恢复其重启的「系统」区块。
-- [会话 UI](../../client/ui-conversation/README.zh.md)——崩溃恢复行注册进入的节点 Definition 注册表。
-- [聊天 UI](../../client/ui-chat/README.zh.md)——推导读取的 Chat 目标与带键节点渲染器家族。
+- [会话 UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-conversation/README.zh.md)——崩溃恢复行注册进入的节点 Definition 注册表。
+- [聊天 UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-chat/README.zh.md)——推导读取的 Chat 目标与带键节点渲染器家族。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——挂载本行的层。
 
 -----

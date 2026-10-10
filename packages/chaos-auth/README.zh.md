@@ -50,7 +50,7 @@ kind: "package-reference"
 | `tokenRef` | `DSH_AUTH_TOKEN` | 启动时解析为登录 token 的 credentials 引用 |
 | `publicUrl` | `''` | 反向代理公网 URL；`https://` 前缀启用 `Secure` cookie 标志，任何非空值还会在回环上激活门禁 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-plugin-chaos-auth)是每个受支持字段的穷尽式真源。
+生成的[配置目录](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-auth)是每个受支持字段的穷尽式真源。
 
 ### 激活与 token
 
@@ -95,10 +95,10 @@ kind: "package-reference"
 
 当包级约定不够用时阅读以下页面。
 
-- [Web 服务器](../../host/webserver/README.zh.md)——受守卫保护的 HTTP 载体及其 `registerGuard` seam。
-- [Credentials](../../credentials/credentials/README.zh.md)——把 `tokenRef` 解析为登录 token 的系统。
+- [Web 服务器](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/host/webserver/README.zh.md)——受守卫保护的 HTTP 载体及其 `registerGuard` seam。
+- [Credentials](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/credentials/credentials/README.zh.md)——把 `tokenRef` 解析为登录 token 的系统。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——在 web-app 组合之上挂载本插件的层。
-- [Connection](../../client/connection/README.zh.md)——登录重定向目标为其已认证 URL 的浏览器传输层。
+- [Connection](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/connection/README.zh.md)——登录重定向目标为其已认证 URL 的浏览器传输层。
 
 -----
 

@@ -34,7 +34,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-plugin-chaos
 dsh plugin --profile <name> remove @deepseek-ai/dsh-plugin-chaos
 ```
 
-The command initializes the profile on first use, forwards to pnpm in the profile directory, then reconciles the `dsh.profile.bundles` list against the installed state: a dependency resolving to a package that declares `dsh.bundle.patch` — this one — joins the layer stack, and removing the dependency takes it back out. A dependency without that declaration stays a plain dependency, and the reconcile warns about it. From a source checkout, pass the package path with a `./` prefix (`dsh plugin --profile <name> add ./packages/extensions/chaos-bundle`) so the launcher anchors it to the invoking directory. In-box bundles such as `@deepseek-ai/dsh-base` resolve from the dsh installation and are never touched by the reconcile.
+The command initializes the profile on first use, forwards to pnpm in the profile directory, then reconciles the `dsh.profile.bundles` list against the installed state: a dependency resolving to a package that declares `dsh.bundle.patch` — this one — joins the layer stack, and removing the dependency takes it back out. A dependency without that declaration stays a plain dependency, and the reconcile warns about it. From a source checkout, pass the package path with a `./` prefix (`dsh plugin --profile <name> add .`) so the launcher anchors it to the invoking directory. In-box bundles such as `@deepseek-ai/dsh-base` resolve from the dsh installation and are never touched by the reconcile.
 
 You can also name the bundle in a profile's `dsh.profile.bundles` list, after `@deepseek-ai/dsh-web-app`:
 
@@ -52,7 +52,7 @@ You can also name the bundle in a profile's `dsh.profile.bundles` list, after `@
 
 | Row | Package | What it adds |
 |---|---|---|
-| `process-control` | [process-control](../../boot/process-control/README.md) | Reports whether the running process can replace itself, and spawns the successor when asked |
+| `process-control` | [process-control](../process-control/README.md) | Reports whether the running process can replace itself, and spawns the successor when asked |
 | `chaos-mobile` | [chaos-mobile](../chaos-mobile/README.md) | Adapts the Web layout for a phone viewport: drawer, sheets, and touch targets |
 | `chaos-auth` | [chaos-auth](../chaos-auth/README.md) | Requires a token login when the web server is reachable beyond loopback |
 | `chaos-restart` | [chaos-restart](../chaos-restart/README.md) | Replaces the running web-server process from a Settings section |
@@ -98,11 +98,11 @@ The inserted plugins build on generic main-repo seams: chaos-think-tags replaces
 
 Read these pages when the layer-level contract is not enough.
 
-- [web-app bundle](../../bundle/web-app/README.md) — the layer this bundle inserts its rows after.
+- [web-app bundle](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/bundle/web-app/README.md) — the layer this bundle inserts its rows after.
 - [Archived-session retention sweeper](../chaos-janitor/README.md) — the sweep behavior and its configuration.
 - [Think-tag presentation](../chaos-think-tags/README.md) — the renderer the think-tags row mounts.
-- [Base bundle](../../bundle/base/README.md) — the shared core layer form and the patch semantics.
-- [app-boot profile section](../../boot/app-boot/README.md) — how profiles resolve and stack bundle layers.
+- [Base bundle](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/bundle/base/README.md) — the shared core layer form and the patch semantics.
+- [app-boot profile section](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/boot/app-boot/README.md) — how profiles resolve and stack bundle layers.
 
 -----
 

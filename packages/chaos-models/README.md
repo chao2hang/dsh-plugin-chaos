@@ -77,8 +77,8 @@ The browser half registers one keyed `conversation.input.right` slot (`chaos-mod
 
 Read these pages when the package-level contract is not enough.
 
-- [pi-ai LLM adapter](../../llm/llm-pi-ai/README.md) — the settings route that owns validation and the models / modelOverrides shape.
-- [Model selection menu](../../client/ui-model-selection/README.md) — the menu whose capabilities row opens the dialog.
+- [pi-ai LLM adapter](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/llm/llm-pi-ai/README.md) — the settings route that owns validation and the models / modelOverrides shape.
+- [Model selection menu](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-model-selection/README.md) — the menu whose capabilities row opens the dialog.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that declares this plugin as a dependency.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that mounts this row.
 

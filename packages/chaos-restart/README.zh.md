@@ -44,7 +44,7 @@ kind: "package-reference"
 |---|---|---|
 | `enabled` | `true` | 挂载宿主路由；`false` 不注册路由，浏览器区块保持挂载并报告不支持 |
 
-Chaos bundle patch 以 `enabled: true` 挂载该行。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-plugin-chaos-restart)是每个受支持字段的穷尽式真源。
+Chaos bundle patch 以 `enabled: true` 挂载该行。生成的[配置目录](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-restart)是每个受支持字段的穷尽式真源。
 
 ### 路由如何应答
 
@@ -95,11 +95,11 @@ Chaos bundle patch 以 `enabled: true` 挂载该行。生成的[配置目录](..
 
 当包级约定不够用时阅读以下页面。
 
-- [Process control](../../boot/process-control/README.zh.md)——销毁当前应用树并派生后继进程的服务。
+- [Process control](../process-control/README.zh.md)——销毁当前应用树并派生后继进程的服务。
 - [重试条](../chaos-retry/README.zh.md)——为重启所中断回合提供的恢复入口。
 - [Chaos bundle](../chaos-bundle/README.zh.md)——挂载本行的层。
-- [Host web server](../../host/webserver/README.zh.md)——路由注册 seam。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-plugin-chaos-restart)——受支持的配置字段及其 JSDoc。
+- [Host web server](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/host/webserver/README.zh.md)——路由注册 seam。
+- [生成的配置目录](https://deepseek-harness.github.io/deepseek-harness/config-catalog.html#deepseek-aidsh-plugin-chaos-restart)——受支持的配置字段及其 JSDoc。
 
 -----
 

@@ -87,8 +87,8 @@ The abnormal-end state is a pure derivation over split snapshots: `detectAbnorma
 Read these pages when the package-level contract is not enough.
 
 - [Server self-restart](../chaos-restart/README.md) — the System section whose restart this plugin recovers from.
-- [Conversation UI](../../client/ui-conversation/README.md) — the node Definition registry the crash-recovery row registers into.
-- [Chat UI](../../client/ui-chat/README.md) — the Chat target the derivation reads and the keyed node renderer family.
+- [Conversation UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-conversation/README.md) — the node Definition registry the crash-recovery row registers into.
+- [Chat UI](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/client/ui-chat/README.md) — the Chat target the derivation reads and the keyed node renderer family.
 - [Chaos bundle](../chaos-bundle/README.md) — the layer that mounts this row.
 
 -----
