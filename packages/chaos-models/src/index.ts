@@ -1,0 +1,46 @@
+/** Model capability configuration extension, Host half. */
+
+/**
+ * Return the empty Host plugin. The browser writes model overrides through the
+ * existing live `llm-pi-ai` settings section, which is already the owner of
+ * pi-ai profile validation and adapter refresh.
+ */
+export function apply(): void {}
+
+/** Stable settings namespace that pi-ai owns. */
+export const PI_AI_SETTINGS_NAMESPACE = 'llm-pi-ai'
+
+/** One level the capability form can translate to pi-ai's wire map. */
+export type ThinkingLevel = 'off' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max'
+
+/** Ordered pi-ai reasoning levels exposed by the configuration form. */
+export const THINKING_LEVELS: readonly ThinkingLevel[] = [
+  'off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max',
+]
+
+/** One wire protocol the API-override select can repoint a model to. */
+export type ApiProtocol = 'openai-completions' | 'openai-responses' | 'anthropic-messages' | 'google-generative-ai'
+
+/**
+ * Ordered wire protocols the API-override select offers, mirroring the serveable
+ * protocol table in `llm-pi-ai`'s provider construction. A stale entry here is
+ * rejected loudly at the settings write, which is what keeps this copy honest.
+ */
+export const API_PROTOCOLS: readonly ApiProtocol[] = [
+  'openai-completions',
+  'openai-responses',
+  'anthropic-messages',
+  'google-generative-ai',
+]
+
+/**
+ * Convert selected levels to pi-ai's exact `reasoningEfforts` profile field.
+ * @param levels - the levels selected in the configuration form.
+ * @returns the per-level effort map, or `false` when no level is selected.
+ */
+export function reasoningEffortsOf(levels: readonly ThinkingLevel[]): false | Record<string, string | null> {
+  if (levels.length === 0) return false
+  const efforts: Record<string, string | null> = {}
+  for (const level of levels) efforts[level] = level === 'off' ? null : level
+  return efforts
+}

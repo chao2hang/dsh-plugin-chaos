@@ -1,0 +1,35 @@
+# dsh-plugin-chaos bundle patch.
+#
+# One layer over a profile that already loads @deepseek-ai/dsh-web-app. The
+# shipped web-app layer does not carry these rows, so this patch inserts every
+# Chaos row. process-control precedes chaos-restart, which reads it.
+- insert:
+    - id: process-control
+      name: '@deepseek-ai/dsh-process-control'
+
+    - id: chaos-mobile
+      name: '@deepseek-ai/dsh-plugin-chaos-mobile'
+
+    - id: chaos-auth
+      name: '@deepseek-ai/dsh-plugin-chaos-auth'
+
+    - id: chaos-restart
+      name: '@deepseek-ai/dsh-plugin-chaos-restart'
+
+    - id: chaos-models
+      name: '@deepseek-ai/dsh-plugin-chaos-models'
+
+    - id: chaos-retry
+      name: '@deepseek-ai/dsh-plugin-chaos-retry'
+
+    - id: chaos-think-tags
+      name: '@deepseek-ai/dsh-plugin-chaos-think-tags'
+
+    - id: chaos-janitor
+      name: '@deepseek-ai/dsh-plugin-chaos-janitor'
+      config:
+        # Retention: 0 disables the sweeper; a positive value deletes an
+        # archived session once its log has been quiet this many days.
+        maxArchivedDays: 0
+        intervalMinutes: 60
+        dryRun: false

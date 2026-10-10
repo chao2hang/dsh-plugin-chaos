@@ -1,0 +1,50 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "types": ["node", "client-build-environment"]
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../host/webserver"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../api/session-controller/tsconfig.client.json"
+    },
+    {
+      "path": "../../client/ui-conversation/tsconfig.host.json"
+    },
+    {
+      "path": "../../client/ui-conversation/tsconfig.client.json"
+    },    {
+      "path": "../../client/ui-layout"
+    },
+    {
+      "path": "../../client/ui-layout"
+    },    {
+      "path": "../../client/ui-primitives"
+    },
+    {
+      "path": "../../client/ui-primitives"
+    },    {
+      "path": "../../client/ui-renderer"
+    },
+    {
+      "path": "../../client/ui-renderer"
+    },    {
+      "path": "../../client/ui-slots"
+    },
+    {
+      "path": "../../client/ui-slots"
+    },    {
+      "path": "../../llm/token-meter"
+    }
+  ]
+}

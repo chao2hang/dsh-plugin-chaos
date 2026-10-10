@@ -1,0 +1,513 @@
+/**
+ * @deepseek-ai/dsh-plugin-chaos-auth — Remote access authentication plugin.
+ * It runs in one of two modes, picked from the detected webserver surface:
+ *
+ * - Guard mode (fork `dsh-host-webserver` exposing `registerGuard` /
+ *   `registerUpgradeGuard`): every HTTP request and WebSocket upgrade is
+ *   checked before route matching. Unauthenticated requests receive a minimal
+ *   login page (for page requests) or 401 (for API requests).
+ * - Route mode (published `dsh-host-webserver`, which has no guard seam): an
+ *   exact `/` route serves the application entry itself — unauthenticated
+ *   browsers are redirected to the login page; authenticated ones get the index
+ *   relayed from the SPA fallback owner, so the entry stays at `/` (the fallback
+ *   keeps owning `/index.html`). WebSocket upgrades and `/api`
+ *   stay protected by client-connection's own channel authentication.
+ *
+ * Login/logout endpoints are public named routes in both modes.
+ *
+ * Security model:
+ * - Default: loopback HTTP stays anonymous (existing behavior unchanged).
+ * - When webserver binds 0.0.0.0: the plugin activates and requires a token.
+ * - Token is resolved through the credentials system (never plaintext config).
+ * - Session cookies: HttpOnly + SameSite=Strict; Secure under HTTPS.
+ * - Sliding idle expiry + absolute lifetime cap; cookie max-age is the min.
+ *
+ * @module @deepseek-ai/dsh-plugin-chaos-auth
+ */
+import { request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
+import type { Duplex } from 'node:stream'
+import type { Context } from '@deepseek-ai/cordis'
+import z from '@deepseek-ai/schemastery'
+import type {} from '@deepseek-ai/dsh-host-webserver'
+import { credentialRef } from '@deepseek-ai/dsh-credentials'
+import {
+  SessionStore, constantTimeEqual, extractSessionId, buildCookie, clearCookie,
+  DEFAULT_IDLE_TIMEOUT_MS, DEFAULT_ABSOLUTE_TIMEOUT_MS,
+  type SessionStoreConfig,
+} from './session-store.ts'
+
+/** Stable Cordis plugin name. */
+export const name = 'chaos-auth'
+
+/** Required services: the web server and built-in browser-session authority. */
+export const inject = ['webServer', 'connection']
+
+/** Plugin configuration. */
+export interface Config {
+  /** Idle timeout in ms (default: 7 days). */
+  idleTimeoutMs: number
+  /** Absolute timeout in ms (default: 30 days). Must be >= idleTimeoutMs. */
+  absoluteTimeoutMs: number
+  /**
+   * Credential reference for the login token. Resolved through the
+   * credentials system at startup; the token value never appears in config.
+   */
+  tokenRef: string
+  /**
+   * Public URL when behind a reverse proxy that terminates TLS. When set,
+   * the plugin trusts the URL's hostname for the trust fence but does not
+   * trust forwarding headers (the Host fence handles DNS rebinding defense).
+   */
+  publicUrl: string
+}
+
+export const Config: z<Config> = z.object({
+  idleTimeoutMs: z.natural().default(DEFAULT_IDLE_TIMEOUT_MS),
+  absoluteTimeoutMs: z.natural().default(DEFAULT_ABSOLUTE_TIMEOUT_MS),
+  tokenRef: z.string().default('DSH_AUTH_TOKEN'),
+  publicUrl: z.string().default(''),
+})
+
+/** Re-export security utilities for testing. */
+export { SessionStore, constantTimeEqual, extractSessionId, buildCookie, clearCookie, cookieMaxAge } from './session-store.ts'
+export type { SessionStoreConfig } from './session-store.ts'
+
+/** Login page HTML: standalone, responsive, and intentionally app-code free. */
+/** [LO-DEPLOY PATCH] Breadcrumb cookie bounding token-URL mint attempts. */
+const MINT_ATTEMPT_COOKIE = 'dsh-mint-attempt'
+
+function loginPageHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>登录 · DeepSeek Harness</title>
+<style>
+:root{color-scheme:dark;--bg:#171410;--surface:#201c16;--border:rgba(237,230,214,.14);--text:#ece5d3;--muted:#9d937e;--accent:#b3402f;--accent-pressed:#93331f}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{min-height:100dvh;margin:0;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));background:radial-gradient(120% 60% at 50% 0%,rgba(236,229,211,.045) 0,transparent 60%),var(--bg);color:var(--text);font-family:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",serif;-webkit-font-smoothing:antialiased}
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:36px}
+.seal{display:grid;place-items:center;width:44px;height:44px;border-radius:6px;background:var(--accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 -3px 6px rgba(0,0,0,.28);color:#f4ead8;font-size:24px;font-weight:700;line-height:1}
+.wordmark{color:var(--muted);font-family:ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;font-size:11px;font-weight:600;letter-spacing:.42em;text-indent:.42em}
+h1{margin:0 0 10px;font-size:30px;font-weight:600;line-height:1.25;letter-spacing:.12em;text-align:center}
+.sub{margin:0 0 30px;color:var(--muted);font-size:14px;line-height:1.7;text-align:center}
+label{display:block;margin-bottom:10px;color:var(--text);font-size:14px;font-weight:600;letter-spacing:.18em}
+input{width:100%;height:52px;padding:0 16px;border:1px solid var(--border);border-radius:8px;outline:0;background:var(--surface);color:var(--text);font:inherit;font-size:16px;letter-spacing:.06em;transition:border-color .18s ease,box-shadow .18s ease}
+input::placeholder{color:#6f675a}
+input:hover{border-color:rgba(237,230,214,.26)}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,64,47,.18)}
+button{width:100%;min-height:52px;margin-top:18px;border:0;border-radius:8px;background:var(--accent);color:#f4ead8;font:inherit;font-size:16px;font-weight:600;letter-spacing:.5em;text-indent:.5em;cursor:pointer;transition:background .18s ease,transform .18s ease}
+button:hover{background:#c34a37}
+button:active{background:var(--accent-pressed);transform:translateY(1px)}
+button:focus-visible{outline:3px solid rgba(179,64,47,.4);outline-offset:2px}
+.error{display:none;margin:14px 0 0;padding:11px 14px;border:1px solid rgba(179,64,47,.4);border-radius:8px;background:rgba(179,64,47,.12);color:#e8a195;font-size:13px;line-height:1.5;letter-spacing:.06em}
+.footer{margin:30px 0 0;color:#6f675a;font-size:12px;line-height:1.6;letter-spacing:.14em;text-align:center}
+.side{position:fixed;top:50%;right:max(14px,env(safe-area-inset-right));transform:translateY(-50%);writing-mode:vertical-rl;color:rgba(237,230,214,.16);font-size:15px;letter-spacing:.6em;pointer-events:none;user-select:none}
+.login{display:flex;flex-direction:column;justify-content:center;width:min(100%,400px);min-height:calc(100dvh - max(48px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));margin:auto}
+@media (max-width:480px){body{display:block;padding:20px max(24px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}h1{font-size:27px}.login{width:100%;min-height:calc(100dvh - max(40px,env(safe-area-inset-top) + env(safe-area-inset-bottom)))}.side{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="side" aria-hidden="true">凭钥而入</div>
+<main class="login" aria-labelledby="login-title">
+  <div class="brand"><span class="seal" aria-hidden="true">启</span><span class="wordmark">DEEPSEEK HARNESS</span></div>
+  <h1 id="login-title">欢迎回来</h1>
+  <p class="sub">此实例已启用访问保护，请输入通行密钥以继续。</p>
+  <form method="POST" action="/auth/login">
+    <label for="token">通行密钥</label>
+    <input id="token" type="password" name="token" placeholder="请输入通行密钥" autocomplete="current-password" autofocus required>
+    <button type="submit">进入</button>
+    <div class="error" id="err" role="alert">密钥不正确，请核对后重试。</div>
+  </form>
+  <p class="footer">此连接已受保护 · 仅受邀用户可访问</p>
+</main>
+</body>
+</html>`
+}
+/** Whether a request is a page request (accepts HTML) vs an API request. */
+function isPageRequest(req: IncomingMessage): boolean {
+  const accept = req.headers.accept ?? ''
+  return accept.includes('text/html')
+}
+
+/** Whether an unauthenticated request may read this public endpoint or install metadata. */
+function isPublicUnauthenticatedPath(pathname: string, search = ''): boolean {
+  return pathname === '/auth/login' || pathname === '/auth/logout' || pathname === '/manifest.webmanifest' ||
+    (pathname === '/' && new URLSearchParams(search).has('token'))
+}
+
+/**
+ * Mount the auth plugin: register guards and auth routes.
+ * @param ctx - plugin context carrying the webServer service.
+ * @param config - validated configuration.
+ */
+export function apply(ctx: Context, config: Config): void {
+  const webServer = ctx.webServer
+  const connection = ctx.get('connection') as {
+    authenticatedUrl: (baseUrl: string) => string
+    authorizeIndex: (req: IncomingMessage, res: ServerResponse) => boolean
+  }
+  const tls = (ctx.get('webServer') as { config?: { tls?: { cert?: unknown; key?: unknown } } } | undefined)?.config?.tls
+  const isHttps = config.publicUrl.startsWith('https://') ||
+    (typeof tls?.cert === 'string' && tls.cert !== '' && typeof tls.key === 'string' && tls.key !== '')
+
+  // Validate config: absolute timeout must be >= idle timeout.
+  if (config.absoluteTimeoutMs < config.idleTimeoutMs) {
+    throw new Error(
+      `chaos-auth: absolute timeout (${String(config.absoluteTimeoutMs)}ms) must be >= idle timeout (${String(config.idleTimeoutMs)}ms)`,
+    )
+  }
+
+  // Loopback remains anonymous unless a reverse proxy explicitly supplies the public URL.
+  if (webServer.host !== '0.0.0.0' && config.publicUrl === '') return
+  // The fork webserver exposes guards as the cross-cutting interception seam.
+  // The published webserver offers only named routes plus a single fallback
+  // seat (owned by the SPA dist server), so route mode gates the entry path.
+  const hasGuards = typeof webServer.registerGuard === 'function' &&
+    typeof webServer.registerUpgradeGuard === 'function'
+
+  const storeConfig: SessionStoreConfig = {
+    idleTimeoutMs: config.idleTimeoutMs,
+    absoluteTimeoutMs: config.absoluteTimeoutMs,
+  }
+  const sessions = new SessionStore(storeConfig)
+
+  // [LO-DEPLOY PATCH] The application entry is '/' itself — no browser should
+  // have to be sent to '/index.html'. Reach the SPA fallback owner over the
+  // loopback listener instead: one internal hop, no dist-path knowledge, and the
+  // index injection taps run exactly as dsh renders them. The fallback keeps
+  // owning '/index.html', so this plugin must never claim that pathname (the
+  // relay would otherwise call back into its own route). A live chaos-auth
+  // session proves the password gate was cleared but says nothing about dsh's
+  // own browser cookie (`dsh-auth-<sha256(authority)>`), which only the
+  // launch-token exchange at '/' mints; the relay's 401 is that verdict.
+  const loopbackAddress = (): { host: string; port: number } => {
+    const host = String(webServer.host)
+    return {
+      host: host === '0.0.0.0' || host === '::' || host === '' ? '127.0.0.1' : host,
+      port: webServer.port,
+    }
+  }
+  const relayIndex = (
+    req: IncomingMessage,
+  ): Promise<{ status: number; body: Buffer } | undefined> =>
+    new Promise((resolve) => {
+      const headers: Record<string, string> = {}
+      // The index cookie is authority-bound: forward the browser's Host (and the
+      // upstream proxy's scheme hint) so the fallback judges the same audience.
+      if (req.headers.host !== undefined) headers.host = String(req.headers.host)
+      if (req.headers.cookie !== undefined) headers.cookie = String(req.headers.cookie)
+      if (req.headers['x-forwarded-proto'] !== undefined) {
+        headers['x-forwarded-proto'] = String(req.headers['x-forwarded-proto'])
+      }
+      const call = httpRequest(
+        { ...loopbackAddress(), path: '/index.html', method: 'GET', headers },
+        (upstream) => {
+          const chunks: Buffer[] = []
+          upstream.on('data', (chunk) => { chunks.push(Buffer.from(chunk)) })
+          upstream.on('error', () => { resolve(undefined) })
+          upstream.on('end', () => {
+            resolve({ status: upstream.statusCode ?? 502, body: Buffer.concat(chunks) })
+          })
+        },
+      )
+      call.setTimeout(5_000, () => { call.destroy(); resolve(undefined) })
+      call.on('error', () => { resolve(undefined) })
+      call.end()
+    })
+
+  // [LO-DEPLOY PATCH] Loop breaker: a browser already presenting a dsh-auth-*
+  // cookie that dsh still rejects would bounce '/' <-> token URL forever.
+  const hasIndexCookie = (req: IncomingMessage): boolean =>
+    /(?:^|;\s*)dsh-auth-/.test(String(req.headers.cookie ?? ''))
+
+  // [LO-DEPLOY PATCH] Second loop breaker: if the browser refuses to store the
+  // minted cookie, '/' -> token URL -> '/' would spin forever. One breadcrumb
+  // cookie bounds it to a single attempt, after which the login page is served
+  // instead of another redirect.
+  const mintAttemptMilliseconds = 10_000
+  const readCookie = (req: IncomingMessage, name: string): string | undefined => {
+    for (const segment of String(req.headers.cookie ?? '').split(';')) {
+      const at = segment.indexOf('=')
+      if (at === -1) continue
+      if (segment.slice(0, at).trim() === name) return segment.slice(at + 1).trim()
+    }
+    return undefined
+  }
+  const mintAttemptActive = (req: IncomingMessage): boolean => {
+    const stamp = Number(readCookie(req, MINT_ATTEMPT_COOKIE) ?? '0')
+    return Number.isFinite(stamp) && stamp > 0 && Date.now() - stamp < mintAttemptMilliseconds
+  }
+
+  // Periodic cleanup (every 10 minutes).
+  const cleanupInterval = setInterval(() => { sessions.cleanup() }, 10 * 60 * 1000)
+  ctx.effect(() => () =>{  clearInterval(cleanupInterval) }, 'chaos-auth: cleanup interval')
+
+  // Resolve the token from the credentials system at startup.
+  let expectedToken: string | undefined
+  ctx.inject(['credentials'], (credCtx) => {
+    void credCtx.credentials.resolve(credentialRef(config.tokenRef)).then((resolved) => {
+      if (resolved !== undefined && typeof resolved.value === 'string' && resolved.value !== '') {
+        expectedToken = resolved.value
+      } else {
+        credCtx.logger.warn(`chaos-auth: token reference "${config.tokenRef}" is not configured; login will be disabled`)
+      }
+    })
+  })
+
+  // Register auth routes (public, not guarded).
+  ctx.effect(() => {
+    const disposeLogin = webServer.register({
+      kind: 'exact',
+      path: '/auth/login',
+      handler: async (req: IncomingMessage, res: ServerResponse) => {
+        if (req.method === 'GET') {
+          res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+          res.end(loginPageHtml())
+          return
+        }
+        if (req.method !== 'POST') {
+          res.writeHead(405)
+          res.end()
+          return
+        }
+        // Parse form body for the token.
+        const body = await readBody(req)
+        const params = new URLSearchParams(body)
+        const submittedToken = params.get('token') ?? ''
+
+        if (expectedToken === undefined || !constantTimeEqual(submittedToken, expectedToken)) {
+          res.writeHead(401, { 'content-type': 'text/html; charset=utf-8' })
+          res.end(loginPageHtml().replace('display:none', 'display:block'))
+          return
+        }
+
+        // Create session and set cookie.
+        const session = sessions.create()
+        const requestAuthority = req.headers.host ?? '127.0.0.1'
+        const loopbackAuthority = isLoopbackAuthority(requestAuthority)
+        const proto = resolveRequestScheme(req, isHttps, loopbackAuthority)
+        const reqIsHttps = proto === 'https'
+        // A loopback authority keeps itself after login: an operator who tunnelled
+        // in (ssh -L … 127.0.0.1:3080) stays on a loopback page, which is the only
+        // authority where dsh's settings pages open (isLoopback drives
+        // persistence 'host' in ui-settings). Remote authorities still get the
+        // canonical public URL.
+        const postLoginOrigin = loopbackAuthority
+          ? `${proto}://${requestAuthority}`
+          : config.publicUrl || `${proto}://${requestAuthority}`
+        res.writeHead(302, {
+          'set-cookie': buildCookie(session, Date.now(), storeConfig, reqIsHttps),
+          location: connection.authenticatedUrl(postLoginOrigin),
+        })
+        res.end()
+      },
+    })
+
+    const disposeLogout = webServer.register({
+      kind: 'exact',
+      path: '/auth/logout',
+      handler: (req: IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST' && req.method !== 'GET') {
+          res.writeHead(405)
+          res.end()
+          return
+        }
+        const sessionId = extractSessionId(req)
+        sessions.destroy(sessionId)
+        const proto = resolveRequestScheme(req, isHttps, isLoopbackAuthority(req.headers.host ?? '127.0.0.1'))
+        res.writeHead(302, {
+          'set-cookie': clearCookie(proto === 'https'),
+          location: '/auth/login',
+        })
+        res.end()
+      },
+    })
+
+    return () => { disposeLogin(); disposeLogout() }
+  }, 'chaos-auth: login/logout routes')
+
+  // Register request guard: checks session before route matching.
+  if (hasGuards) {
+    ctx.effect(() => {
+      const disposeGuard = webServer.registerGuard((req: IncomingMessage, res: ServerResponse) => {
+        // Auth endpoints and the install manifest are public.
+        const requestUrl = new URL(req.url ?? '/', 'http://x')
+        if (isPublicUnauthenticatedPath(requestUrl.pathname, requestUrl.search)) return true
+
+        // Check session.
+        const sessionId = extractSessionId(req)
+        const session = sessions.validate(sessionId)
+        if (session !== undefined) {
+          return true
+        }
+
+        // Unauthenticated: page requests get the login page, API requests get 401.
+        if (isPageRequest(req)) {
+          res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+          res.end(loginPageHtml())
+        } else {
+          res.writeHead(401, { 'content-type': 'application/json' })
+          res.end(JSON.stringify({ error: 'unauthorized' }))
+        }
+        return false
+      })
+      return () =>{  disposeGuard() }
+    }, 'chaos-auth: request guard')
+
+    // Register upgrade guard: checks session before WebSocket upgrade.
+    ctx.effect(() => {
+      const disposeUpgradeGuard = webServer.registerUpgradeGuard((req: IncomingMessage, socket: Duplex) => {
+        const sessionId = extractSessionId(req)
+        const session = sessions.validate(sessionId)
+        if (session !== undefined) {
+          return true
+        }
+        // Unauthenticated upgrade: reject.
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+        socket.destroy()
+        return false
+      })
+      return () =>{  disposeUpgradeGuard() }
+    }, 'chaos-auth: upgrade guard')
+    return
+  }
+
+  // Route mode (published dsh-host-webserver): gate the application entry.
+  // Unauthenticated browsers are sent to the login page; authenticated ones
+  // to /index.html, where the SPA fallback owner serves the dist. Requests
+  // carrying the client-connection launch token are handed to
+  // connection.authorizeIndex at '/', the only pathname where it consumes the
+  // token and issues the browser-session cookie. WebSocket upgrades and /api
+  // remain protected by client-connection's channel authentication.
+  ctx.effect(() => {
+    return webServer.register({
+      kind: 'exact',
+      path: '/',
+      handler: async (req: IncomingMessage, res: ServerResponse) => {
+        const requestUrl = new URL(req.url ?? '/', 'http://x')
+        if (requestUrl.searchParams.has('token')) {
+          connection.authorizeIndex(req, res)
+          return
+        }
+        const session = sessions.validate(extractSessionId(req))
+        if (session === undefined) {
+          res.writeHead(302, { location: '/auth/login' })
+          res.end()
+          return
+        }
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD' })
+          res.end()
+          return
+        }
+        const authority = req.headers.host ?? '127.0.0.1'
+        const proto = resolveRequestScheme(req, isHttps, isLoopbackAuthority(authority))
+        const secureSuffix = proto === 'https' ? '; Secure' : ''
+        const clearMintAttempt = `${MINT_ATTEMPT_COOKIE}=; Path=/; Max-Age=0${secureSuffix}`
+        // [LO-DEPLOY PATCH] Serve the entry HERE, at '/', rather than redirecting
+        // to /index.html: relayIndex carries the browser's Host and cookies to
+        // the fallback owner, so its 200 is both the page body and proof that
+        // dsh's own browser cookie is good. The address bar never sees
+        // '/index.html', and a cookie-less browser no longer dead-ends on dsh's
+        // 401 page.
+        const relayed = await relayIndex(req)
+        if (relayed !== undefined && relayed.status === 200) {
+          res.writeHead(200, {
+            'cache-control': 'no-store',
+            'content-length': relayed.body.length,
+            'content-type': 'text/html; charset=utf-8',
+            'set-cookie': clearMintAttempt,
+          })
+          res.end(req.method === 'HEAD' ? undefined : relayed.body)
+          return
+        }
+        if (relayed !== undefined && relayed.status !== 401 && relayed.status !== 403) {
+          // Not dsh refusing the cookie — the relay itself failed. Say so
+          // plainly instead of guessing at a redirect.
+          res.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' })
+          res.end(`chaos-auth: 入口中继失败 (upstream ${relayed.status})\n`)
+          return
+        }
+        // [LO-DEPLOY PATCH] dsh refused the index cookie (or the relay never
+        // answered). Clearing the password gate does not imply dsh's own browser
+        // cookie exists, and only the launch-token exchange at '/' mints it —
+        // hand the browser this process's token URL, then it returns here.
+        if (hasIndexCookie(req)) {
+          // Stale cookie dsh refuses: re-login mints a fresh one.
+          res.writeHead(302, { location: '/auth/login' })
+          res.end()
+          return
+        }
+        if (mintAttemptActive(req)) {
+          // The browser dropped the minted cookie, so another redirect would
+          // spin forever. Serve the login page instead: a visible dead end the
+          // operator can act on, never a redirect loop.
+          res.writeHead(200, {
+            'cache-control': 'no-store',
+            'content-type': 'text/html; charset=utf-8',
+            'set-cookie': clearMintAttempt,
+          })
+          res.end(loginPageHtml())
+          return
+        }
+        res.writeHead(302, {
+          'cache-control': 'no-store',
+          'set-cookie': `${MINT_ATTEMPT_COOKIE}=${Date.now()}; Path=/; Max-Age=60; SameSite=Lax${secureSuffix}`,
+          location: connection.authenticatedUrl(`${proto}://${authority}`),
+        })
+        res.end()
+      },
+    })
+  }, 'chaos-auth: root gate route')
+}
+
+/** Read the request body as a string. */
+async function readBody(req: IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = []
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer)
+    if (chunks.reduce((sum, c) => sum + c.length, 0) > 1_000_000) {
+      throw new Error('request body too large')
+    }
+  }
+  return Buffer.concat(chunks).toString('utf8')
+}
+
+/**
+ * Whether a Host header (or authority) names the local loopback authority.
+ * Accepts `localhost`, `[::1]` and any `127.x.x.x`, with an optional port.
+ * @param host - raw Host header value.
+ * @returns true when the authority is loopback-only.
+ */
+function isLoopbackAuthority(host: string): boolean {
+  const name = host.startsWith('[') ? host.slice(0, host.indexOf(']') + 1) : (host.split(':')[0] ?? '')
+  if (name === 'localhost' || name === '[::1]') return true
+  const parts = name.split('.')
+  return parts.length === 4 && parts[0] === '127' && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255)
+}
+
+/**
+ * Resolve the scheme the browser is actually speaking. A forwarded header wins;
+ * a loopback authority trusts the real socket (an ssh tunnel lands on the plain
+ * HTTP listener even when the public URL is https); everything else keeps the
+ * configured TLS posture.
+ * @param req - the incoming request.
+ * @param fallbackHttps - whether the deployment is configured for HTTPS.
+ * @param loopbackAuthority - whether the request authority is loopback.
+ * @returns the scheme to build cookie flags and redirects with.
+ */
+function resolveRequestScheme(
+  req: IncomingMessage,
+  fallbackHttps: boolean,
+  loopbackAuthority: boolean,
+): 'http' | 'https' {
+  const forwarded = String(req.headers['x-forwarded-proto'] ?? '').split(',')[0]?.trim().toLowerCase()
+  if (forwarded === 'https' || forwarded === 'http') return forwarded
+  if (loopbackAuthority) return (req.socket as { encrypted?: boolean }).encrypted === true ? 'https' : 'http'
+  return fallbackHttps ? 'https' : 'http'
+}
