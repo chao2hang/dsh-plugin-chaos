@@ -54,13 +54,13 @@ The generated [configuration catalog](https://deepseek-harness.github.io/deepsee
 
 ### Activation and the token
 
-The plugin picks one of two modes from the detected `dsh-host-webserver` surface. A host exporting `registerGuard` and `registerUpgradeGuard` (the fork build) runs guard mode; the published `dsh-host-webserver` offers only named routes plus a single fallback seat, so there the plugin runs route mode. The login token is resolved through the credentials system from `tokenRef` at startup; when the reference does not resolve to a non-empty value, the plugin logs a warning and every `POST /auth/login` answers `401`, so an unconfigured token disables login without opening the server.
+The plugin requires a modified `dsh-host-webserver`. The published package exposes neither `registerGuard` nor `registerUpgradeGuard`, so a stock `dsh` cannot run it: the host must be changed to add both methods before this plugin is installed. With both present, guard mode checks every HTTP request and every WebSocket upgrade before route matching. When either method is missing, the plugin falls back to an exact `/` route that does not cover `/api`, WebSocket upgrades, or static assets, and that fallback is not a supported deployment. The login token is resolved through the credentials system from `tokenRef` at startup; when the reference does not resolve to a non-empty value, the plugin logs a warning and every `POST /auth/login` answers `401`, so an unconfigured token disables login without opening the server.
 
 ### Guards and routes
 
 Guard mode runs two guards before route matching. The request guard passes the public paths (`/auth/login`, `/auth/logout`, `/manifest.webmanifest`, and `/` with a `token` query), validates the session cookie against the store, answers unauthenticated page requests with the login page and API requests with a JSON `401`, and refreshes session activity on every authenticated request. The upgrade guard applies the same session check to WebSocket upgrades and destroys the socket with a `401` response when it fails.
 
-Route mode registers an exact `/` route instead: unauthenticated browsers are redirected to the login page, authenticated ones to `/index.html` (the SPA fallback owner keeps serving the dist), and requests carrying the client-connection launch token are handed to `connection.authorizeIndex` at `/` — the only pathname where it consumes the token and issues the browser-session cookie. WebSocket upgrades and `/api` stay protected by client-connection's own channel authentication.
+The unsupported fallback registers an exact `/` route instead: unauthenticated browsers are redirected to the login page, authenticated ones to `/index.html` (the SPA fallback owner keeps serving the dist), and requests carrying the client-connection launch token are handed to `connection.authorizeIndex` at `/` — the only pathname where it consumes the token and issues the browser-session cookie. WebSocket upgrades and `/api` stay protected by client-connection's own channel authentication.
 
 In both modes `GET /auth/login` serves the standalone login page, `POST /auth/login` compares the submitted token with the resolved value using a constant-time comparison, creates a session, and redirects to the connection layer's authenticated URL; `GET /auth/logout` and `POST /auth/logout` destroy the session, clear the cookie, and redirect to the login page.
 
@@ -128,7 +128,7 @@ These limits are current package constraints, not a task backlog.
 - **Loopback stays anonymous** — activation happens only when the web server binds `0.0.0.0` or `publicUrl` is set; loopback HTTP without either remains fully accessible.
 - **An unconfigured token disables login** — when `tokenRef` does not resolve to a non-empty value, the plugin logs a warning and every `POST /auth/login` answers `401`.
 - **Sessions live only in process memory** — a server restart destroys every active session, and clients must log in again.
-- **Route mode gates only the entry path** — on the published `dsh-host-webserver` the exact `/` route protects the SPA entry while `/api`, WebSocket upgrades, and static assets keep relying on client-connection authentication and the public dist serving.
+- **A stock `dsh` cannot run this plugin** — `registerGuard` and `registerUpgradeGuard` are not part of the published `dsh-host-webserver`. The host must be modified to add both before installation. Without them the plugin registers only an exact `/` route, which leaves `/api`, WebSocket upgrades, and static assets outside this plugin's check.
 - **The login page is static** — its copy is fixed Chinese HTML (`lang="zh-CN"`), not routed through the locale system.
 
 <a id="dev-note"></a>

@@ -54,13 +54,13 @@ kind: "package-reference"
 
 ### 激活与 token
 
-本插件按探测到的 `dsh-host-webserver` 表面选择两种模式之一：导出 `registerGuard` 与 `registerUpgradeGuard` 的宿主（fork 构建）运行守卫模式；发布的 `dsh-host-webserver` 只提供命名路由与单一 fallback 席位，因此在那里运行路由模式。登录 token 在启动时经 credentials 系统从 `tokenRef` 解析；当该引用未解析出非空值时，插件记录警告且每次 `POST /auth/login` 都应答 `401`，因此未配置的 token 会禁用登录而不会打开服务器。
+本插件要求修改过的 `dsh-host-webserver`。发布的包既不提供 `registerGuard` 也不提供 `registerUpgradeGuard`，因此原装 `dsh` 不能运行它：必须先改宿主、补上这两个方法，再安装本插件。两者都存在时，守卫模式在路由匹配之前检查每个 HTTP 请求和每次 WebSocket 升级。任一方法缺失时，插件退化为一条 `/` 精确路由，它不覆盖 `/api`、WebSocket 升级和静态资源，这个退化不是受支持的部署。登录 token 在启动时经 credentials 系统从 `tokenRef` 解析；当该引用未解析出非空值时，插件记录警告且每次 `POST /auth/login` 都应答 `401`，因此未配置的 token 会禁用登录而不会打开服务器。
 
 ### 守卫与路由
 
 守卫模式在路由匹配之前运行两个守卫。请求守卫放行公开路径（`/auth/login`、`/auth/logout`、`/manifest.webmanifest`，以及带 `token` 查询的 `/`），用会话 cookie 对照存储校验，对未认证页面请求应答登录页、对 API 请求应答 JSON `401`，并在每次已认证请求时刷新会话活动。升级守卫对 WebSocket 升级应用相同的会话校验，失败时以 `401` 响应销毁 socket。
 
-路由模式改为注册一条 `/` 精确路由：未认证浏览器被重定向到登录页，已认证的重定向到 `/index.html`（SPA fallback 属主继续提供 dist），携带 client-connection 启动令牌的请求交给 `connection.authorizeIndex` 在 `/` 处理——那是它消费令牌并签发浏览器会话 cookie 的唯一路径名。WebSocket 升级与 `/api` 保持由 client-connection 自身的通道认证保护。
+不受支持的退化改为注册一条 `/` 精确路由：未认证浏览器被重定向到登录页，已认证的重定向到 `/index.html`（SPA fallback 属主继续提供 dist），携带 client-connection 启动令牌的请求交给 `connection.authorizeIndex` 在 `/` 处理——那是它消费令牌并签发浏览器会话 cookie 的唯一路径名。WebSocket 升级与 `/api` 保持由 client-connection 自身的通道认证保护。
 
 两种模式下 `GET /auth/login` 提供独立登录页；`POST /auth/login` 用恒定时间比较核对提交的 token 与解析值，创建会话并重定向到连接层的已认证 URL；`GET /auth/logout` 与 `POST /auth/logout` 销毁会话、清除 cookie 并重定向到登录页。
 
@@ -128,7 +128,7 @@ kind: "package-reference"
 - **回环保持匿名**——仅当 web 服务器绑定 `0.0.0.0` 或设置了 `publicUrl` 时才激活；两者皆无的回环 HTTP 仍完全可访问。
 - **未配置的 token 会禁用登录**——当 `tokenRef` 未解析出非空值时，插件记录警告且每次 `POST /auth/login` 都应答 `401`。
 - **会话只驻留进程内存**——服务器重启会销毁所有活跃会话，客户端必须重新登录。
-- **路由模式只门禁入口路径**——在发布的 `dsh-host-webserver` 上，`/` 精确路由保护 SPA 入口，`/api`、WebSocket 升级与静态资源继续依赖 client-connection 认证与公开的 dist 提供。
+- **原装 `dsh` 不能运行本插件**——`registerGuard` 与 `registerUpgradeGuard` 不属于发布的 `dsh-host-webserver`。必须先修改宿主、补上两者，再安装。缺少它们时，插件只注册一条 `/` 精确路由，`/api`、WebSocket 升级与静态资源都不在本插件的检查之内。
 - **登录页是静态的**——其文案是固定的中文 HTML（`lang="zh-CN"`），不经过 locale 系统。
 
 <a id="dev-note"></a>

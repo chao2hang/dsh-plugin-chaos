@@ -1,12 +1,13 @@
 /**
  * @deepseek-ai/dsh-plugin-chaos-auth — Remote access authentication plugin.
- * It runs in one of two modes, picked from the detected webserver surface:
+ * It requires a `dsh-host-webserver` modified to expose `registerGuard` and
+ * `registerUpgradeGuard`. The published webserver has neither, so a stock dsh
+ * cannot run this plugin until the host adds both.
  *
- * - Guard mode (fork `dsh-host-webserver` exposing `registerGuard` /
- *   `registerUpgradeGuard`): every HTTP request and WebSocket upgrade is
- *   checked before route matching. Unauthenticated requests receive a minimal
+ * - Guard mode (both methods present): every HTTP request and WebSocket upgrade
+ *   is checked before route matching. Unauthenticated requests receive a minimal
  *   login page (for page requests) or 401 (for API requests).
- * - Route mode (published `dsh-host-webserver`, which has no guard seam): an
+ * - Fallback (either method missing): an
  *   exact `/` route serves the application entry itself — unauthenticated
  *   browsers are redirected to the login page; authenticated ones get the index
  *   relayed from the SPA fallback owner, so the entry stays at `/` (the fallback
@@ -164,12 +165,9 @@ export function apply(ctx: Context, config: Config): void {
 
   // Loopback remains anonymous unless a reverse proxy explicitly supplies the public URL.
   if (webServer.host !== '0.0.0.0' && config.publicUrl === '') return
-  // The fork webserver exposes guards as the cross-cutting interception seam.
-  // The published webserver offers only named routes plus a single fallback
-  // seat (owned by the SPA dist server), so route mode gates the entry path.
-  // registerGuard and registerUpgradeGuard exist only on the fork's webserver.
-  // The published webserver's type has neither, so the lookup stays dynamic and
-  // route mode gates the entry path instead.
+  // registerGuard and registerUpgradeGuard are not on the published webserver,
+  // so the lookup stays dynamic. A host without both is unsupported: the exact
+  // `/` route below does not cover `/api`, upgrades, or static assets.
   const guarded = webServer as typeof webServer & {
     registerGuard?: (guard: (req: IncomingMessage, res: ServerResponse) => boolean) => () => void
     registerUpgradeGuard?: (guard: (req: IncomingMessage, socket: Duplex) => boolean) => () => void
@@ -384,7 +382,7 @@ export function apply(ctx: Context, config: Config): void {
     return
   }
 
-  // Route mode (published dsh-host-webserver): gate the application entry.
+  // Unsupported fallback: the host is missing a guard method, so only `/` is checked.
   // Unauthenticated browsers are sent to the login page; authenticated ones
   // to /index.html, where the SPA fallback owner serves the dist. Requests
   // carrying the client-connection launch token are handed to

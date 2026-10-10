@@ -1,6 +1,6 @@
 # dsh-plugin-chaos
 
-Chaos plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), installed into an unmodified `dsh` profile.
+Chaos plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). Installing the bundle is not enough: the published `dsh-host-webserver` has no `registerGuard` or `registerUpgradeGuard`, and `chaos-auth` requires both. A stock `dsh` must be patched to expose them before this plugin can run.
 
 The bundle inserts eight rows after `@deepseek-ai/dsh-web-app`: process control, mobile layout, remote login, server restart, model capability controls, conversation retry, think-tag presentation, and archived-session retention. Removing the bundle removes all eight.
 

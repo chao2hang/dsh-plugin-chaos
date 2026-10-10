@@ -8,7 +8,7 @@ type Handler = (req: IncomingMessage, res: ServerResponse) => void | Promise<voi
 
 /**
  * Capture named routes without opening a listener. The surface deliberately
- * omits registerGuard/registerUpgradeGuard so apply picks route mode.
+ * omits registerGuard/registerUpgradeGuard so apply takes the unsupported `/` fallback.
  */
 function routingServer() {
   const routes = new Map<string, Handler>()
