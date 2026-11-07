@@ -192,9 +192,14 @@ export function apply(ctx: Context, config: Config): void {
   // launch-token exchange at '/' mints; the relay's 401 is that verdict.
   const loopbackAddress = (): { host: string; port: number } => {
     const host = String(webServer.host)
+    // [rc.3 PATCH] upstream formalized `get port(): number | undefined` — the
+    // OS-assigned listening port, `undefined` before `listen` binds. The relay
+    // only runs while serving requests, so the listener is always bound.
+    const port = webServer.port
+    if (port === undefined) throw new Error('chaos-auth: webserver port not bound yet')
     return {
       host: host === '0.0.0.0' || host === '::' || host === '' ? '127.0.0.1' : host,
-      port: webServer.port,
+      port,
     }
   }
   const relayIndex = (
