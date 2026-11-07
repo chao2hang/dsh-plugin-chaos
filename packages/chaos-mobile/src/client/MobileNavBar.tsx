@@ -1,9 +1,10 @@
 /**
  * Mobile navigation bar: a 44pt top bar that replaces the floating hamburger
  * and details-close buttons. Left side is context-aware via CSS — it shows a
- * menu toggle while the details panel is closed and a back button while it is
- * open (driven by the AppFrame's `data-details-collapsed` attribute). The
- * center holds a truncated title, the right side holds a single overflow button.
+ * menu toggle while no chaos push-page is open and a back button while one is
+ * (driven by `html[data-chaos-details-open]`, the only collapsed-state signal
+ * the upstream AppFrame does not own). The center holds a truncated title,
+ * the right side holds a single overflow button.
  *
  * Design reference: iOS HIG — Navigation Bars.
  */

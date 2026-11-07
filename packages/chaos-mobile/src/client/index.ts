@@ -47,6 +47,12 @@ interface WorkspaceNavigation {
  * Mount the mobile adaptation: inject global CSS and register mobile controls.
  * @param ctx - Client root context.
  */
+
+/** Details actions the fork's layout service adds. The published service has neither. */
+function layoutDetails(layout: { toggleSidebar(): void }): { openDetails?(): void; closeDetails?(): void } {
+  return layout as { toggleSidebar(): void; openDetails?(): void; closeDetails?(): void }
+}
+
 export function apply(ctx: ClientContext): void {
   const workspaceNavigation = ctx.get('uiWorkspace') as unknown as WorkspaceNavigation
   // Inject global mobile CSS for the plugin lifetime.
@@ -70,8 +76,8 @@ export function apply(ctx: ClientContext): void {
     priority: -1,
     inject: (): MobileOverlayInjected => ({
       toggleSidebar: () => { ctx.layout.toggleSidebar() },
-      openDetails: () => { ctx.layout.openDetails?.() },
-      closeDetails: () => { ctx.layout.closeDetails?.() },
+      openDetails: () => { layoutDetails(ctx.layout).openDetails?.() },
+      closeDetails: () => { layoutDetails(ctx.layout).closeDetails?.() },
       newSession: () => { workspaceNavigation.startSession() },
     }),
   }, MobileOverlay))
@@ -83,7 +89,13 @@ export function apply(ctx: ClientContext): void {
       // as the composer's own addFiles callback reads it. The button hands a
       // string id; the slot's branded sessionId resolves the scope instead.
       conversation: {
-        createDrafts: (_id, files) => (ctx.conversation as ConversationController).createDrafts(sessionId, files),
+        // [rc.1 PATCH] createDrafts gained `uploadImages`: the Host stages
+        // uploads for ordinary Sessions only; a subagent continuation's images
+        // travel inline, so mirror the composer's own drop handler.
+        createDrafts: (_id, files) => {
+          const ordinary = ctx.sessions.binding(sessionId)?.session.getSnapshot().subagent === null
+          return (ctx.conversation as ConversationController).createDrafts(sessionId, files, ordinary)
+        },
         releaseDraftAttachments: (drafts) => { (ctx.conversation as ConversationController).releaseDraftAttachments(drafts) },
         addAttachments: (_id, draftIds) => {
           const actx = ctx.sessions.scope(sessionId)

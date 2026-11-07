@@ -86,16 +86,21 @@
   .button { transition: none; }
 }
 
-/* Context-aware left button: menu shows while details is closed, back while
-   open. "Closed" is the frame's data-details-collapsed present AND the
-   chaos-owned push-page state absent: on a narrow viewport the core column
-   solver keeps the attribute set even while the chaos details sheet is open
-   (its 640px center floor cannot fit), so the state on <html> decides there.
-   The attribute is unique to the frame in every frontend, so the html-level
-   :has() probe needs no frame qualifier; the bar portals outside the frame,
-   so select through the root. */
-html[data-chaos-mobile]:has([data-details-collapsed]):not([data-chaos-details-open]) [data-chaos-back],
-html[data-chaos-mobile]:not(:has([data-details-collapsed])) [data-chaos-menu-toggle],
+/* Context-aware left button: menu shows while no chaos push-page is open,
+   back while one is. The upstream AppFrame names its collapsed column
+   data-rightbar-collapsed and never renders data-details-collapsed, so the
+   old frame-attribute probe inverted there (menu permanently hidden, back
+   always shown, sidebar unreachable). The chaos-owned html state decides on
+   every frontend; the bar portals outside the frame, so select through the
+   root. Settings overrides carry !important and keep working. */
 html[data-chaos-mobile][data-chaos-details-open] [data-chaos-menu-toggle] {
   display: none;
+}
+
+html[data-chaos-mobile] [data-chaos-back] {
+  display: none;
+}
+
+html[data-chaos-mobile][data-chaos-details-open] [data-chaos-back] {
+  display: flex;
 }

@@ -87,7 +87,7 @@ export function AttachmentButton(
   }
 
   return (
-    <div ref={root} className={css.root} data-composer-attach>
+    <div ref={root} className={css.root} data-chaos-composer-attach>
       <input ref={camera} className={css.picker} type="file" accept="image/*" capture="environment" onChange={selectFiles} />
       <input ref={images} className={css.picker} type="file" accept="image/*" multiple onChange={selectFiles} />
       {/* Document-only accept: without it several mobile browsers route a bare

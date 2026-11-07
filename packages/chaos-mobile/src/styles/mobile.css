@@ -11,10 +11,12 @@ compatible: 0.1.3 frontends mark the frame and columns explicitly
 frontends (0.1.2-rc.1 and older) omit those semantic hooks, so every
 frame/column rule also matches the structural anchors — the columns are
 the direct parents of the data-slot render sites, the frame is the direct
-parent of the data-shell-overlay layer, and the collapsed state lives on
-the frame as data-sidebar-collapsed / data-details-collapsed in both
-lineages (no other element carries them, so html-level :has() probes the
-same answer). Nested :has() stays out: current Chromium rejects it as an
+parent of the data-shell-overlay layer, and the sidebar collapsed state
+lives on the frame as data-sidebar-collapsed in both lineages (no other
+element carries it, so html-level :has() probes the same answer; the
+upstream rightbar collapsed state is data-rightbar-collapsed, so
+detail-visibility rules key off the chaos-owned html state instead).
+Nested :has() stays out: current Chromium rejects it as an
 invalid selector. One [class*=] selector remains for headerUtilities
 (ui-conversation has no stable anchor yet — known limitation). */
 
@@ -138,6 +140,20 @@ html[data-chaos-mobile] :has(> [data-slot='conversation']) {
    calc(88px + safe-area-inset-bottom), the spot of a DOCKED composer. */
 html[data-chaos-mobile] [data-phase='hero'] [data-conversation-scroll] {
   justify-content: flex-end;
+}
+
+/* The single element the hero docks with is the composer chain, but upstream
+   still centres it: the chain carries the flex-centred stack's foot inset
+   (`.composerHero { padding-bottom: 32px }`, there to float a CENTered stack
+   above true centre). Once the hero is docked that inset no longer biases
+   toward the center — it is a plain gap under the input card, so the card
+   floats 32px above the floor while every docked-composer affordance (model
+   menu anchor, queue dock, safe-area inset) assumes it sits on the floor.
+   Drop the inset in docked mode only; centering on tablet/desktop keeps it,
+   and so does the focused-composer viewport rules below, which re-measure
+   against the card's true bottom edge. */
+html[data-chaos-mobile] [data-phase='hero'] [data-conversation-scroll] > [data-composer-seat] [data-slot='conversation.composer'] [class*='composerHero'] {
+  padding-bottom: 0;
 }
 
 /* ═══ Backdrop ══════════════════════════════════════════════════════════ */
@@ -409,16 +425,16 @@ html[data-chaos-mobile] [data-conversation-header-identity] {
 [data-chaos-nav-bar] [data-chaos-settings-hidden] { display: none !important; }
 [data-chaos-nav-bar] [data-chaos-settings-back] { display: flex !important; }
 
-/* When details is open: show back, hide menu. "Open" is either the frame
-   attribute going away (wide runtimes) or the chaos-owned push-page state
-   (narrow viewports, where the solver keeps data-details-collapsed). */
-[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-menu-toggle],
-html:not(:has([data-details-collapsed])) [data-chaos-mobile-overlay] [data-chaos-menu-toggle],
+/* When the chaos push-page is open: show back, hide menu. The upstream
+   frame never renders data-details-collapsed (its column state is
+   data-rightbar-collapsed), so the frame attribute decides nothing here;
+   the chaos-owned html state is the single signal. */
+[data-chaos-mobile-overlay] [data-chaos-back] {
+  display: none;
+}
 html[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-menu-toggle] {
   display: none;
 }
-[data-shell-frame]:not([data-details-collapsed]) [data-chaos-mobile-overlay] [data-chaos-back],
-html:not(:has([data-details-collapsed])) [data-chaos-mobile-overlay] [data-chaos-back],
 html[data-chaos-details-open] [data-chaos-mobile-overlay] [data-chaos-back] {
   display: flex;
 }
@@ -467,8 +483,10 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-trailing] {
 
 /* Bottom rail: every auxiliary action is a 32px rounded-square control.
    The model remains a readable text chip and send is the one 40px primary
-   action, so the hierarchy stays obvious without mixed circular dimensions. */
-html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker],
+   action, so the hierarchy stays obvious without mixed circular dimensions.
+   The chooser binds to its own root marker: the upstream composer renders
+   the slot without a data-input-actions-row wrapper. */
+html[data-chaos-mobile] [data-chaos-composer-attach] [data-chaos-attachment-picker],
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command],
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] {
   box-sizing: border-box;
@@ -514,7 +532,7 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] {
 
 /* Normalize the icon language across the bottom rail. The controls keep their
    established hit areas; only glyph scale and contrast are unified. */
-html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker] svg,
+html[data-chaos-mobile] [data-chaos-composer-attach] [data-chaos-attachment-picker] svg,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command] svg,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission] svg {
   width: 18px;
@@ -526,7 +544,7 @@ html[data-chaos-mobile] [data-input-actions-row] [data-composer-primary] svg {
   height: 20px;
 }
 
-html[data-chaos-mobile] [data-input-actions-row] [data-chaos-attachment-picker]:active,
+html[data-chaos-mobile] [data-chaos-composer-attach] [data-chaos-attachment-picker]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-command]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-permission]:active,
 html[data-chaos-mobile] [data-input-actions-row] [data-composer-model]:active {

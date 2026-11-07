@@ -30,15 +30,25 @@ import {
   formatContextTokens, getChaosContextMeter, subscribeChaosContextMeter,
 } from './context-meter-store.ts'
 import * as uiPrimitives from '@deepseek-ai/dsh-client-ui-primitives'
-import type { SurfaceSheetProps } from '@deepseek-ai/dsh-client-ui-primitives'
 
-/**
- * Sheet presentation is an additive ui-primitives API: fork builds carry it,
- * installed dsh releases may not. Read it as an optional pair so the overlay
- * degrades to inline presentation instead of crashing the slot.
- */
-const setSurfacePresentation = uiPrimitives.setSurfacePresentation as ((presentation: { mode: 'sheet'; presentAsSheet: (props: SurfaceSheetProps) => ReactNode }) => void) | undefined
-const resetSurfacePresentation = uiPrimitives.resetSurfacePresentation as (() => void) | undefined
+/** Sheet props the fork's ui-primitives sheet mode accepts. The published package exports neither the type nor the setters. */
+interface SurfaceSheetProps {
+  title?: string
+  onClose: () => void
+  children: ReactNode
+  surface?: string
+  footer?: ReactNode
+}
+
+/** Additive sheet setters. Absent on the published ui-primitives, where the overlay keeps inline presentation. */
+interface SurfacePresentationApi {
+  setSurfacePresentation?(presentation: { mode: 'sheet'; presentAsSheet: (props: SurfaceSheetProps) => ReactNode }): void
+  resetSurfacePresentation?(): void
+}
+
+const surfacePresentation = uiPrimitives as unknown as SurfacePresentationApi
+const setSurfacePresentation = surfacePresentation.setSurfacePresentation
+const resetSurfacePresentation = surfacePresentation.resetSurfacePresentation
 
 /** Panel actions injected by the layout-aware overlay registration. */
 export interface MobileOverlayInjected {
