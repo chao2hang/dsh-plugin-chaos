@@ -2,6 +2,7 @@ import { Fragment, memo, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { ChatNodeViewProps, TurnTailOwnerProps } from '@deepseek-ai/dsh-client-ui-chat/client'
+import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import { DisclosureRow, IconThinkOutlineMedium, JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives'
 import { normalizeThinkTags } from './think-tags.ts'
@@ -39,8 +40,8 @@ function ThinkRow({ text }: { text: string }) {
 
 /** Render assistant blocks after presentation-only think-tag normalization. */
 function ThinkTagAssistantContent({
-  blocks, streaming, renderMessageImages, mentions, t,
-}: Pick<ChatNodeViewProps<'assistant-step'>, 'renderMessageImages' | 't'> & {
+  blocks, streaming, renderFactorySlot, loadImage, mentions, t,
+}: Pick<ChatNodeViewProps<'assistant-step'>, 'loadImage' | 't' | 'renderFactorySlot'> & {
   blocks: readonly AssistantBlock[]
   streaming: boolean
   mentions: MarkdownFileMentions | undefined
@@ -69,7 +70,17 @@ function ThinkTagAssistantContent({
           group.push(next)
           index += 1
         }
-        rendered.push(<Fragment key={start}>{renderMessageImages({ images: group.map(({ attachment }) => ({ attachment })), align: 'start' })}</Fragment>)
+        rendered.push(
+          <Fragment key={start}>
+            {/* [rc.1 PATCH] Render through the shared gallery content Factory
+                instead of the `conversation.chat.message.images` slot: declaring
+                that child here collides with the upstream assistant-step entry,
+                which already declares it globally, and aborts this registration. */}
+            {renderFactorySlot('conversation.images.content', {
+              images: group.map(({ attachment }) => ({ attachment })), loadImage, align: 'start',
+            })}
+          </Fragment>,
+        )
         break
       }
       case 'tool-call':
@@ -81,10 +92,19 @@ function ThinkTagAssistantContent({
   return <div>{rendered}</div>
 }
 
+/**
+ * [rc.1 PATCH] upstream moved `fileMentions` off `ChatNodeViewProps` and behind
+ * the slot entry's own `inject`. This plugin supplies the same one-argument
+ * resolver its registration declares, so prose file links keep resolving.
+ */
+type ThinkTagInjected = {
+  fileMentions: (owner: TurnTailOwnerProps) => MarkdownFileMentions | undefined
+}
+
 /** Assistant renderer that routes provider-emitted think tags to the Think disclosure. */
 export const ThinkTagAssistantNodeView = memo(function ThinkTagAssistantNodeView({
-  node, useTurnData, openFile, renderMessageImages, fileMentions, t,
-}: ChatNodeViewProps<'assistant-step'>) {
+  node, useTurnData, openFile, renderFactorySlot, loadImage, fileMentions, t,
+}: ChatNodeViewProps<'assistant-step'> & InjectFace<ThinkTagInjected>) {
   const data = node.data
   const turn = node.location.kind === 'turn' || node.location.kind === 'step' ? node.location.turn : undefined
   const tail = useTurnData('turn-tail')
@@ -95,5 +115,5 @@ export const ThinkTagAssistantNodeView = memo(function ThinkTagAssistantNodeView
   }, [data.finalNode, openFile, tail, turn])
   const mentions = useMemo(() => owner === undefined ? undefined : fileMentions(owner), [fileMentions, owner])
   const blocks = useMemo(() => normalizeThinkTags(data.blocks), [data.blocks])
-  return <ThinkTagAssistantContent blocks={blocks} streaming={data.status === 'running'} renderMessageImages={renderMessageImages} mentions={mentions} t={t} />
+  return <ThinkTagAssistantContent blocks={blocks} streaming={data.status === 'running'} renderFactorySlot={renderFactorySlot} loadImage={loadImage} mentions={mentions} t={t} />
 })

@@ -25,6 +25,9 @@ describe('chaos-think-tags renderer override', () => {
     const defaultFiber = ctx.plugin(() => {
       ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
         name: 'conversation.chat.node', key: 'assistant-step',
+        // Upstream's assistant-step entry declares this child; a redeclaration
+        // by the shadowing entry aborts registration.
+        children: { 'conversation.chat.message.images': { kind: 'single', scope: 'session' } },
       }, Frame))
     })
     await defaultFiber.await()
