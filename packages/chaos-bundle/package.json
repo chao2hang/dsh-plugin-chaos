@@ -41,10 +41,10 @@
     "@deepseek-ai/dsh-process-control": "workspace:^"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
     "tsdown": "^0.22.2"
   },
   "files": [

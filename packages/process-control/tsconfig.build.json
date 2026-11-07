@@ -5,7 +5,8 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
-    "incremental": false,
+    "incremental": true,
+    "tsBuildInfoFile": "./lib/.tsbuildinfo.build",
     "sourceMap": true
   }
 }

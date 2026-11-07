@@ -9,7 +9,7 @@
  * the sweep degrades to a skip instead of guessing.
  */
 import { readdir, rm, stat } from 'node:fs/promises'
-import { generationLogPath, sessionDir } from '@deepseek-ai/dsh-session-persistence-jsonl'
+import { generationLogPath, sessionDir } from '@deepseek-ai/dsh-session-persistence-jsonl/src/format.ts'
 import type { SessionHeader } from '@deepseek-ai/dsh-session'
 import type { JanitorDeletion, JanitorFailure, JanitorOutcome, JanitorSkip } from './types.ts'
 

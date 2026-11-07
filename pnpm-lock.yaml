@@ -30,18 +30,18 @@ importers:
   packages/chaos-auth:
     dependencies:
       '@deepseek-ai/schemastery':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/schemastery
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/schemastery
+        specifier: link:/home/chaos/deepseek-harness/vendor/schemastery
+        version: link:../../../deepseek-harness/vendor/schemastery
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-credentials':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/credentials/credentials
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/credentials/credentials
+        specifier: link:/home/chaos/deepseek-harness/packages/credentials/credentials
+        version: link:../../../deepseek-harness/packages/credentials/credentials
       '@deepseek-ai/dsh-host-webserver':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/host/webserver
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/host/webserver
+        specifier: link:/home/chaos/deepseek-harness/packages/host/webserver
+        version: link:../../../deepseek-harness/packages/host/webserver
       tsdown:
         specifier: ^0.22.2
         version: 0.22.14(typescript@6.0.3)
@@ -71,8 +71,8 @@ importers:
         version: link:../process-control
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       tsdown:
         specifier: ^0.22.2
         version: 0.22.14(typescript@6.0.3)
@@ -80,30 +80,30 @@ importers:
   packages/chaos-janitor:
     dependencies:
       '@deepseek-ai/schemastery':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/schemastery
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/schemastery
+        specifier: link:/home/chaos/deepseek-harness/vendor/schemastery
+        version: link:../../../deepseek-harness/vendor/schemastery
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/cordis-plugin-timer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/timer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/timer
+        specifier: link:/home/chaos/deepseek-harness/vendor/timer
+        version: link:../../../deepseek-harness/vendor/timer
       '@deepseek-ai/dsh-home-paths':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/util/home-paths
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/util/home-paths
+        specifier: link:/home/chaos/deepseek-harness/packages/util/home-paths
+        version: link:../../../deepseek-harness/packages/util/home-paths
       '@deepseek-ai/dsh-session':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/core/session
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/core/session
+        specifier: link:/home/chaos/deepseek-harness/packages/core/session
+        version: link:../../../deepseek-harness/packages/core/session
       '@deepseek-ai/dsh-session-persistence':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/session/session-persistence
+        specifier: link:/home/chaos/deepseek-harness/packages/session/session-persistence
+        version: link:../../../deepseek-harness/packages/session/session-persistence
       '@deepseek-ai/dsh-session-persistence-jsonl':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence-jsonl
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/session/session-persistence-jsonl
+        specifier: link:/home/chaos/deepseek-harness/packages/session/session-persistence-jsonl
+        version: link:../../../deepseek-harness/packages/session/session-persistence-jsonl
       '@deepseek-ai/dsh-workspace':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/workspace/workspace
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/workspace/workspace
+        specifier: link:/home/chaos/deepseek-harness/packages/workspace/workspace
+        version: link:../../../deepseek-harness/packages/workspace/workspace
       tsdown:
         specifier: ^0.22.2
         version: 0.22.14(typescript@6.0.3)
@@ -115,32 +115,32 @@ importers:
         version: 11.12.0
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-api-session-controller':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/api/session-controller
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/api/session-controller
+        specifier: link:/home/chaos/deepseek-harness/packages/api/session-controller
+        version: link:../../../deepseek-harness/packages/api/session-controller
       '@deepseek-ai/dsh-client-ui-conversation':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-conversation
+        version: link:../../../deepseek-harness/packages/client/ui-conversation
       '@deepseek-ai/dsh-client-ui-layout':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-layout
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-layout
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-layout
+        version: link:../../../deepseek-harness/packages/client/ui-layout
       '@deepseek-ai/dsh-client-ui-primitives':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-primitives
+        version: link:../../../deepseek-harness/packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-renderer
+        version: link:../../../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-slots':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-slots
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-slots
+        version: link:../../../deepseek-harness/packages/client/ui-slots
       '@deepseek-ai/dsh-host-webserver':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/host/webserver
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/host/webserver
+        specifier: link:/home/chaos/deepseek-harness/packages/host/webserver
+        version: link:../../../deepseek-harness/packages/host/webserver
       '@deepseek-ai/dsh-token-meter':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/llm/token-meter
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/llm/token-meter
+        specifier: link:/home/chaos/deepseek-harness/packages/llm/token-meter
+        version: link:../../../deepseek-harness/packages/llm/token-meter
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.3(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -166,29 +166,29 @@ importers:
   packages/chaos-models:
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-api-remotes':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/api/remotes
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/api/remotes
+        specifier: link:/home/chaos/deepseek-harness/packages/api/remotes
+        version: link:../../../deepseek-harness/packages/api/remotes
       '@deepseek-ai/dsh-client-connection':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/connection
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/connection
+        specifier: link:/home/chaos/deepseek-harness/packages/client/connection
+        version: link:../../../deepseek-harness/packages/client/connection
       '@deepseek-ai/dsh-client-ui-conversation':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-conversation
+        version: link:../../../deepseek-harness/packages/client/ui-conversation
       '@deepseek-ai/dsh-client-ui-primitives':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-primitives
+        version: link:../../../deepseek-harness/packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-renderer
+        version: link:../../../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-settings':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-settings
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-settings
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-settings
+        version: link:../../../deepseek-harness/packages/client/ui-settings
       '@deepseek-ai/dsh-client-ui-slots':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-slots
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-slots
+        version: link:../../../deepseek-harness/packages/client/ui-slots
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.3(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -214,33 +214,33 @@ importers:
         specifier: link:../process-control
         version: link:../process-control
       '@deepseek-ai/schemastery':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/schemastery
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/schemastery
+        specifier: link:/home/chaos/deepseek-harness/vendor/schemastery
+        version: link:../../../deepseek-harness/vendor/schemastery
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-client-locale':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/locale
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/locale
+        specifier: link:/home/chaos/deepseek-harness/packages/client/locale
+        version: link:../../../deepseek-harness/packages/client/locale
       '@deepseek-ai/dsh-client-test-runtime':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/test-support/client-runtime
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/test-support/client-runtime
+        specifier: link:/home/chaos/deepseek-harness/packages/test-support/client-runtime
+        version: link:../../../deepseek-harness/packages/test-support/client-runtime
       '@deepseek-ai/dsh-client-ui-primitives':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-primitives
+        version: link:../../../deepseek-harness/packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-renderer
+        version: link:../../../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-settings':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-settings
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-settings
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-settings
+        version: link:../../../deepseek-harness/packages/client/ui-settings
       '@deepseek-ai/dsh-client-ui-slots':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-slots
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-slots
+        version: link:../../../deepseek-harness/packages/client/ui-slots
       '@deepseek-ai/dsh-host-webserver':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/host/webserver
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/host/webserver
+        specifier: link:/home/chaos/deepseek-harness/packages/host/webserver
+        version: link:../../../deepseek-harness/packages/host/webserver
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.3(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -263,44 +263,44 @@ importers:
   packages/chaos-retry:
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-api-session-controller':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/api/session-controller
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/api/session-controller
+        specifier: link:/home/chaos/deepseek-harness/packages/api/session-controller
+        version: link:../../../deepseek-harness/packages/api/session-controller
       '@deepseek-ai/dsh-attachment':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/attachment/attachment
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/attachment/attachment
+        specifier: link:/home/chaos/deepseek-harness/packages/attachment/attachment
+        version: link:../../../deepseek-harness/packages/attachment/attachment
       '@deepseek-ai/dsh-client-locale':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/locale
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/locale
+        specifier: link:/home/chaos/deepseek-harness/packages/client/locale
+        version: link:../../../deepseek-harness/packages/client/locale
       '@deepseek-ai/dsh-client-test-runtime':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/test-support/client-runtime
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/test-support/client-runtime
+        specifier: link:/home/chaos/deepseek-harness/packages/test-support/client-runtime
+        version: link:../../../deepseek-harness/packages/test-support/client-runtime
       '@deepseek-ai/dsh-client-ui-approval':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-approval
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-approval
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-approval
+        version: link:../../../deepseek-harness/packages/client/ui-approval
       '@deepseek-ai/dsh-client-ui-chat':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-chat
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-chat
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-chat
+        version: link:../../../deepseek-harness/packages/client/ui-chat
       '@deepseek-ai/dsh-client-ui-conversation':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-conversation
+        version: link:../../../deepseek-harness/packages/client/ui-conversation
       '@deepseek-ai/dsh-client-ui-primitives':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-primitives
+        version: link:../../../deepseek-harness/packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-renderer
+        version: link:../../../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-session':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-session
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-session
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-session
+        version: link:../../../deepseek-harness/packages/client/ui-session
       '@deepseek-ai/dsh-client-ui-slots':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-slots
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-slots
+        version: link:../../../deepseek-harness/packages/client/ui-slots
       '@deepseek-ai/dsh-session':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/core/session
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/core/session
+        specifier: link:/home/chaos/deepseek-harness/packages/core/session
+        version: link:../../../deepseek-harness/packages/core/session
       '@testing-library/react':
         specifier: ^16.1.0
         version: 16.3.3(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -323,26 +323,26 @@ importers:
   packages/chaos-think-tags:
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-client-locale':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/locale
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/locale
+        specifier: link:/home/chaos/deepseek-harness/packages/client/locale
+        version: link:../../../deepseek-harness/packages/client/locale
       '@deepseek-ai/dsh-client-ui-chat':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-chat
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-chat
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-chat
+        version: link:../../../deepseek-harness/packages/client/ui-chat
       '@deepseek-ai/dsh-client-ui-conversation':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-conversation
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-conversation
+        version: link:../../../deepseek-harness/packages/client/ui-conversation
       '@deepseek-ai/dsh-client-ui-primitives':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-primitives
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-primitives
+        version: link:../../../deepseek-harness/packages/client/ui-primitives
       '@deepseek-ai/dsh-client-ui-renderer':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-renderer
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-renderer
+        version: link:../../../deepseek-harness/packages/client/ui-renderer
       '@deepseek-ai/dsh-client-ui-slots':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/client/ui-slots
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/client/ui-slots
+        specifier: link:/home/chaos/deepseek-harness/packages/client/ui-slots
+        version: link:../../../deepseek-harness/packages/client/ui-slots
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
@@ -359,11 +359,11 @@ importers:
   packages/process-control:
     devDependencies:
       '@deepseek-ai/cordis':
-        specifier: link:/home/chaos/deepseek-harness-chaos/vendor/cordis
-        version: link:../../../../home/chaos/deepseek-harness-chaos/vendor/cordis
+        specifier: link:/home/chaos/deepseek-harness/vendor/cordis
+        version: link:../../../deepseek-harness/vendor/cordis
       '@deepseek-ai/dsh-cmdline':
-        specifier: link:/home/chaos/deepseek-harness-chaos/packages/boot/cmdline
-        version: link:../../../../home/chaos/deepseek-harness-chaos/packages/boot/cmdline
+        specifier: link:/home/chaos/deepseek-harness/packages/boot/cmdline
+        version: link:../../../deepseek-harness/packages/boot/cmdline
       tsdown:
         specifier: ^0.22.2
         version: 0.22.14(typescript@6.0.3)

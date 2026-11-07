@@ -22,35 +22,35 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "bundle": "tsc -p tsconfig.build.json",
+    "bundle": "tsc -p tsconfig.build.json && tsdown",
     "watch": "tsdown --watch"
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/cordis-plugin-timer": "link:/home/chaos/deepseek-harness-chaos/vendor/timer",
-    "@deepseek-ai/dsh-home-paths": "link:/home/chaos/deepseek-harness-chaos/packages/util/home-paths",
-    "@deepseek-ai/dsh-session": "link:/home/chaos/deepseek-harness-chaos/packages/core/session",
-    "@deepseek-ai/dsh-session-persistence": "link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence-jsonl",
-    "@deepseek-ai/dsh-workspace": "link:/home/chaos/deepseek-harness-chaos/packages/workspace/workspace"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/cordis-plugin-timer": "link:/home/chaos/deepseek-harness/vendor/timer",
+    "@deepseek-ai/dsh-home-paths": "workspace:^",
+    "@deepseek-ai/dsh-session": "workspace:^",
+    "@deepseek-ai/dsh-session-persistence": "workspace:^",
+    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
+    "@deepseek-ai/dsh-workspace": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/cordis-plugin-timer": "link:/home/chaos/deepseek-harness-chaos/vendor/timer",
-    "@deepseek-ai/dsh-home-paths": "link:/home/chaos/deepseek-harness-chaos/packages/util/home-paths",
-    "@deepseek-ai/dsh-session": "link:/home/chaos/deepseek-harness-chaos/packages/core/session",
-    "@deepseek-ai/dsh-session-persistence": "link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "link:/home/chaos/deepseek-harness-chaos/packages/session/session-persistence-jsonl",
-    "@deepseek-ai/dsh-workspace": "link:/home/chaos/deepseek-harness-chaos/packages/workspace/workspace",
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/cordis-plugin-timer": "link:/home/chaos/deepseek-harness/vendor/timer",
+    "@deepseek-ai/dsh-home-paths": "link:/home/chaos/deepseek-harness/packages/util/home-paths",
+    "@deepseek-ai/dsh-session": "link:/home/chaos/deepseek-harness/packages/core/session",
+    "@deepseek-ai/dsh-session-persistence": "link:/home/chaos/deepseek-harness/packages/session/session-persistence",
+    "@deepseek-ai/dsh-session-persistence-jsonl": "link:/home/chaos/deepseek-harness/packages/session/session-persistence-jsonl",
+    "@deepseek-ai/dsh-workspace": "link:/home/chaos/deepseek-harness/packages/workspace/workspace",
     "tsdown": "^0.22.2",
-    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness-chaos/vendor/schemastery"
+    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness/vendor/schemastery"
   },
   "files": [
     "lib/index.js",
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness-chaos/vendor/schemastery"
+    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness/vendor/schemastery"
   }
 }

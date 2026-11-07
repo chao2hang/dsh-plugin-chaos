@@ -27,12 +27,12 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/dsh-cmdline": "link:/home/chaos/deepseek-harness-chaos/packages/boot/cmdline"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/dsh-cmdline": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/dsh-cmdline": "link:/home/chaos/deepseek-harness-chaos/packages/boot/cmdline",
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/dsh-cmdline": "link:/home/chaos/deepseek-harness/packages/boot/cmdline",
     "tsdown": "^0.22.2"
   },
   "files": [

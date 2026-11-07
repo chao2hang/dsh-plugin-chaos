@@ -27,22 +27,22 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/dsh-host-webserver": "link:/home/chaos/deepseek-harness-chaos/packages/host/webserver",
-    "@deepseek-ai/dsh-credentials": "link:/home/chaos/deepseek-harness-chaos/packages/credentials/credentials"
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/dsh-host-webserver": "workspace:^",
+    "@deepseek-ai/dsh-credentials": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness-chaos/vendor/cordis",
-    "@deepseek-ai/dsh-host-webserver": "link:/home/chaos/deepseek-harness-chaos/packages/host/webserver",
-    "@deepseek-ai/dsh-credentials": "link:/home/chaos/deepseek-harness-chaos/packages/credentials/credentials",
+    "@deepseek-ai/cordis": "link:/home/chaos/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/dsh-host-webserver": "link:/home/chaos/deepseek-harness/packages/host/webserver",
+    "@deepseek-ai/dsh-credentials": "link:/home/chaos/deepseek-harness/packages/credentials/credentials",
     "tsdown": "^0.22.2",
-    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness-chaos/vendor/schemastery"
+    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness/vendor/schemastery"
   },
   "files": [
     "lib/index.js",
     "lib/types/**/*.d.ts"
   ],
   "dependencies": {
-    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness-chaos/vendor/schemastery"
+    "@deepseek-ai/schemastery": "link:/home/chaos/deepseek-harness/vendor/schemastery"
   }
 }

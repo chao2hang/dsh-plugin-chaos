@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { sessionDir } from '@deepseek-ai/dsh-session-persistence-jsonl'
+import { sessionDir } from '@deepseek-ai/dsh-session-persistence-jsonl/src/format.ts'
 import type { SessionHeader } from '@deepseek-ai/dsh-session'
 import { sweepArchivedSessions } from '../src/sweep.ts'
 
